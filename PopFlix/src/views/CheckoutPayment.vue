@@ -17,45 +17,10 @@ const bookingStore = useBookingStore();
 const { movie, loadMovieDetails, getImageURL } = useMovieDetails();
 const currentStage = ref(2);
 const generatedTxnId = ref('');
-// DUMMY VOUCHER
-const selectedVoucherId = ref(null);
-const dummyVouchers = ref([
-    { id: 'VCH_5', label: '🍿 Popcorn Bundle Deal (5% OFF)', title: 'Popcorn Bundle Deal', discount: 5, description: 'Code: CINEMA5 • Standard discount apply hold items' },
-    { id: 'VCH_10', label: '🎬 Tixly Launch Celebration (10% OFF)', title: 'Tixly Launch Celebration', discount: 10, description: 'Code: POPCORN10 • Active launch window tier reward' },
-    { id: 'VCH_15', label: '💎 VIP Diamond Membership Tier (15% OFF)', title: 'VIP Diamond Member Reward', discount: 15, description: 'Code: TIXLY15 • Premium loyalty club tier settlement deduction' }
-]);
-const handleDropdownVoucher = (id) => {
-    if (!id) {
-        clearActiveVoucher();
-        return;
-    }
-
-    // Scan matching instance attributes out of collection
-    const match = dummyVouchers.value.find(v => v.id === id);
-    if (match) {
-        activeDiscount.value = match.discount;
-        appliedVoucher.value = match.id;
-        voucherCode.value = match.id; // Links cleanly into backend payment expectations
-    }
-};
-
-// ⚡ NEW: Direct reset cleanup anchor triggers
-const clearActiveVoucher = () => {
-    selectedVoucherId.value = null;
-    activeDiscount.value = 0;
-    appliedVoucher.value = '';
-    voucherCode.value = '';
-};
-// DUMMY END
 
 const paymentMethod = ref('stripe');
 const saveInfo = ref(true);
 const isMovieLoading = ref(true);
-
-// Voucher & Discount Properties
-const voucherCode = ref('');
-const activeDiscount = ref(0); // Percentage value (e.g., 5, 10, 15)
-const appliedVoucher = ref('');
 
 // Mock form data bindings
 const cardName = ref('');
@@ -164,10 +129,7 @@ watch(currentBooking, (newVal, oldVal) => {
     }
 });
 
-// Dynamic Price Computations based on Voucher state logic
 const subtotalPrice = computed(() => Number(currentBooking.value?.totalPrice || 0));
-const discountAmount = computed(() => (subtotalPrice.value * (activeDiscount.value / 100)));
-const finalTotalPrice = computed(() => Math.max(0, subtotalPrice.value - discountAmount.value).toFixed(2));
 
 
 const cleanupAndExit = () => {
@@ -193,7 +155,7 @@ const handlePaymentExecution = async () => {
         generatedTxnId.value = 'TXN_STRIPE_' + Math.random().toString(36).substr(2, 9).toUpperCase();
         localStorage.setItem('completedBookingBackup', JSON.stringify(currentBooking.value));
         localStorage.setItem('completedTxnIdBackup', generatedTxnId.value);
-        await bookingStore.confirmPayment(generatedTxnId.value, finalTotalPrice.value, paymentMethod.value);
+        await bookingStore.confirmPayment(generatedTxnId.value, subtotalPrice.value, paymentMethod.value);
 
         bookingStore.stopGlobalTimer();
         localStorage.removeItem('timerDeadline');
@@ -237,7 +199,7 @@ const formattedSeats = computed(() => {
 <template>
     <v-app>
     <v-container width="100vw" fluid class="fill-height bg-dark-theater" theme="dark">
-        <h2>Checkout</h2>
+        <h2>Checkout Payment</h2>
         <v-row no-gutters class="fill-height pt-5">
             <v-col cols="12" md="5" class="d-flex flex-column align-end">
                 <div class="w-100 max-width-left p-3">
@@ -303,48 +265,12 @@ const formattedSeats = computed(() => {
                         </v-col>
                     </v-row>
 
-
-                    <v-card class="pa-4 mb-4 bg-glass border-glass shadow-cinematic" variant="flat">
-                        <v-label class="text-grey-lighten-1 d-block mb-2 ">
-                            Select Available Voucher
-                        </v-label>
-
-                        <v-select v-model="selectedVoucherId" :items="dummyVouchers" item-title="label" item-value="id"
-                            placeholder="Choose a voucher or promo code" variant="solo" flat rounded="lg"
-                            density="comfortable" hide-details clearable
-                            class="text-white v-input-dark custom-select-dropdown"
-                            @update:model-value="handleDropdownVoucher" @click:clear="clearActiveVoucher">
-                            <template v-slot:item="{ props, item }">
-                                <v-list-item v-bind="props" class="py-2 custom-dropdown-item" bg-color="#121620">
-                                    <template v-slot:title>
-                                        <div class="d-flex justify-space-between align-center">
-                                            <span class="font-weight-bold text-white">{{ item.raw.title }}</span>
-                                            <v-chip size="x-small" color="red-accent-3" variant="flat"
-                                                class="font-weight-black">
-                                                {{ item.raw.discount }}% OFF
-                                            </v-chip>
-                                        </div>
-                                    </template>
-                                    <template v-slot:subtitle>
-                                        <span class="text-grey-darken-1 text-xsmall d-block mt-1">{{
-                                            item.raw.description }}</span>
-                                    </template>
-                                </v-list-item>
-                            </template>
-                        </v-select>
-                    </v-card>
-
                     <v-divider class="my-4 divider-opacity-soft"></v-divider>
 
                     <div class="pricing-rows px-2">
                         <div class="d-flex justify-space-between text-body-2 text-grey-lighten-2 mb-2">
                             <span>Subtotal Cost</span>
                             <span class="font-weight-bold text-white">RM {{ subtotalPrice.toFixed(2) }}</span>
-                        </div>
-                        <div v-if="activeDiscount > 0"
-                            class="d-flex justify-space-between text-body-2 text-red-lighten-3 mb-2 animate-pulse-slow">
-                            <span>Voucher Promo Discount ({{ activeDiscount }}%)</span>
-                            <span class="font-weight-bold">- RM {{ discountAmount.toFixed(2) }}</span>
                         </div>
                         <div class="d-flex justify-space-between text-body-2 text-grey-lighten-2 mb-2">
                             <span>Booking Service Fee</span>
@@ -365,7 +291,7 @@ const formattedSeats = computed(() => {
                                 <span class="text-caption text-grey-lighten-1">GST (10%) Inclusive Mapping</span>
                             </div>
                             <span class="text-h3 font-weight-black text-white text-glow-red">
-                                RM {{ finalTotalPrice }}
+                                RM {{ subtotalPrice.toFixed(2) }}
                             </span>
                         </div>
                     </div>
@@ -377,7 +303,7 @@ const formattedSeats = computed(() => {
                 class="d-flex flex-column align-start justify-center px-12 bg-deep-charcoal rounded">
                 <div class="max-width-right">
 
-                    <div class="d-flex justify-space-between align-center mb-2 w-100 ms-3">
+                    <div class="d-flex justify-space-between align-center mb-2 mt-5 w-100 ms-3">
                         <div class="step-tracker-pill d-flex mx-auto gap-2">
 
                             <span class="step-badge checked-green">1</span>
@@ -501,7 +427,7 @@ const formattedSeats = computed(() => {
                                 Pay Now
                             </v-btn>
 
-                            <div class="d-flex justify-center align-center mt-3 text-caption text-grey">
+                            <div class="d-flex justify-center align-center mt-3 mb-2 text-caption text-grey">
                                 <v-icon size="14" color="grey">mdi-lock-outline</v-icon> Secured & Protected by
                                 <span class="text-white ms-1">stripe</span>
                             </div>

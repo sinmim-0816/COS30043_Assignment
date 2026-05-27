@@ -90,7 +90,7 @@ onUnmounted(() => {
                 <li class="hover-capsule" :style="hoverStyle"></li>
                 <li @mouseenter="handleMouseEnter"><router-link to="/movies">Movies</router-link></li>
                 <li @mouseenter="handleMouseEnter"><router-link to="/showtimes">Showtimes</router-link></li>
-                <li @mouseenter="handleMouseEnter"><router-link to="/theaters">Theatre</router-link></li>
+                <li @mouseenter="handleMouseEnter"><router-link to="/theaters">Cinemas</router-link></li>
                 <li @mouseenter="handleMouseEnter"><router-link to="/customize-list">Customization</router-link></li>
             </ul>
         </nav>

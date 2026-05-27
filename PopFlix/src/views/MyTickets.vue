@@ -10,6 +10,7 @@ import QrcodeVue from 'qrcode.vue';
 import { useTickets } from '@/hook/useTickets';
 import { useReviews } from '@/hook/useReviews';
 import { useAuthStore } from '@/stores/auth';
+import FooterView from '@/components/FooterView.vue';
 
 const { ticketsList: tickets, isTicketsLoading, ticketsError, fetchTickets } = useTickets();
 const { submitReview: postReview } = useReviews();
@@ -174,6 +175,7 @@ const submitReview = async () => {
 </script>
 
 <template>
+    <v-app>
     <v-layout class="cinematic-dashboard fill-height align-start pa-6" fluid width="100vw">
         <v-row class="mt-3 w-100 ma-0">
             <h2>My Bookings</h2>
@@ -442,6 +444,8 @@ const submitReview = async () => {
             </div>
         </v-dialog>
     </v-layout>
+    <FooterView/>
+    </v-app>
 </template>
 
 <style scoped>

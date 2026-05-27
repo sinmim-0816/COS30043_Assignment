@@ -17,15 +17,24 @@ import { getCertImage } from '@/utils/AgeRating';
 import { getExperienceStyle } from '@/utils/experience';
 import { useShowtimes } from '@/hook/useShowtimes';
 import FooterView from '@/components/FooterView.vue';
+import { useExperience } from '@/hook/useExperience';
+import TicketLeft from '@/components/TicketLeft.vue';
+import TicketCenter from '@/components/TicketCenter.vue';
+import TicketRight from '@/components/TicketRight.vue';
 
 const { featuredMovies, fetchHeroMovies, getImageURL, isLoading, getLanguageName, getCertificate, comingSoonMovies, fetchComingSoonMovies } = useMovies();
 const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
+const { items: experienceData, loading: expLoading, loadExperiences, loadAllExperiences } = useExperience(); 
 const router = useRouter();
 
 const showTrailer = ref(false);
 const currentVideoKey = ref(null);
 const swiperInstance = ref(null);
 const activeTab = ref(0);
+
+const experienceCategories = ref([]);
+const activeExperienceIndex = ref(0);
+
 const onSwiper = (swiper) => {
     swiperInstance.value = swiper;
 };
@@ -162,6 +171,18 @@ const displayMovies = computed(() => {
 
     return featuredMovies.value;
 });
+
+const selectExperience = async (index) => {
+    activeExperienceIndex.value = index;
+    const selectedKey = experienceCategories.value[index].key;
+    await loadExperiences(selectedKey);
+};
+
+const viewMoreExperiences = () => {
+    router.push('/movies'); 
+};
+
+
 onMounted(async () => {
     if (featuredMovies.value.length === 0) {
         await fetchHeroMovies();
@@ -176,6 +197,29 @@ onMounted(async () => {
         console.error("Failed to sync showtimes sessions map cache:", err);
     }
 
+    const allExperiences = await loadAllExperiences();
+    if (allExperiences && allExperiences.length > 0) {
+        const uniqueCategories = [];
+        const seenKeys = new Set();
+
+        allExperiences.forEach(exp => {
+            if (!seenKeys.has(exp.exp_key)) {
+                seenKeys.add(exp.exp_key);
+                uniqueCategories.push({
+                    key: exp.exp_key,
+                    name: exp.exp_key, 
+                    desc: exp.subtitle || exp.description 
+                });
+            }
+        });
+
+        experienceCategories.value = uniqueCategories;
+
+        if (experienceCategories.value.length > 0) {
+            await selectExperience(0);
+        }
+    }
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -184,7 +228,7 @@ onMounted(async () => {
         });
     }, { threshold: 0.2 });
 
-    document.querySelectorAll('h2').forEach(h2 => observer.observe(h2));
+    document.querySelectorAll('h2, .scroll-animate').forEach((el) => observer.observe(el));
 });
 </script>
 
@@ -383,6 +427,131 @@ onMounted(async () => {
                 </v-window>
             </v-container>
         </section>
+        <section id="custom-ticket-cta" class=" position-relative">
+            
+            <v-container fluid class="text-center position-relative z-index-2" width="100vw">
+                
+                <div class="ticket-animation-stage scroll-animate">
+                    
+                    <div class="animated-ticket ticket-left">
+                        <div class="svg-ticket-wrapper">
+                            <TicketLeft />
+                        </div>
+                    </div>
+                    
+                    <div class="animated-ticket ticket-center">
+                        <div class="svg-ticket-wrapper">
+                            <TicketCenter />
+                        </div>
+                    </div>
+
+                    <div class="animated-ticket ticket-right">
+                        <div class="svg-ticket-wrapper">
+                            <TicketRight />
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <h2 class="text-h3 font-weight-black text-white mb-4" style="letter-spacing: -1px;">
+                    Craft Your Cinematic Keepsake
+                </h2>
+                <p class="text-h6 text-grey-lighten-1 font-weight-regular mx-auto" >
+                    Don't just watch the movie, own the memory. After booking your showtime, unlock the ability to customize and design your own unique digital ticket to share and collect!
+                </p>
+                
+                <v-btn 
+                    color="red-accent-3" 
+                    variant="flat"
+                    height="48"
+                    class="rounded-pill px-8 font-weight-bold text-white text-none"
+                >
+                    Learn More
+                </v-btn>
+
+            </v-container>
+        </section>
+        <section id="experiences" >
+            <v-container fluid class="px-5 px-md-10">
+                <div class="text-center mb-5">
+                    <h2 class="text-h3 font-weight-black mx-auto" style="max-width: 600px; line-height: 1.2;">
+                        Immersive ways <br/> to watch your movie.
+                    </h2>
+                </div>
+
+                <v-row class="align-stretch">
+                    <v-col cols="12" md="4" lg="3">
+                        <div class="experience-list-container">
+                            <div 
+                                v-for="(cat, index) in experienceCategories" 
+                                :key="cat.key"
+                                class="experience-item"
+                                :class="{ 'active': activeExperienceIndex === index }"
+                                @click="selectExperience(index)"
+                            >
+                                <div class="exp-text">
+                                    <h4 class="text-uppercase font-weight-bold mb-1 title-text">
+                                        {{ cat.name }}
+                                    </h4>
+                                    <p class="text-caption mb-0 desc-text ">
+                                        {{ cat.desc }}
+                                    </p>
+                                </div>
+                                <ChevronRight v-if="activeExperienceIndex === index" class="active-arrow" size="20"/>
+                            </div>
+                        </div>
+                    </v-col>
+
+                    <v-col cols="12" md="8" lg="9">
+                        <div v-if="expLoading" class="fill-height w-100 d-flex justify-center align-center" style="min-height: 400px;">
+                            <v-progress-circular indeterminate color="red-accent-3" size="50"></v-progress-circular>
+                        </div>
+                        
+                        <v-fade-transition mode="out-in">
+                            <div v-if="!expLoading && experienceData.length > 0" class="w-100 custom-feature-layout">
+                                
+                                <div class="d-flex flex-column feature-col-small">
+                                    <div v-if="experienceData[0]" class="feature-card rounded-xl overflow-hidden position-relative">
+                                        <v-img :src="experienceData[0].image_url" cover class="h-100 w-100 feature-img">
+                                            <div class="fill-height bottom-gradient"></div>
+                                            <div class="position-absolute bottom-0 pa-4 text-white z-index-2">
+                                                <h3 class="font-weight-bold mb-1 text-h6">{{ experienceData[0].title }}</h3>
+                                                <p class="text-caption text-grey-lighten-1 mb-0 text-truncate">{{ experienceData[0].subtitle || experienceData[0].description }}</p>
+                                            </div>
+                                        </v-img>
+                                    </div>
+                                    
+                                    <v-btn 
+                                        color="red-accent-3" 
+                                        variant="flat"
+                                        height="60"
+                                        class="rounded-xl font-weight-bold text-white text-subtitle-1 text-none mt-4 shadow-md view-all-btn"
+                                        @click="viewMoreExperiences"
+                                    >
+                                        View All Experiences
+                                        <ChevronRight size="20" class="ms-1" />
+                                    </v-btn>
+                                </div>
+
+                                <div class="feature-col-large" v-if="experienceData[1]">
+                                    <div class="feature-card rounded-xl overflow-hidden position-relative h-100">
+                                        <v-img :src="experienceData[1].image_url" cover class="h-100 w-100 feature-img">
+                                            <div class="fill-height bottom-gradient"></div>
+                                            <div class="position-absolute bottom-0 pa-6 text-white w-100 z-index-2">
+                                                <h3 class="font-weight-bold mb-2 text-h4" style="letter-spacing: -0.5px;">{{ experienceData[1].title }}</h3>
+                                                <p class="text-body-1 text-grey-lighten-1 mb-0" style="line-height: 1.4;">{{ experienceData[1].description }}</p>
+                                            </div>
+                                        </v-img>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </v-fade-transition>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </section>
+        
         <FooterView />
     </v-app>
     
@@ -525,7 +694,7 @@ onMounted(async () => {
 #now-showing {
     position: relative;
     z-index: 21;
-    padding: 2rem 3rem !important;
+    padding: 2rem 3rem 0 3rem !important;
 }
 
 h2 {
@@ -625,5 +794,228 @@ h2 {
     z-index: 20;
     opacity: 1;
     pointer-events: none; 
+}
+
+#experiences {
+    background-color: transparent;
+    padding:0 7rem
+}
+
+.experience-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    max-height: 520px; 
+    overflow-y: auto;
+    padding-right: 8px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.experience-list-container::-webkit-scrollbar {
+    display: none;
+}
+
+.experience-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background-color: none; 
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 4px solid transparent; 
+    
+}
+
+.experience-item:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.experience-item.active {
+    background: var(--active-date-bg);
+    transform: translateX(4px);
+}
+
+.title-text {
+    color: var(--text-color, #ffffff);
+    transition: color 0.3s;
+}
+
+.desc-text {
+    color: var(--text-color);
+    transition: color 0.3s;
+}
+
+.experience-item.active .title-text {
+    color: #ffffff !important;
+}
+
+.experience-item.active .desc-text {
+    color: rgba(255,255,255,0.8);
+}
+
+.active-arrow {
+    color: #fffefe;
+}
+
+.custom-feature-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr; 
+    gap: 24px;
+    min-height: 520px;
+}
+
+.feature-col-small {
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-col-small .feature-card {
+    min-height: 400px;
+    width: 350px;
+    margin-top: 20px;
+    align-self: center;
+}
+
+.feature-col-large {
+    height: 100%;
+    width: 450px;
+}
+
+.feature-card {
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.feature-img {
+    transition: transform 0.7s ease;
+}
+.bottom-gradient {
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+    width: 100vw !important;
+    bottom: 0;
+}
+
+.z-index-2 {
+    z-index: 2;
+}
+
+.view-all-btn {
+    transition: background-color 0.3s, transform 0.3s;
+    width: 300px;
+    align-self: center;
+    background: var(--movie-btn);
+}
+
+.view-all-btn:hover {
+    background-color: #d32f2f !important;
+    transform: translateY(-2px);
+}
+
+@media (max-width: 960px) {
+    .custom-feature-layout {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+    .feature-col-large {
+        min-height: 400px;
+        margin-top: 16px;
+    }
+    .experience-list-container {
+        max-height: 300px;
+        margin-bottom: 24px;
+    }
+}
+#movie-matchmaker {
+    background-color: var(--bg-color); 
+    overflow: hidden;
+}
+
+.ticket-animation-stage {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.animated-ticket {
+    position: absolute;
+    transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0;
+    transform: translateY(50px) translateX(0) rotate(0deg) scale(0.8);
+}
+
+.scroll-animate.is-visible .ticket-left {
+    opacity: 1;
+    transform: translateY(20px) translateX(-140px) rotate(-15deg) scale(1);
+    z-index: 1;
+}
+
+.scroll-animate.is-visible .ticket-center {
+    opacity: 1;
+    transform: translateY(-20px) translateX(0) rotate(0deg) scale(1.1);
+    z-index: 3; /* Stacks on top */
+}
+
+.scroll-animate.is-visible .ticket-right {
+    opacity: 1;
+    transform: translateY(20px) translateX(140px) rotate(15deg) scale(1);
+    z-index: 1;
+}
+
+.placeholder-ticket {
+    width: 160px;
+    height: 240px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed rgba(0,0,0,0.1); 
+    background-clip: padding-box;
+}
+
+.placeholder-ticket.main-ticket {
+    background: #f5f5f5;
+    border: 2px dashed #ff5252;
+}
+
+/* Responsive adjustment for mobile */
+@media (max-width: 600px) {
+    .scroll-animate.is-visible .ticket-left {
+        transform: translateY(10px) translateX(-80px) rotate(-15deg) scale(0.8);
+    }
+    .scroll-animate.is-visible .ticket-center {
+        transform: translateY(-10px) translateX(0) rotate(0deg) scale(0.9);
+    }
+    .scroll-animate.is-visible .ticket-right {
+        transform: translateY(10px) translateX(80px) rotate(15deg) scale(0.8);
+    }
+    .ticket-animation-stage {
+        height: 250px;
+    }
+}
+.svg-ticket-wrapper {
+    width: 300px;   
+    height: 350px; 
+    filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.svg-ticket-wrapper svg {
+    width: 100%;
+    height: 100%;
+}
+
+#custom-ticket-cta{
+    margin-top:10rem;
+    justify-content: center;
 }
 </style>
