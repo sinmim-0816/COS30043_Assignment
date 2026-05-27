@@ -1,0 +1,629 @@
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import { Autoplay, Pagination, EffectFade, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import 'swiper/css/effect-fade';
+import { addDays } from 'date-fns';
+import { Star, CirclePlay, ChevronRight, BadgeInfo, Tag, ClockFading, MessageCircle, ChevronLeft, BellRing } from '@lucide/vue';
+import { useRouter } from 'vue-router';
+
+// Import other hooks and components
+import { useMovies } from '@/hook/useMovies';
+import { getGenreName } from '@/utils/genre';
+import { getCertImage } from '@/utils/AgeRating';
+import { getExperienceStyle } from '@/utils/experience';
+import { useShowtimes } from '@/hook/useShowtimes';
+import FooterView from '@/components/FooterView.vue';
+
+const { featuredMovies, fetchHeroMovies, getImageURL, isLoading, getLanguageName, getCertificate, comingSoonMovies, fetchComingSoonMovies } = useMovies();
+const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
+const router = useRouter();
+
+const showTrailer = ref(false);
+const currentVideoKey = ref(null);
+const swiperInstance = ref(null);
+const activeTab = ref(0);
+const onSwiper = (swiper) => {
+    swiperInstance.value = swiper;
+};
+
+const playVideo = async (movie) => {
+    const url = movie.trailer;
+    if (!url) {
+        return;
+    }
+    const key = url.split('v=')[1];
+    currentVideoKey.value = key;
+    showTrailer.value = true;
+    swiperInstance.value?.autoplay?.stop();
+};
+
+const getDisplayExperience = (movie) => {
+    if (!movie?.experiences || movie.experiences.length === 0) {
+        return null;
+    }
+    const expKey = movie.experiences[0];
+    const style = getExperienceStyle(expKey);
+
+    return {
+        name: expKey,
+        color: style.color,
+        textColor: style.textColor
+    };
+};
+
+const gotoMovieDetails = (movieId) => {
+    router.push({
+        name: 'MovieDetails',
+        params: { id: movieId },
+    });
+}
+
+const findSessionForMovie = (movieId) => {
+    const now = new Date();
+    const futureSessions = allSessions.value
+        .filter((s) =>
+            String(s.movie_id || s.movieId) === String(movieId) &&
+            new Date(s.start_time) > now
+        )
+        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+    return futureSessions[0] || null;
+};
+
+const ensureShowtimesLoadedForMovie = async (movieId) => {
+    let matched = findSessionForMovie(movieId);
+    if (matched) {
+        return matched;
+    }
+
+    if (!cinemas.value.length) {
+        await loadInitialData();
+    }
+
+    const searchDays = 8;
+    for (let dayOffset = 0; dayOffset < searchDays; dayOffset++) {
+        const targetDate = addDays(new Date(), dayOffset);
+        for (const cinema of cinemas.value) {
+            await fetchAllShowtimes(cinema.id, targetDate);
+            matched = findSessionForMovie(movieId);
+            if (matched) {
+                return matched;
+            }
+        }
+    }
+
+    return null;
+};
+
+const getTabClass = (index) => {
+    if (activeTab.value === index) {
+        return 'text-red-accent-3 fs-5';
+    }
+    
+    return 'theme-tab-inactive';
+};
+
+const handleBuyNowRedirect = async (movie) => {
+    if (!movie) return;
+
+    const matchedSession = await ensureShowtimesLoadedForMovie(movie.id);
+    const dynamicShowtimeId = matchedSession?.id
+        || (movie.showtimes && movie.showtimes.length > 0 ? movie.showtimes[0].id : null);
+
+    if (!dynamicShowtimeId) {
+        gotoMovieDetails(movie.id);
+        return;
+    }
+    router.push({
+        name: 'TicketBooking',
+        params: {
+            movieId: movie.id,
+            showtimeId: dynamicShowtimeId
+        },
+        query: {
+            exp: matchedSession?.experience?.exp_key || movie?.experiences?.[0] || 'DOLBY'
+        },
+    });
+};
+
+const closeTrailer = () => {
+    showTrailer.value = false;
+    currentVideoKey.value = null;
+    if (swiperInstance.value) {
+        swiperInstance.value.autoplay.start();
+    }
+};
+
+const displayMovies = computed(() => {
+    const today = new Date();
+
+    if (activeTab.value === 0) {
+        return featuredMovies.value.filter(movie =>
+            new Date(movie?.release_date) <= today
+        );
+    }
+
+    if (activeTab.value === 1) {
+        return featuredMovies.value.filter(movie => {
+            const genres = movie?.genres || [];
+            const isKid = genres.includes('16') || genres.includes('10751');
+            const isReleased = new Date(movie?.release_date) <= today;
+            return isKid && isReleased;
+        });
+    }
+
+    if (activeTab.value === 2) {
+        return comingSoonMovies.value;
+    }
+
+    return featuredMovies.value;
+});
+onMounted(async () => {
+    if (featuredMovies.value.length === 0) {
+        await fetchHeroMovies();
+    }
+
+    if (comingSoonMovies.value.length === 0) {
+        await fetchComingSoonMovies();
+    }
+    try {
+        await loadInitialData();
+    } catch (err) {
+        console.error("Failed to sync showtimes sessions map cache:", err);
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+            }
+        });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('h2').forEach(h2 => observer.observe(h2));
+});
+</script>
+
+<template>
+    <template v-if="isLoading">
+        <div class="loading-wrapper">
+            <div class="loader-content">
+                <v-progress-circular indeterminate color="red-accent-3" size="70" width="4">
+                    <v-icon icon="mdi-movie-roll"  size="24"></v-icon>
+                </v-progress-circular>
+
+                <p class="mt-6 loading-text">Loading...</p>
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </template>
+    <v-app v-else-if="featuredMovies" full-height class="container-fluid m-0 p-0">
+        <section class="hero_section" v-show="featuredMovies.length > 0">
+            <Swiper :key="featuredMovies.length" @swiper="onSwiper" :modules="[Autoplay, Pagination, EffectFade]"
+                effect="fade" :slides-per-view="1" :loop="true" :autoplay="{ delay: 3000, pauseOnMouseEnter: true }"
+                :pagination="{ clickable: true }" class="mySwiper p-0 m-0">
+                <SwiperSlide v-for="movie in featuredMovies.slice(0, 10)" :key="movie?.id" class="slider_img">
+                    <div class="overlay-gradient"></div>
+                    <div class="bottom-fade"></div>
+                    <v-img :src="getImageURL(movie?.backdrop)" :alt="movie?.title" class="hero_bg" />
+                    <v-container fluid class="overlay-elements fill-height">
+                        <v-row align="end" class="fill-height">
+                            <v-col class="hero_content" cols="12" md="6">
+                                <div class="d-flex align-center gap-3 mb-2">
+                                    <v-img :src="getCertImage(getCertificate(movie))" contain width="45px" height="45px"
+                                        class="flex-grow-0 cert"></v-img>
+                                    <v-divider vertical class="mx-2" thickness="2" color="white"></v-divider>
+                                    <v-chip variant="tonal" color="white" size="small"
+                                        class="text-uppercase font-weight-bold">
+                                        {{ getLanguageName(movie?.language) }}
+                                    </v-chip>
+                                </div>
+                                <h1 class="fw-bold">{{ movie?.title }}</h1>
+                                <div class="d-flex align-items-center gap-4">
+                                    <p>
+                                        <Star id="rate_icon" fill="#f5c518" color="#f5c518" /> <span class="fs-1">{{
+                                            movie?.vote_average?.toFixed?.(1) || 0.0 }}</span> /10
+                                    </p>
+                                    <p class="text-muted" id="details">{{ movie?.runtime }} &bull; <span
+                                            v-for="(genreId, index) in movie?.genres" :key="genreId">{{
+                                                getGenreName(genreId) }}<span v-if="index < movie?.genres.length - 1">,
+                                            </span></span> &bull; <span>{{ movie?.release_date ? new
+                                                Date(movie?.release_date).getFullYear() : 'N/A' }}</span></p>
+
+                                </div>
+                                <p class="fs-6 text-wrap">{{ movie?.overview }}</p>
+
+                                <v-row>
+                                    <v-btn variant="flat" class="trailer-btn py-4 fs-6 rounded-2"
+                                        @click="playVideo(movie)">
+                                        <CirclePlay class="me-2" />Watch Trailer
+                                    </v-btn>
+                                    <v-btn variant="flat" elevation="3" class="movie-btn py-4 fs-6 rounded-2"
+                                        @click="handleBuyNowRedirect(movie)">
+                                        Buy Now
+                                    </v-btn>
+                                </v-row>
+                            </v-col>
+                            <v-col cols="6">
+                                <v-row class="fill-height d-flex align-items-center" id="poster_section">
+                                    <v-col cols="3" class="poster-thumb d-flex align-items-center"
+                                        v-for="(backdrop, index) in movie?.backdrops?.slice(0, 3)" :key="index">
+                                        <img :src="getImageURL(backdrop)" alt="Poster Image">
+                                    </v-col>
+                                </v-row>
+                                <div class="d-flex mb-3">
+
+                                    <div v-for="actor in (movie?.actors?.slice(0, 5) || [])" :key="actor.name"
+                                        class="actors me-4">
+                                        <v-avatar size="60" class="mb-1 ms-1 border-white">
+                                            <v-img :src="getImageURL(actor?.profile)" alt="Actor Image" />
+                                        </v-avatar>
+                                        <div class="text-center small lh-1">{{ actor?.name }}</div>
+                                    </div>
+                                    <div v-if="movie?.actors?.length > 5" class="col-auto d-flex align-items-center">
+                                        <button class="btn view-btn mb-5" @click="gotoMovieDetails(movie.id)">VIEW
+                                            ALL</button>
+                                    </div>
+                                </div>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </SwiperSlide>
+            </Swiper>
+            <v-dialog v-model="showTrailer" max-width="1000" max-height="600" persistent scrim="#0a0e17" :opacity="0.8"
+                :retain-focus="false">
+                <v-card color="transparent" elevation="0" rounded="4">
+                    <v-card-title class="d-flex justify-end p-0">
+                        <v-btn icon="mdi-close" color="white" variant="text" @click="closeTrailer"></v-btn>
+                    </v-card-title>
+                    <div>
+                        <iframe v-if="currentVideoKey" width="1000px" height="500"
+                            :src="`https://www.youtube.com/embed/${currentVideoKey}?autoplay=1&`" frameborder="0"
+                            allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen>
+                        </iframe>
+                    </div>
+                </v-card>
+            </v-dialog>
+            <div class="section-connector"></div>
+        </section>
+        <section id="now-showing" class="pt-2">
+            <v-container v-if="!isLoading" class="reveal-on-load" fluid>
+                <h2>Movie Showtime</h2>
+                <div class="mt-4 mx-5 d-flex align-center justify-space-between mb-8">
+                    <v-tabs v-model="activeTab" bg-color="transparent">
+                        <v-tab v-for="(tab, index) in ['Now Showing', 'Kids', 'Coming Soon']" :key="index"
+                            :value="index" :class="getTabClass(index)">
+                            {{ tab }}
+                        </v-tab>
+                    </v-tabs>
+                    <RouterLink to="/movies">
+                        <v-btn variant="text" class="hidden-sm-and-down rounded theme-tab-inactive">See More
+                            <ChevronRight />
+                        </v-btn>
+                    </RouterLink>
+                </div>
+                <v-window v-model="activeTab" class="mx-3">
+                    <v-window-item v-for="n in 3" :key="n" :value="n - 1">
+                        <div class="swiper-wrapper-relative">
+                            <Swiper :key="activeTab" :modules="[Navigation]" :slides-per-view="1" :space-between="20"
+                                :navigation="{ nextEl: '.swiper-wrapper-relative .custom-next', prevEl: '.swiper-wrapper-relative .custom-prev' }"
+                                :breakpoints="{ '640': { slidesPerView: 2.5 }, '1024': { slidesPerView: 4.5 } }"
+                                class="movie-swiper mt-4" :pagination="false">
+                                <SwiperSlide v-for="movie in displayMovies" :key="movie?.id">
+                                    <v-hover v-slot="{ isHovering, props }">
+                                        <v-card v-bind="props" class="movie-booking-card rounded-x1"
+                                            :elevation="isHovering ? 12 : 2">
+                                            <v-img :src="getImageURL(movie?.poster)" cover height="26vw">
+                                                <v-chip v-if="getDisplayExperience(movie)"
+                                                    :key="getDisplayExperience(movie).name" :style="{
+                                                        backgroundColor: getDisplayExperience(movie).color,
+                                                        color: getDisplayExperience(movie).textColor
+                                                    }"
+                                                    class="px-3 fs-6 text-uppercase cinema-badge d-flex justify-center m-2 experience-font">
+                                                    {{ getDisplayExperience(movie).name }}
+                                                </v-chip>
+                                                <!-- Cert Icon -->
+                                                <v-img :src="getCertImage(getCertificate(movie))"
+                                                    class="certification-badge position-absolute bottom-0 left-0 m-2"></v-img>
+
+                                                <div class="card-action-overlay d-flex flex-column pa-4">
+                                                    <v-btn variant="flat" class="info p-0"
+                                                        @click="gotoMovieDetails(movie?.id)">
+                                                        <BadgeInfo size="28" color="white" class="mb-2" />
+                                                        <span class="text-white ms-2 mb-2">More Info</span>
+                                                    </v-btn>
+
+
+                                                    <div class="position-absolute bottom-0 overlay-container">
+                                                        <h3 class="text-white mb-1 fs-5">{{ movie?.title }}</h3>
+                                                        <div class="d-flex align-center mb-1">
+                                                            <Star size="14" fill="#f5c518" color="#f5c518"
+                                                                class="me-1" />
+                                                            <span class="text-white text-caption">{{
+                                                                movie?.vote_average?.toFixed(1) }}</span>
+                                                        </div>
+                                                        <div class="text-grey-lighten-2 text-caption">
+                                                            <Tag size="14" class="me-1" /> {{
+                                                                getGenreName(movie?.genres[0])
+                                                            }}
+                                                        </div>
+                                                        <div class="text-grey-lighten-2 text-caption">
+                                                            <ClockFading size="14" class="me-1" />{{ movie?.runtime }}
+                                                        </div>
+                                                        <div class="text-grey-lighten-2 text-caption">
+                                                            <MessageCircle size="14" class="me-1" /> {{
+                                                                getLanguageName(movie?.language) }}
+                                                        </div>
+                                                        <v-btn :color="activeTab === 2 ? 'white' : 'red-accent-3'"
+                                                            :variant="activeTab === 2 ? 'outlined' : 'flat'"
+                                                            :class="['rounded-2', activeTab == 2 ? '' : 'movie-btn', 'mb-4 d-block mx-auto mt-2']"
+                                                            @click="activeTab === 2 ? null : handleBuyNowRedirect(movie)">
+                                                            <BellRing size="16" class="me-1" v-if="activeTab === 2" />{{
+                                                                activeTab === 2 ? 'Remind Me' : 'Buy Now' }}
+                                                        </v-btn>
+                                                    </div>
+                                                </div>
+                                            </v-img>
+                                        </v-card>
+                                    </v-hover>
+                                </SwiperSlide>
+                            </Swiper>
+                            <button class="custom-nav-btn custom-prev">
+                                <ChevronLeft size="32" />
+                            </button>
+                            <button class="custom-nav-btn custom-next">
+                                <ChevronRight size="32" />
+                            </button>
+                        </div>
+                    </v-window-item>
+                </v-window>
+            </v-container>
+        </section>
+        <FooterView />
+    </v-app>
+    
+</template>
+
+<style>
+.hero_section {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+
+.mySwiper,
+.swiper,
+.swiper-slide {
+    width: 100%;
+    height: 100%;
+    
+}
+
+.slider_img {
+    position: relative;
+    width: 100%;
+    height: 700px;
+    
+}
+
+.hero_bg img,
+.poster-thumb img {
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 5;
+}
+
+.overlay-elements {
+    position: absolute;
+    bottom: 0%;
+    left: 5%;
+    z-index: 12;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    width: 95vw !important;
+    z-index: 12;
+    margin-bottom: 3rem;
+}
+
+.hero_content {
+    padding: 2rem;
+    font-size: 1.5rem;
+    user-select: none;
+}
+
+.overlay-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--hero-gradient);
+    z-index: 8;
+    transition: background 0.5s ease;
+}
+
+.hero_content h1 {
+    color: white !important;
+}
+#rate_icon {
+    color: #f5c518;
+    width: 30px;
+    height: 30px;
+}
+
+#details {
+    color: #dadada !important;
+    font-size: 16px;
+    max-width: 75%;
+    font-weight: 700;
+}
+
+#poster_section {
+    height: 30vh !important;
+}
+
+.poster-thumb {
+    width: 15vw !important;
+}
+
+.poster-thumb img {
+    height: auto;
+    object-fit: contain;
+    border-radius: 12px;
+}
+
+.actors img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.actors {
+    max-width: 70px;
+    max-height: 100px;
+}
+
+.view-btn {
+    color: white;
+    background-color: rgba(212, 212, 212, 0.297);
+    backdrop-filter: blur(15px);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 11px;
+}
+
+.trailer-btn {
+    background-color: rgba(212, 212, 212, 0.297);
+    backdrop-filter: blur(10px);
+    width: 165px;
+    transition: color 0.3s ease;
+}
+
+.trailer-btn:hover {
+    color: rgb(255, 61, 61);
+}
+
+.bottom-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40vh;
+    background: linear-gradient(to top, #0a0e17 0%, transparent 100%);
+    z-index: 9;
+}
+
+#now-showing {
+    position: relative;
+    z-index: 21;
+    padding: 2rem 3rem !important;
+}
+
+h2 {
+    max-width: 300px;
+}
+
+.v-tab {
+    width: 150px;
+}
+
+.reveal-on-load {
+    animation: professionalReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.v-card:hover {
+    transform: scale(1.05);
+}
+
+.v-card:hover .card-action-overlay {
+    opacity: 1;
+}
+
+.v-card:hover .certification-badge {
+    opacity: 0;
+}
+
+.swiper-wrapper-relative {
+    position: relative;
+    padding: 0 55px;
+}
+
+.custom-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    width: 45px;
+    height: 45px;
+    background: var(--btn-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color:var(--btn-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.custom-prev {
+    left: 0;
+}
+
+.custom-next {
+    right: 0;
+}
+
+.custom-nav-btn:hover {
+    background-color: rgba(255, 82, 82, 0.2);
+    border-color: #ff5252;
+    color: #ff5252
+}
+
+.swiper-button-disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.info {
+    cursor: pointer;
+    display: flex;
+    width: 110px;
+    justify-content: flex-start;
+    background-color: transparent !important;
+}
+
+.info:hover {
+    color: red !important;
+}
+
+.certification-badge {
+    width: 40px;
+    height: 40px;
+}
+.theme-tab-inactive {
+    color: var(--tab-inactive-color) !important;
+    transition: color 0.3s ease;
+}
+.section-connector {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--bg-color));
+    z-index: 20;
+    opacity: 1;
+    pointer-events: none; 
+}
+</style>

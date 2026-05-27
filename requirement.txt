@@ -1,0 +1,22 @@
+npm install router
+npm i swiper
+npm install vuetify
+npm install @mdi/font -D
+npm install vite-plugin-vuetify -D
+npm install @yeger/vue-masonry-wall
+npm install axios
+
+
+backend
+npm install -g @nestjs/cli
+npm install pg 
+npm install @nestjs/typeorm
+nest generate resource experiences
+npm install @nestjs/config
+npm install dotenv
+
+
+run:
+npm install
+npm run db:setup
+npm run start:dev
