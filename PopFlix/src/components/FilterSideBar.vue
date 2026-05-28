@@ -13,7 +13,7 @@ const props = defineProps({
     },
     filters:Object
 });
-const emit = defineEmits(['update: modalValue', 'apply-filters','close']);
+const emit = defineEmits(['update:modelValue', 'apply-filters','close']);
 
 const availableLanguages=computed(()=>{
     if(!props.movies){
@@ -71,7 +71,7 @@ const reset=()=>{
 
 const apply=()=>{
     emit('apply-filters',{...localFilters.value});
-    emit('update: modalValue', false);
+    emit('update:modelValue', false);
     emit('close');
 }
 
@@ -84,16 +84,22 @@ watch(()=>props.filters, (newFilters)=>{
 </script>
 
 <template>
-    <v-navigation-drawer location="right" temporary width="400" class="bg-grey-darken-4" :model-value="modelValue" @update:model-value="val=>$emit('update: modalValue', val)">
-        <div class="d-flex flex-column h-100 p-4">
+    <v-navigation-drawer
+        location="right"
+        temporary
+        width="400"
+        class="bg-grey-darken-4 filter-drawer-shell"
+        :model-value="modelValue"
+        @update:model-value="val => $emit('update:modelValue', val)"
+    >
+        <div class="d-flex flex-column drawer-inner">
             <div class="d-flex justify-space-between align-center mb-3">
                 <h3 class="text-white">
                     Filters
                 </h3>
                 <v-btn icon="mdi-close" variant="text" @click="$emit('close')"></v-btn>
             </div>
-            <!-- Genres -->
-             <div class="overflow-y-auto">
+            <div class="filter-scroll-area">
                 <div class="mb-4">
                     <p class="text-overline text-grey-lighten-1 mb-2">Genre</p>
                     <v-chip-group 
@@ -239,7 +245,7 @@ watch(()=>props.filters, (newFilters)=>{
                     </v-chip-group>
                 </div>
             </div>
-            <div class="d-flex gap-2 mt-4 mx-4 justify-space-between">
+            <div class="d-flex gap-2 mt-4 justify-space-between filter-actions">
                 <v-btn variant="outlined" height="48" width="140" color="grey" @click="reset" class="rounded-3">Clear All</v-btn>
                 <v-btn color="red-accent-3" height="48" width="140" @click="apply" class="font-weight-bold rounded-3 movie-btn">
                     Apply Filters
@@ -267,26 +273,43 @@ watch(()=>props.filters, (newFilters)=>{
 .transition-swing{
     transition:0.3s cubic-bezier(0.25, 0.8,0.5,1);
 }
-.h-100 {
-    height: 100% !important;
+.filter-drawer-shell :deep(.v-navigation-drawer__content) {
+    height: 100%;
     overflow: hidden;
 }
 
-.overflow-y-auto::-webkit-scrollbar {
+.drawer-inner {
+    height: 100%;
+    max-height: 100vh;
+    padding: 16px 16px 20px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.filter-scroll-area {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+}
+
+.filter-actions {
+    flex: 0 0 auto;
+    padding-top: 8px;
+}
+
+.filter-scroll-area::-webkit-scrollbar {
     width: 6px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
+.filter-scroll-area::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
+.filter-scroll-area::-webkit-scrollbar-thumb {
     background: #444;
     border-radius: 10px;
-}
-
-.overflow-y-auto {
-    overflow-x: hidden !important; 
 }
 
 </style>

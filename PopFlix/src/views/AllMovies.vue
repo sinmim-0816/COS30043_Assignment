@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue';
 import { MasonryWall } from '@yeger/vue-masonry-wall';
 import { Star, Tag, ClockFading, MessageCircle, BellRing, BadgeInfo, Info, ChevronUp, ChevronDown } from '@lucide/vue';
 import { useRouter, useRoute } from 'vue-router';
@@ -103,6 +103,14 @@ const gotoMovieDetails = (movieId) => {
 
 const handleApplyFilters = (newFilters) => {
     sidebarFilters.value = newFilters;
+};
+
+const setPageScrollLocked = (locked) => {
+    if (typeof document === 'undefined') return;
+
+    document.body.style.overflow = locked ? 'hidden' : '';
+    document.documentElement.style.overflow = locked ? 'hidden' : '';
+    document.body.style.width = locked ? '100%' : '';
 };
 
 const openExperienceModal = async (expKey) => {
@@ -240,6 +248,14 @@ onMounted(async () => {
         }
     }
 })
+
+watch(showFilterDrawer, (open) => {
+    setPageScrollLocked(open);
+}, { immediate: true });
+
+onBeforeUnmount(() => {
+    setPageScrollLocked(false);
+});
 
 </script>
 
