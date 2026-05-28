@@ -33,7 +33,8 @@ const isAuthPage = computed(() => {
     return path === '/login' || 
            path === '/register' || 
            path === '/forgot-password' || 
-           path.startsWith('/reset-password');
+           path.startsWith('/reset-password') ||
+           path.startsWith('/activate');
 })
 
 const showNavLinks = computed(() => !isAuthPage.value)

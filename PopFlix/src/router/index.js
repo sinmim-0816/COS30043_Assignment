@@ -19,6 +19,7 @@ import CustomizeList from '@/views/CustomizeList.vue'
 import RegisterPage from '@/views/RegisterPage.vue'
 import ForgotPassword from '@/views/ForgotPassword.vue'
 import ResetPassword from '@/views/ResetPassword.vue'
+import UserActivate from '@/views/UserActivate.vue'
 
 const routes = [
     {
@@ -46,7 +47,7 @@ const routes = [
         path: '/booking/:movieId/:showtimeId',
         name: 'TicketBooking',
         component: TicketBooking,
-        
+
     },
     {
         path: '/login',
@@ -62,6 +63,11 @@ const routes = [
         path: '/forgot-password',
         name: 'ForgotPassword',
         component: ForgotPassword
+    },
+    {
+        path: '/activate',
+        name: 'ActivateAccount',
+        component: UserActivate
     },
     {
         path: '/reset-password',

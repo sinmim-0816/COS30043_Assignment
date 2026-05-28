@@ -126,7 +126,7 @@ const submitForm = async () => {
     if (result) {
         router.push({
             path: '/login',
-            state: { successMessage: 'Registration successful! Please login.' }
+            state: { successMessage: 'Registration successful! Please check your inbox to activate your account.' }
         });
     }
 };

@@ -3,11 +3,16 @@ import { API_ENDPOINTS } from '@/api/apiEndpoint';
 
 export const authService = {
     async login(email, password) {
-        const response = await backendClient.post(API_ENDPOINTS.LOGIN, {
-            email,
-            password,
-        });
-        return response.data;
+        try {
+            const response = await backendClient.post(API_ENDPOINTS.LOGIN, {
+                email,
+                password,
+            });
+            return response.data;
+        } catch (error) {
+            throw error;
+
+        }
     },
 
     async getProfile() {
@@ -41,5 +46,15 @@ export const authService = {
     async verifyResetToken(token) {
         const response = await backendClient.get(API_ENDPOINTS.VERIFY_RESET_TOKEN(token));
         return response.data;
+    },
+
+    async activate(token) {
+        try {
+            const response = await backendClient.post(`/auth/activate/${token}`);
+            return response.data;
+        } catch (error) {
+            if (!error.response) throw "Cannot connect to server.";
+            throw error.response.data.message || "Activation failed.";
+        }
     },
 };

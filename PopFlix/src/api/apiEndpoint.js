@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
     VERIFY_RESET_TOKEN: (token) => `/auth/verify-reset-token/${token}`,
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
+    ACTIVATE: '/auth/activate',
     FAQS: '/faqs',
     VEHICLES: '/vehicles',
     VEHICLE_DETAILS: (id) => `/vehicles/${id}`,
