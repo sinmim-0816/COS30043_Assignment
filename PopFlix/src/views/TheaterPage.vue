@@ -1,11 +1,11 @@
 <script setup>
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Clock, MapPin, Copy, Ticket, Car, Accessibility, Coffee, Tv, Wifi, Utensils, Baby } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
-// Imports
+// Imports other hook and components
 import { useCinemas } from '@/hook/useCinemas';
 import FooterView from '@/components/FooterView.vue';
 
@@ -15,6 +15,9 @@ const router = useRouter();
 const mapContainer = ref(null);
 const map = ref(null);
 const markers = ref({});
+
+const tileLayer = ref(null);
+const themeObserver = ref(null);
 
 const activeIndex = ref(0);
 
@@ -30,12 +33,38 @@ const getAmenityIcon = (label) => {
   return icons[label] || MapPin;
 };
 
+const getIsDarkTheme = () => {
+    return document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
+};
+
+const getTileUrl = () => {
+    return getIsDarkTheme()
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+};
+
+const syncMapTheme = () => {
+    if (!map.value) return;
+
+    const nextUrl = getTileUrl();
+    const currentUrl = tileLayer.value?.options?.url;
+    if (currentUrl === nextUrl) return;
+
+    if (tileLayer.value) {
+        map.value.removeLayer(tileLayer.value);
+    }
+
+    tileLayer.value = L.tileLayer(nextUrl, {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }).addTo(map.value);
+};
+
 const initMap = () => {
     if (!mapContainer.value || map.value) return;
     
     map.value = L.map(mapContainer.value).setView([1.5303, 110.3653], 12);
     
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    tileLayer.value = L.tileLayer(getTileUrl(), {
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
     }).addTo(map.value);
 
@@ -78,11 +107,30 @@ const initMap = () => {
     }
 };
 
+
 watch(cinemas, async (newVal) => {
     if (newVal.length > 0) {
         await nextTick();
         initMap();
     }
+});
+
+onMounted(() => {
+    themeObserver.value = new MutationObserver(() => {
+        syncMapTheme();
+    });
+
+    themeObserver.value.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
+
+    window.addEventListener('storage', syncMapTheme);
+});
+
+onUnmounted(() => {
+    themeObserver.value?.disconnect();
+    window.removeEventListener('storage', syncMapTheme);
 });
 
 const selectCinema = (index) => {
@@ -270,7 +318,6 @@ const checkIsOpen = (operatingHours) => {
                         <!-- Dynamic Amenities -->
                         <p class="sec-label mt-5">Available Amenities</p>
                         <div class="amenities-row" v-if="cinemas[activeIndex].amenities">
-                            <!-- Vue uses <component :is="..."> to dynamically render imported icons -->
                             <span v-for="am in cinemas[activeIndex].amenities" :key="am.label" class="am-chip">
                                 <component :is="getAmenityIcon(am.label)" size="14" />
                                 {{ am.label }}
@@ -571,7 +618,7 @@ const checkIsOpen = (operatingHours) => {
 
 :deep(.custom-leaflet-popup .popup-subtitle) {
     font-size: 11px;
-    color: rgba(255,255,255,0.6);
+    color: var(--muted-text-color);
     margin: 0;
     white-space: nowrap;
     overflow: hidden;

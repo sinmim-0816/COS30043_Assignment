@@ -20,11 +20,10 @@ const goToCustomize = (ticket) => {
 
 <template>
     <v-app>
-        <v-container fluid class="customization-dashboard px-10" width="100vw">
+        <v-container fluid class="customization-dashboard" width="100vw">
             <h2>Customize Tickets</h2>
             <v-row v-if="!isTicketsLoading" class="mt-4">
                 <v-col v-for="t in tickets" :key="t.id" cols="12" md="6" lg="3">
-                    {{ console.log(t.id) }}
                     <div class="movie-card">
                         <div class="poster-container">
                             <v-img :src="t.poster" cover height="180" class="rounded-t-lg"></v-img>
@@ -70,16 +69,16 @@ const goToCustomize = (ticket) => {
 
 <style scoped>
 .customization-dashboard {
-    background: #0e111b;
+    background: var(--bg-color);
     min-height: 100vh;
     padding-left: 75px;
     padding-right: 75px;
 }
 
 .movie-card {
-    background: #151926;
+     background: var(--card-bg);
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(14, 14, 14, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     width: 300px;
@@ -111,7 +110,7 @@ const goToCustomize = (ticket) => {
 }
 
 .card-body h3 {
-    color: #fff;
+    color: var(--text-color);
     margin-bottom: 12px;
     font-size: 1.2rem;
 }
