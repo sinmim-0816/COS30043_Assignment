@@ -44,10 +44,10 @@ onUnmounted(() => {
                                     <div v-for="(_, idx) in slides" :key="idx" class="indicator-bar"
                                         :class="{ 'active': idx === activeIndex }"></div>
                                 </div>
-                                <h3 class="fs-2 fw-bold mb-4">The World of <span
+                                <h3 class="fs-2 text-white fw-bold mb-4">The World of <span
                                         class="text-red-accent-3">WATCHER</span>
                                 </h3>
-                                <p class="text-h6 font-weight-light description-text">{{ slides[activeIndex].text }}</p>
+                                <p class="text-white font-weight-light description-text">{{ slides[activeIndex].text }}</p>
                             </div>
                         </div>
                     </transition>
@@ -64,7 +64,7 @@ onUnmounted(() => {
 <style scoped>
 .auth-layout-container {
     height: 100%;
-    background-color: #0a0e17;
+    background-color: var(--bg-color);
 }
 
 .carousel-container {
@@ -76,10 +76,9 @@ onUnmounted(() => {
 .slide-content {
     position: absolute;
     inset: 0;
-    background-color: transparent;
     margin: 20px;
     max-width: 700px;
-    background-color: #0a0e17;
+    background-color: var(--bg-color);
     overflow: hidden;
     border-radius:20px;
 }
@@ -137,7 +136,7 @@ onUnmounted(() => {
 }
 
 .bg-form-dark {
-    background-color: #0a0e17;
+    background-color: var(--bg-color);
 }
 
 .cinematic-img {

@@ -90,6 +90,7 @@ body,
   --register-bg: rgba(21, 20, 20, 0.25);
   --login-bg: linear-gradient(135deg, #ff4d4d, #ff5252);
   --register-hover: rgba(21, 21, 21, 0.8);
+  --label-color: rgba(97, 96, 96, 0.815);
 }
 
 html.dark {
@@ -149,6 +150,7 @@ html.dark {
   --register-bg: rgba(255, 255, 255, 0.25);
   --login-bg: linear-gradient(135deg, #ff4d4d, #b30000);
   --register-hover: rgba(255, 255, 255, 0.8);
+  --label-color: color: rgba(255, 255, 255, 0.815);
 }
 
 .text-color {
@@ -323,6 +325,13 @@ html.dark {
 :deep(.v-field--focused .v-field__outline) {
   color: #ff5252 !important;
   --v-field-border-opacity: 1 !important;
+}
+
+header.transparent-header {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  backdrop-filter: none !important;
 }
 
 @keyframes pulse-width {

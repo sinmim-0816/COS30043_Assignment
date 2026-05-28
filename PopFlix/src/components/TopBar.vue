@@ -25,7 +25,15 @@ const authStore = useAuthStore()
 const isLoggedIn = computed(() => !!authStore.user)
 const currentUser = computed(() => authStore.user)
 
-const showNavLinks = computed(() => route.path !== '/login' && route.path !== '/register' && route.path !== '/forgot-password')
+const isAuthPage = computed(() => {
+    const path = route.path;
+    return path === '/login' || 
+           path === '/register' || 
+           path === '/forgot-password' || 
+           path.startsWith('/reset-password');
+})
+
+const showNavLinks = computed(() => !isAuthPage.value)
 
 const hoverStyle = ref({
     left: '0px',
@@ -80,7 +88,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header>
+    <header :class="{ 'transparent-header': isAuthPage }">
         <router-link to="/">
             <img :src="logo" alt="PopFlix Logo" class="company_logo">
         </router-link>
