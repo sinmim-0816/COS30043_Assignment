@@ -144,7 +144,7 @@ onUnmounted(() => {
                     Register
                 </router-link>
                 <router-link to="/login" class="login-btn px-4 py-2 me-2">
-                    <User class="icon" size="22" /> Login
+                    <User class="icon me-1" size="22" /> Login
                 </router-link>
             </div>
         </div>
@@ -195,15 +195,6 @@ button {
     color: var(--topbar-link);
     border-radius: 50px;
 }
-
-.login-btn {
-    gap: 0.5rem;
-    text-decoration: none;
-    font-weight: 500;
-    color: white;
-    font-size: 18px;
-}
-
 .dropdown-wrapper {
     position: relative;
 }
@@ -337,7 +328,7 @@ button {
     box-shadow: 0 4px 15px rgba(255, 82, 82, 0.25);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     white-space: nowrap;
-    background: linear-gradient(135deg, #ff4d4d, #b30000);
+    background: var(--login-bg);
 }
 
 .login-btn:hover {
@@ -355,19 +346,19 @@ button {
     align-items: center;
     text-decoration: none;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-color);
     font-size: 15px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid var(--register-bg);
     border-radius: 30px;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     white-space: nowrap;
 }
 
 .register-btn:hover {
-    color: white;
+    color: var(--text-color);
     background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.8);
+    border-color: var(--register-hover);
     transform: translateY(-1px);
 }
 

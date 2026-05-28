@@ -87,6 +87,9 @@ body,
   --pill-text: #003366;
   --showtime-bg: white;
   --loading-icon: red;
+  --register-bg: rgba(21, 20, 20, 0.25);
+  --login-bg: linear-gradient(135deg, #ff4d4d, #ff5252);
+  --register-hover: rgba(21, 21, 21, 0.8);
 }
 
 html.dark {
@@ -143,6 +146,9 @@ html.dark {
   --pill-text: #9e9e9e;
   --showtime-bg: #111827;
   --loading-icon: white;
+  --register-bg: rgba(255, 255, 255, 0.25);
+  --login-bg: linear-gradient(135deg, #ff4d4d, #b30000);
+  --register-hover: rgba(255, 255, 255, 0.8);
 }
 
 .text-color {

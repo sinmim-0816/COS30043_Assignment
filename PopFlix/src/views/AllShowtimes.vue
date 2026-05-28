@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { format, addDays } from 'date-fns';
 
 // Import other components, hook
@@ -19,6 +19,7 @@ const selectedCinemaId = ref(null);
 const selectedDate = ref(new Date());
 const activeExperiences = ref({});
 const router=useRouter();
+const route = useRoute();
 const showFilterDrawer=ref(false);
 
 const sidebarFilters=ref({
@@ -185,7 +186,14 @@ onMounted(async () => {
     const cinemaList = await loadInitialData();
 
     if (cinemaList.length > 0) {
-        selectedCinemaId.value = cinemaList[0].id;
+        if (route.query.cinema) {
+            const passedCinemaId = Number(route.query.cinema);
+            const cinemaExists = cinemaList.some(c => c.id === passedCinemaId);
+            selectedCinemaId.value = cinemaExists ? passedCinemaId : cinemaList[0].id;
+        } else {
+            selectedCinemaId.value = cinemaList[0].id;
+        }
+
         await fetchAllShowtimes(selectedCinemaId.value, selectedDate.value);
     }
 });
@@ -461,7 +469,7 @@ h2 {
 }
 
 .showtime-movie-card {
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(16, 0, 89, 0.303);
     border-radius: 12px;
     overflow: hidden;
     max-width: 80vw;
@@ -513,5 +521,3 @@ h2 {
     color: var(--text-color);
 }
 </style>
-
-<!-- Add Experience Modal -->

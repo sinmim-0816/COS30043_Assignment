@@ -176,7 +176,10 @@ const copyAddr = (addr) => {
 };
 
 const bookNow = (id) => {
-    router.push({ name: 'TicketBooking', params: { movieId: 'all', showtimeId: 'all' } });
+    router.push({ 
+        path: '/showtimes',
+        query: { cinema: id } 
+    });
 };
 
 const getThemeColor = (index) => {
@@ -583,7 +586,6 @@ const checkIsOpen = (operatingHours) => {
     width: 240px !important;
 }
 
-/* The little triangle arrow pointing down */
 :deep(.premium-popup .leaflet-popup-tip) {
     background: var(--card-bg, #1a1a2e);
     border: 1px solid rgba(128,128,128,0.2);
@@ -591,7 +593,6 @@ const checkIsOpen = (operatingHours) => {
     border-left: none;
 }
 
-/* Custom internal layout */
 :deep(.custom-leaflet-popup) {
     display: flex;
     flex-direction: column;
