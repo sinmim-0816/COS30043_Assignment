@@ -20,7 +20,6 @@ h2 {
   margin: 0 auto;
 }
 
-
 :deep(.v-tab--selected) {
   background: rgba(255, 82, 82, 0.1) !important;
   border-radius: 12px;
@@ -73,20 +72,21 @@ body,
   --movie-btn: linear-gradient(135deg, #ff4d4d, #ff5252);
   --overlay-details: linear-gradient(to right, rgba(245, 249, 255, 0.429) 0%, transparent 60%);
   --muted-text-color: #171717;
-  --frame-bg:#ffe7bd9f;
-  --hole-color:white;
-  --tr-color:black;
-  --th-color:black;
-  --td-color:#0a0a0a;
-  --studio-color:#2e2e2e;
-  --cinema-btn-color: rgba(26, 38, 63, 0.8) ;
-  --cinema-btn-bg:white;
-  --dropdown-bg:white;
+  --frame-bg: #ffe7bd9f;
+  --hole-color: white;
+  --tr-color: black;
+  --th-color: black;
+  --td-color: #0a0a0a;
+  --studio-color: #2e2e2e;
+  --cinema-btn-color: rgba(26, 38, 63, 0.8);
+  --cinema-btn-bg: white;
+  --dropdown-bg: white;
   --active-date-bg: linear-gradient(135deg, #6495ed 0%, #4682b4 100%);
-  --pill-color:white;
+  --pill-color: white;
   --pill-border: #4682b4;
-  --pill-text:#003366;
+  --pill-text: #003366;
   --showtime-bg: white;
+  --loading-icon: red;
 }
 
 html.dark {
@@ -129,23 +129,28 @@ html.dark {
   --overlay-details: linear-gradient(to top, #121212 0%, transparent 50%);
   --muted-text-color: #9e9e9e;
   --frame-bg: #1a1a1f;
-  --hole-color:#0d0d12;
-  --tr-color:rgba(255, 255, 255, 0.401);
-  --th-color:rgba(255, 255, 255, 0.542);
-  --td-color:#eee;
-  --studio-color:rgba(255, 255, 255, 0.05);
-  --cinema-btn-color: #e0e0e0 ;
+  --hole-color: #0d0d12;
+  --tr-color: rgba(255, 255, 255, 0.401);
+  --th-color: rgba(255, 255, 255, 0.542);
+  --td-color: #eee;
+  --studio-color: rgba(255, 255, 255, 0.05);
+  --cinema-btn-color: #e0e0e0;
   --cinema-btn-bg: rgba(255, 255, 255, 0.05);
-  --dropdown-bg:#1e1e1e;
+  --dropdown-bg: #1e1e1e;
   --active-date-bg: linear-gradient(135deg, #001f3f 0%, #003366 100%);
-  --pill-color:rgba(255, 255, 255, 0.03);
-  --pill-border:rgba(255, 255, 255, 0.1);
-  --pill-text:#9e9e9e;
+  --pill-color: rgba(255, 255, 255, 0.03);
+  --pill-border: rgba(255, 255, 255, 0.1);
+  --pill-text: #9e9e9e;
   --showtime-bg: #111827;
+  --loading-icon: white;
 }
 
-.text-color{
-    color: var(--muted-text-color)
+.text-color {
+  color: var(--muted-text-color);
+}
+
+.icon-icon {
+  color: var(--loading-icon);
 }
 
 @keyframes squareReveal {
@@ -168,9 +173,9 @@ html.dark {
 }
 
 .v-layout {
-    display: block !important;
-    overflow: visible !important;
-    width:100vw;
+  display: block !important;
+  overflow: visible !important;
+  width: 100vw;
 }
 
 .back-btn {
@@ -254,7 +259,7 @@ html.dark {
   background: var(--movie-btn);
   width: 165px;
   transition: background 0.3s ease;
-  color:white
+  color: white;
 }
 .movie-btn:hover {
   background: linear-gradient(135deg, #ff6666, #cc0000);

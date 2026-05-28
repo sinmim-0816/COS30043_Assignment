@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { MasonryWall } from '@yeger/vue-masonry-wall';
 import { Star, Tag, ClockFading, MessageCircle, BellRing, BadgeInfo, Info, ChevronUp, ChevronDown } from '@lucide/vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 // Import other components, hook
 import { useMovies } from '@/hook/useMovies';
@@ -18,6 +18,7 @@ const { featuredMovies = featuredMovies, getImageURL = getImageURL, getLanguageN
 const { items: experiences, loading, loadExperiences } = useExperience();
 const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
 const router = useRouter();
+const route = useRoute();
 
 const activeExp = ref('All');
 const activeSchedule = ref('Now Showing');
@@ -230,6 +231,13 @@ onMounted(async () => {
     }
     if (comingSoonMovies.value.length === 0) {
         await fetchComingSoonMovies();
+    }
+    if (route.query.exp) {
+        const passedExp = String(route.query.exp).toUpperCase();
+        
+        if (EXPERIENCE_NAMES.includes(passedExp)) {
+            activeExp.value = passedExp;
+        }
     }
 })
 

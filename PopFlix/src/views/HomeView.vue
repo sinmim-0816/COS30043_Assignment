@@ -179,7 +179,11 @@ const selectExperience = async (index) => {
 };
 
 const viewMoreExperiences = () => {
-    router.push('/movies'); 
+    const selectedExpKey = experienceCategories.value[activeExperienceIndex.value].key;
+    router.push({ 
+        path: '/movies', 
+        query: { exp: selectedExpKey } 
+    }); 
 };
 
 
@@ -237,7 +241,7 @@ onMounted(async () => {
         <div class="loading-wrapper">
             <div class="loader-content">
                 <v-progress-circular indeterminate color="red-accent-3" size="70" width="4">
-                    <v-icon icon="mdi-movie-roll"  size="24"></v-icon>
+                    <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
                 </v-progress-circular>
 
                 <p class="mt-6 loading-text">Loading...</p>
@@ -453,18 +457,19 @@ onMounted(async () => {
                     
                 </div>
 
-                <h2 class="text-h3 font-weight-black text-white mb-4" style="letter-spacing: -1px;">
+                <h2 class="text-h3 font-weight-black mb-4" style="letter-spacing: -1px;">
                     Craft Your Cinematic Keepsake
                 </h2>
-                <p class="text-h6 text-grey-lighten-1 font-weight-regular mx-auto" >
+                <p class="text-h6 text-color font-weight-regular mx-auto w-75" >
                     Don't just watch the movie, own the memory. After booking your showtime, unlock the ability to customize and design your own unique digital ticket to share and collect!
                 </p>
                 
                 <v-btn 
+                    to="/customize-list"    
                     color="red-accent-3" 
                     variant="flat"
                     height="48"
-                    class="rounded-pill px-8 font-weight-bold text-white text-none"
+                    class="movie-btn px-8 font-weight-bold text-white text-none"
                 >
                     Learn More
                 </v-btn>
@@ -474,7 +479,7 @@ onMounted(async () => {
         <section id="experiences" >
             <v-container fluid class="px-5 px-md-10">
                 <div class="text-center mb-5">
-                    <h2 class="text-h3 font-weight-black mx-auto" style="max-width: 600px; line-height: 1.2;">
+                    <h2 class="text-h3 font-weight-black mx-auto">
                         Immersive ways <br/> to watch your movie.
                     </h2>
                 </div>
@@ -696,11 +701,6 @@ onMounted(async () => {
     z-index: 21;
     padding: 2rem 3rem 0 3rem !important;
 }
-
-h2 {
-    max-width: 300px;
-}
-
 .v-tab {
     width: 150px;
 }
@@ -904,7 +904,7 @@ h2 {
 
 .view-all-btn {
     transition: background-color 0.3s, transform 0.3s;
-    width: 300px;
+    width: 330px;
     align-self: center;
     background: var(--movie-btn);
 }
@@ -951,14 +951,14 @@ h2 {
 
 .scroll-animate.is-visible .ticket-left {
     opacity: 1;
-    transform: translateY(20px) translateX(-140px) rotate(-15deg) scale(1);
+    transform: translateY(20px) translateX(-180px) rotate(-15deg) scale(1);
     z-index: 1;
 }
 
 .scroll-animate.is-visible .ticket-center {
     opacity: 1;
     transform: translateY(-20px) translateX(0) rotate(0deg) scale(1.1);
-    z-index: 3; /* Stacks on top */
+    z-index: 3;
 }
 
 .scroll-animate.is-visible .ticket-right {
@@ -972,7 +972,6 @@ h2 {
     height: 240px;
     background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1001,9 +1000,8 @@ h2 {
     }
 }
 .svg-ticket-wrapper {
-    width: 300px;   
-    height: 350px; 
-    filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5)); 
+    width: 350px;   
+    height: 400px; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1015,7 +1013,7 @@ h2 {
 }
 
 #custom-ticket-cta{
-    margin-top:10rem;
+    margin-top:4.5rem;
     justify-content: center;
 }
 </style>
