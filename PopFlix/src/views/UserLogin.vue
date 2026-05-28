@@ -109,35 +109,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.premium-label {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: var(--label-color);
-}
-
-.login-btn {
-    letter-spacing: 2px;
-    box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
-    background: var(--login-bg);
-    border-radius: 10px;
-}
-
-.hover-red:hover {
-    color: #ff5252 !important;
-    cursor: pointer;
-}
-
-.error {
-    color: red;
-}
-
-.login-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
 .premium-toast-badge {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

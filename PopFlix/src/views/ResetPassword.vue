@@ -95,8 +95,7 @@ const submit = async () => {
                 <div class="input-group">
                     <v-text-field v-model="password" :type="showPassword ? 'text' : 'password'"
                         @focus="isTypingPassword = true" @blur="isTypingPassword = false" placeholder="••••••••"
-                        variant="outlined" density="comfortable" rounded="lg" color="red-accent-3"
-                        base-color="rgba(255,255,255,1)" hide-details>
+                        variant="outlined" density="comfortable" rounded="lg" color="red-accent-3" hide-details>
                         <template v-slot:prepend-inner>
                             <Lock size="18" class="text-grey" />
                         </template>
@@ -153,7 +152,7 @@ const submit = async () => {
                 <div class="input-group">
                     <v-text-field v-model="confirmPassword" :type="showConPassword ? 'text' : 'password'"
                         placeholder="••••••••" variant="outlined" density="comfortable" rounded="lg"
-                        color="red-accent-3" base-color="rgba(255,255,255,1)" hide-details>
+                        color="red-accent-3" hide-details>
                         <template v-slot:prepend-inner>
                             <Lock size="18" class="text-grey" />
                         </template>
@@ -191,36 +190,6 @@ const submit = async () => {
 </template>
 
 <style scoped>
-/* Reuse styles from Login.vue */
-.premium-label {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.815);
-}
-
-.login-btn {
-    letter-spacing: 2px;
-    box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
-    background: linear-gradient(135deg, #ff4d4d, #b30000);
-    border-radius: 10px;
-}
-
-.hover-red:hover {
-    color: #ff5252 !important;
-}
-
-.error {
-    color: #ff5252;
-    font-size: 14px;
-}
-
-.login-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
 .strength-meter {
     height: 10px;
     background: rgba(255, 255, 255, 0.1);

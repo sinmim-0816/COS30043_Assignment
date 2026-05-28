@@ -151,8 +151,7 @@ const submitForm = async () => {
                         <label class="premium-label">First Name</label>
                         <div class="input-group">
                             <v-text-field v-model="form.firstName" @keypress="isLetter($event)" placeholder="John"
-                                variant="outlined" density="comfortable" rounded="lg" color="red-accent-3"
-                                base-color="rgba(255,255,255,1)" class="mt-2" hide-details>
+                                variant="outlined" density="comfortable" rounded="lg" color="red-accent-3" class="mt-2" hide-details>
                                 <template v-slot:prepend-inner>
                                     <User2 size="18" class="text-grey" />
                                 </template>
@@ -173,8 +172,7 @@ const submitForm = async () => {
                         <label class="premium-label">Last Name</label>
                         <div class="input-group">
                             <v-text-field v-model="form.lastName" placeholder="Doe" @keypress="isLetter($event)"
-                                variant="outlined" density="comfortable" rounded="lg" color="red-accent-3"
-                                base-color="rgba(255,255,255,1)" class="mt-2" hide-details>
+                                variant="outlined" density="comfortable" rounded="lg" color="red-accent-3" class="mt-2" hide-details>
                                 <template v-slot:prepend-inner>
                                     <User2 size="18" class="text-grey" />
                                 </template>
@@ -195,7 +193,7 @@ const submitForm = async () => {
                 <label class="premium-label mt-3">Email</label>
                 <div class="input-group">
                     <v-text-field v-model="form.email" placeholder="you@example.com" variant="outlined"
-                        density="comfortable" rounded="lg" color="red-accent-3" base-color="rgba(255,255,255,1)"
+                        density="comfortable" rounded="lg" color="red-accent-3"
                         class="mt-2" hide-details>
                         <template v-slot:prepend-inner>
                             <Mail size="18" class="text-grey" />
@@ -216,7 +214,7 @@ const submitForm = async () => {
                 <label class="premium-label mt-3">Telephone</label>
                 <div class="input-group">
                     <v-text-field v-model="form.phone" @keypress="isNumber" placeholder="01x-xxxxxxx" variant="outlined"
-                        density="comfortable" rounded="lg" color="red-accent-3" base-color="rgba(255,255,255,1)"
+                        density="comfortable" rounded="lg" color="red-accent-3"
                         class="mt-2" hide-details>
                         <template v-slot:prepend-inner>
                             <Phone size="18" class="text-grey" />
@@ -239,7 +237,7 @@ const submitForm = async () => {
                     <v-text-field v-model="form.password" :type="showPassword ? 'text' : 'password'" @focus="isTypingPassword=true"
                     @blur="isTypingPassword=false" 
                         placeholder="••••••••" variant="outlined" density="comfortable" rounded="lg"
-                        color="red-accent-3" base-color="rgba(255,255,255,1)" class="mt-2" hide-details>
+                        color="red-accent-3" class="mt-2" hide-details>
                         <template v-slot:prepend-inner>
                             <Lock size="18" class="text-grey" />
                         </template>
@@ -297,7 +295,7 @@ const submitForm = async () => {
                 <div class="input-group mb-8">
                     <v-text-field v-model="form.confirmPassword" :type="showConPassword ? 'text' : 'password'"
                         placeholder="••••••••" variant="outlined" density="comfortable" rounded="lg"
-                        color="red-accent-3" base-color="rgba(255,255,255,1)" class="mt-2" hide-details>
+                        color="red-accent-3" class="mt-2" hide-details>
                         <template v-slot:prepend-inner>
                             <Lock size="18" class="text-grey" />
                         </template>
@@ -374,21 +372,9 @@ const submitForm = async () => {
     color: #4caf50;
 }
 
-.premium-label {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.815);
-}
 
 .login-card {
     margin-top: 70px;
 }
 
-.login-btn {
-    letter-spacing: 2px;
-    box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
-    background: linear-gradient(135deg, #ff4d4d, #b30000);
-    border-radius: 10px;
-}
 </style>

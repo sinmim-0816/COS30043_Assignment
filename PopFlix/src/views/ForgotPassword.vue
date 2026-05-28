@@ -54,7 +54,7 @@ const sendResetLink = async () => {
                 <label class="premium-label mt-3">Email Address</label>
                 <div class="input-group mb-6">
                     <v-text-field v-model="email" placeholder="you@example.com" variant="outlined" density="comfortable"
-                        rounded="lg" color="red-accent-3" base-color="rgba(255,255,255,1)" class="mt-2" hide-details>
+                        rounded="lg" color="red-accent-3" class="mt-2" hide-details>
                         <template v-slot:prepend-inner>
                             <Mail size="18" class="text-grey" />
                         </template>
@@ -79,31 +79,6 @@ const sendResetLink = async () => {
 </template>
 
 <style scoped>
-.premium-label {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    color: rgba(255, 255, 255, 0.815);
-}
-
-.login-btn {
-    letter-spacing: 2px;
-    box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
-    background: linear-gradient(135deg, #ff4d4d, #b30000);
-    border-radius: 10px;
-}
-
-.hover-red:hover {
-    color: #ff5252 !important;
-    cursor: pointer;
-}
-
-.login-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
 .premium-toast-badge {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

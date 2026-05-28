@@ -153,6 +153,36 @@ html.dark {
   --label-color: color: rgba(255, 255, 255, 0.815);
 }
 
+.premium-label {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--label-color);
+}
+
+.login-btn {
+  letter-spacing: 2px;
+  box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
+  background: var(--login-bg);
+  border-radius: 10px;
+}
+
+.hover-red:hover {
+  color: #ff5252 !important;
+  cursor: pointer;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+}
+
+.login-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .text-color {
   color: var(--muted-text-color);
 }
