@@ -103,6 +103,27 @@ body,
   --info-hover: #ff4444;
   --dropdown-divider: rgba(82, 82, 82, 0.1);
   --dropdown-hover: rgba(98, 97, 97, 0.08);
+  --chip-bg: #f5f5f5;
+  --chip-text: #1a1a1a;
+  --chip-border: #dcdcdc;
+  --chip-hover-bg: #ececec;
+  --chip-hover-border: #ff5252;
+  --chip-selected-bg: #ff5252;
+  --chip-selected-text: #ffffff;
+  --chip-selected-border: #ff5252;
+  --lang-bg: black;
+  --lang-border: #dcdcdc;
+  --lang-text: #1a1a1a;
+  --lang-hover-bg: #ececec;
+  --lang-hover-border: #ff5252;
+  --sort-chip-bg: #f5f5f5;
+  --sort-chip-text: #1a1a1a;
+  --sort-chip-border: #dcdcdc;
+  --sort-chip-hover-bg: #ececec;
+  --sort-chip-hover-border: #ff5252;
+  --sort-chip-selected-bg: #ff5252;
+  --sort-chip-selected-text: #ffffff;
+  --sort-chip-selected-border: #ff5252;
 }
 
 html.dark {
@@ -170,6 +191,27 @@ html.dark {
   --info-hover: #252a3d;
   --dropdown-divider: rgba(255, 255, 255, 0.1);
   --dropdown-hover: rgba(255, 255, 255, 0.08);
+  --chip-bg: #1f1f1f;
+  --chip-text: #f5f5f5;
+  --chip-border: #3a3a3a;
+  --chip-hover-bg: #2a2a2a;
+  --chip-hover-border: #ff5252;
+  --chip-selected-bg: #ff5252;
+  --chip-selected-text: #ffffff;
+  --chip-selected-border: #ff5252;
+  --lang-bg: white;
+  --lang-border: #333;
+  --lang-text: #f5f5f5;
+  --lang-hover-bg: #2a2a2a;
+  --lang-hover-border: #ff5252;
+  --sort-chip-bg: #1f1f1f;
+  --sort-chip-text: #f5f5f5;
+  --sort-chip-border: #333;
+  --sort-chip-hover-bg: #2a2a2a;
+  --sort-chip-hover-border: #ff5252;
+  --sort-chip-selected-bg: #ff5252;
+  --sort-chip-selected-text: #ffffff;
+  --sort-chip-selected-border: #ff5252;
 }
 
 .premium-label {

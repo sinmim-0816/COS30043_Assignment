@@ -4,9 +4,10 @@ import FooterView from '@/components/FooterView.vue';
 </script>
 
 <template>
-    <TopBar />
-    <router-view />
-    
+    <v-app>
+        <TopBar />
+        <router-view />
+    </v-app>
 </template>
 
 <style scoped>

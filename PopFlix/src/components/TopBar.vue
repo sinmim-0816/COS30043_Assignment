@@ -17,10 +17,13 @@ import logo from '@/assets/popflix_logo.png'
 // Import other hook and components
 import { useAuthStore } from '@/stores/auth'
 import ThemeToggle from './ThemeToggle.vue'
+import GlobalSearch from './GlobalSearch.vue'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+
+const isSearchOpen = ref(false)
 
 const isLoggedIn = computed(() => !!authStore.user)
 const currentUser = computed(() => authStore.user)
@@ -104,9 +107,11 @@ onUnmounted(() => {
         </nav>
         <div class="nav-right-container">
             <!-- Search -->
-            <button type="button" class="p-2" v-if="isLoggedIn">
+            <button type="button" class="p-2" v-if="isLoggedIn" @click="isSearchOpen = true">
                 <Search class="icon" />
             </button>
+
+            <GlobalSearch v-model="isSearchOpen" />
             <!-- Notification -->
             <button type="button" class="p-2" v-if="isLoggedIn">
                 <Bell class="icon" />

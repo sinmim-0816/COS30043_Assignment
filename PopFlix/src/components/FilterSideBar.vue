@@ -94,26 +94,26 @@ watch(()=>props.filters, (newFilters)=>{
     >
         <div class="d-flex flex-column drawer-inner">
             <div class="d-flex justify-space-between align-center mb-3">
-                <h3 class="text-white">
+                <h3 class="text-color">
                     Filters
                 </h3>
-                <v-btn icon="mdi-close" variant="text" @click="$emit('close')"></v-btn>
+                <v-btn color="text-color" icon="mdi-close" variant="text" @click="$emit('close')"></v-btn>
             </div>
             <div class="filter-scroll-area">
                 <div class="mb-4">
-                    <p class="text-overline text-grey-lighten-1 mb-2">Genre</p>
+                    <p class="text-overline text-color mb-2">Genre</p>
                     <v-chip-group 
                         v-model="localFilters.genre" 
                         column 
                         multiple
-                        selected-class="bg-red-accent-3 text-white"
+                        selected-class="genre-chip-selected"
                     >
                         <v-chip
                             v-for="g in genreOptions"
                             :key="g.id"
                             :value="g.id"
                             :filter="false"
-                            class="m-1"
+                            class="m-1 genre-chip"
                         >
                             {{ g.name }}
                         </v-chip>
@@ -130,7 +130,7 @@ watch(()=>props.filters, (newFilters)=>{
                     <v-expansion-panel bg-color="transparent">
                         <v-expansion-panel-title>
                             <div class="d-flex flex-column">
-                                <p class="text-overline text-grey-lighten-1 m-0">Languages</p>
+                                <p class="text-overline text-color m-0">Languages</p>
                                 <span class="text-caption text-grey">
                                     {{ localFilters.language.length > 0 ? `${localFilters.language.length} Selected` : '' }}
                                 </span>
@@ -146,10 +146,12 @@ watch(()=>props.filters, (newFilters)=>{
                                     density="compact"
                                     hide-details
                                     multiple
-                                    class="text-white"
+                                    class="language-checkbox"
                                 >
                                     <template v-slot:label>
-                                        <span style="margin-left:4px">{{ lang === 'All' ? 'All Languages' : getLanguageName(lang) }}</span>
+                                        <span class="language-label">
+                                            {{ lang === 'All' ? 'All Languages' : getLanguageName(lang) }}
+                                        </span>
                                     </template>
                                 </v-checkbox>
                                 </v-col>
@@ -168,7 +170,7 @@ watch(()=>props.filters, (newFilters)=>{
                         <v-expansion-panel bg-color="transparent">
                         <v-expansion-panel-title>
                             <div class="d-flex flex-column">
-                            <p class="text-overline text-grey-lighten-1 m-0">Age Rating</p>
+                            <p class="text-overline text-color m-0">Age Rating</p>
                             <span class="text-caption text-grey">
                                 {{ localFilters.rating.length > 0 ? `${localFilters.rating.length} Selected` : '' }}
                             </span>
@@ -203,7 +205,7 @@ watch(()=>props.filters, (newFilters)=>{
                 <!-- Star Rating -->
                 <div class="mb-4">
                     <div class="d-flex justify-space-between align-center mb-2">
-                        <p class="text-overline text-grey-lighten-1 m-0">Rating Range</p>
+                        <p class="text-overline text-color m-0">Rating Range</p>
                         <span class="text-caption text-red-accent-3 font-weight-bold">
                             {{ localFilters.ratingRange[0].toFixed(1) }} - {{ localFilters.ratingRange[1].toFixed(1) }}
                         </span>
@@ -230,18 +232,29 @@ watch(()=>props.filters, (newFilters)=>{
 
                 <!-- SortBy -->
                 <div class="mb-6">
-                    <p class="text-overline text-grey-lighten-1 mb-2">Sort By</p>
+                    <p class="text-overline text-color mb-2">Sort By</p>
                     <v-chip-group
                         v-model="localFilters.sortBy"
                         mandatory
                         column
-                        selected-class="bg-red-accent-3 text-white"
+                        selected-class="sort-chip-selected"
                         class="sort-pills flex-wrap"
                     >
-                        <v-chip value="default" :filter="false" class="m-1">Default</v-chip>
-                        <v-chip value="latest" :filter="false" class="m-1">Latest Release</v-chip>
-                        <v-chip value="rating" :filter="false" class="m-1">Highest Rating</v-chip>
-                        <v-chip value="popularity" :filter="false" class="m-1">Popularity</v-chip>
+                        <v-chip value="default" :filter="false" class="m-1 sort-chip">
+                            Default
+                        </v-chip>
+
+                        <v-chip value="latest" :filter="false" class="m-1 sort-chip">
+                            Latest Release
+                        </v-chip>
+
+                        <v-chip value="rating" :filter="false" class="m-1 sort-chip">
+                            Highest Rating
+                        </v-chip>
+
+                        <v-chip value="popularity" :filter="false" class="m-1 sort-chip">
+                            Popularity
+                        </v-chip>
                     </v-chip-group>
                 </div>
             </div>
@@ -277,6 +290,11 @@ watch(()=>props.filters, (newFilters)=>{
     height: 100%;
     overflow: hidden;
 }
+.filter-drawer-shell{
+    padding-top:3rem;
+    padding-bottom:2rem;
+    background: var(--bg-color);
+}
 
 .drawer-inner {
     height: 100%;
@@ -297,6 +315,8 @@ watch(()=>props.filters, (newFilters)=>{
 .filter-actions {
     flex: 0 0 auto;
     padding-top: 8px;
+    margin-bottom:3rem;
+    padding: 0 1rem;
 }
 
 .filter-scroll-area::-webkit-scrollbar {
@@ -310,6 +330,59 @@ watch(()=>props.filters, (newFilters)=>{
 .filter-scroll-area::-webkit-scrollbar-thumb {
     background: #444;
     border-radius: 10px;
+}
+
+.genre-chip {
+    background: var(--chip-bg);
+    color: var(--chip-text);
+    border: 1px solid var(--chip-border);
+    transition: all 0.2s ease;
+}
+
+.genre-chip:hover {
+    border-color: var(--chip-hover-border);
+    background: var(--chip-hover-bg);
+}
+
+.genre-chip-selected {
+    background: var(--chip-selected-bg) !important;
+    color: var(--chip-selected-text) !important;
+    border-color: var(--chip-selected-border) !important;
+}
+.language-checkbox {
+    padding: 6px 10px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    color:var(--lang-bg);
+}
+.language-checkbox:hover {
+    background: var(--lang-hover-bg);
+    border-color: var(--lang-hover-border);
+}
+
+.language-label {
+    color: var(--lang-text);
+    font-size: 0.92rem;
+}
+
+.sort-chip {
+    background: var(--sort-chip-bg);
+    color: var(--sort-chip-text);
+    border: 1px solid var(--sort-chip-border);
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.sort-chip:hover {
+    background: var(--sort-chip-hover-bg);
+    border-color: var(--sort-chip-hover-border);
+}
+
+.sort-chip-selected {
+    background: var(--sort-chip-selected-bg) !important;
+    color: var(--sort-chip-selected-text) !important;
+    border-color: var(--sort-chip-selected-border) !important;
+    box-shadow: 0 0 10px rgba(255, 82, 82, 0.25);
 }
 
 </style>
