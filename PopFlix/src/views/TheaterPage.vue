@@ -1,25 +1,27 @@
 <script setup>
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Clock, MapPin, Copy, Ticket, Car, Accessibility, Coffee, Tv, Wifi, Utensils, Baby } from 'lucide-vue-next';
+import { Clock, MapPin, Copy, Ticket, Car, Accessibility, Coffee, Tv, Wifi, Utensils, Baby, ChevronDown } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
 // Imports other hook and components
 import { useCinemas } from '@/hook/useCinemas';
 import FooterView from '@/components/FooterView.vue';
+import { useFaqs } from '@/hook/useFaqs';
 
 const { cinemas, isLoading } = useCinemas();
 const router = useRouter();
 
+
 const mapContainer = ref(null);
 const map = ref(null);
 const markers = ref({});
-
 const tileLayer = ref(null);
 const themeObserver = ref(null);
-
 const activeIndex = ref(0);
+const { allFaqs, faqCategories, isLoadingFaqs } = useFaqs();
+const activeFaqCategory = ref('');
 
 const getAmenityIcon = (label) => {
   const icons = {
@@ -108,12 +110,12 @@ const initMap = () => {
 };
 
 
-watch(cinemas, async (newVal) => {
-    if (newVal.length > 0) {
-        await nextTick();
+watch([cinemas, isLoading, isLoadingFaqs], async ([newCinemas, loadingCinemas, loadingFaqs]) => {
+    if (newCinemas.length > 0 && !loadingCinemas && !loadingFaqs) {
+        await nextTick(); 
         initMap();
     }
-});
+}, { immediate: true });
 
 onMounted(() => {
     themeObserver.value = new MutationObserver(() => {
@@ -230,13 +232,36 @@ const checkIsOpen = (operatingHours) => {
 
     return false;
 };
+
+watch(faqCategories, (newCategories) => {
+    if (newCategories.length > 0 && !activeFaqCategory.value) {
+        activeFaqCategory.value = newCategories[0];
+    }
+}, { immediate: true });
+
+const filteredFaqs = computed(() => {
+    if (!allFaqs.value || allFaqs.value.length === 0) return [];
+    return allFaqs.value.filter(faq => faq.category === activeFaqCategory.value);
+});
 </script>
 
 <template>
-<v-app class="app-wrapper">
-  <div class="page-container pb-15">
+    <template v-if="isLoading || isLoadingFaqs">
+        <div class="loading-wrapper">
+            <div class="loader-content">
+                <v-progress-circular indeterminate color="red-accent-3" size="70" width="4">
+                    <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
+                </v-progress-circular>
+
+                <p class="mt-6 loading-text">Loading...</p>
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </template>
+<v-app class="app-wrapper" v-else>
+  <div class="page-container">
     <v-container fluid width="100vw">
-        <div v-if="isLoading || cinemas.length === 0" class="d-flex justify-center py-15">
+        <div v-if="isLoading || cinemas.length === 0" class="d-flex justify-center">
             <v-progress-circular indeterminate color="red-accent-3"></v-progress-circular>
         </div>
 
@@ -332,6 +357,59 @@ const checkIsOpen = (operatingHours) => {
         </div>
     </v-container>
   </div>
+  <section class="faq-section">
+        <v-container fluid width="100vw">
+            <div class="faq-header text-center mb-10">
+                <h2 class="faq-title mb-4">Frequently Asked Questions</h2>
+                <p class="faq-desc mx-auto">
+                    Got questions? We've got answers! Check out our FAQs to find everything you need to know about our services, pricing, and more.
+                </p>
+            </div>
+
+            <div>
+                <div class="faq-toggle-wrapper mb-3 d-flex justify-center">
+                    <div class="faq-toggle-pill">
+                        <button
+                            v-for="cat in faqCategories"
+                            :key="cat"
+                            class="faq-toggle-btn"
+                            :class="{ 'active': activeFaqCategory === cat }"
+                            @click="activeFaqCategory = cat"
+                        >
+                            {{ cat }}
+                        </button>
+                    </div>
+                </div>
+
+                <v-expansion-panels variant="accordion" class="custom-faq-panels" elevation="0">
+                    <v-expansion-panel
+                        v-for="faq in filteredFaqs"
+                        :key="faq.id"
+                        class="faq-panel mb-4"
+                        elevation="0"
+                    >
+                        <v-expansion-panel-title class="faq-panel-title">
+                            <span class=" fs-6">{{ faq.question }}</span>
+                            
+                            <template v-slot:actions="{ expanded }">
+                                <div class="faq-chevron-box">
+                                    <ChevronDown 
+                                        size="18" 
+                                        class="chevron-icon" 
+                                        :class="{ 'rotate-180': expanded }" 
+                                    />
+                                </div>
+                            </template>
+                        </v-expansion-panel-title>
+                        
+                        <v-expansion-panel-text class="faq-panel-text px-2 pb-4 pt-1">
+                            {{ faq.answer }}
+                        </v-expansion-panel-text>
+                    </v-expansion-panel>
+                </v-expansion-panels>
+            </div>
+        </v-container>
+    </section>
   <FooterView />
 </v-app>
 </template>
@@ -624,5 +702,93 @@ const checkIsOpen = (operatingHours) => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.faq-title {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 42px;
+    color: var(--text-color);
+    letter-spacing: -0.5px;
+}
+
+.faq-desc {
+    color: #6b7280;
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 600px;
+}
+
+.faq-toggle-pill {
+    display: inline-flex;
+    background: transparent;
+    border: 1px solid #d4e3dc; 
+    border-radius: 50px;
+    padding: 6px;
+}
+
+.faq-toggle-btn {
+    padding: 10px 32px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #24584b;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.faq-toggle-btn.active {
+    background-color: #24584b; 
+    color: #ffffff;
+}
+
+:deep(.custom-faq-panels) {
+    background: transparent !important;
+    max-width: 1000px;
+    margin:0 auto;
+}
+
+:deep(.faq-panel) {
+    background: var(--card-bg) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+:deep(.faq-panel::before), 
+:deep(.faq-panel::after) {
+    display: none !important;
+}
+
+:deep(.faq-panel-title) {
+    color: var(--text-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+:deep(.faq-panel-text) {
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+.faq-chevron-box {
+    background: rgba(128, 128, 128, 0.08); 
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    transition: transform 0.3s ease;
+}
+
+.chevron-icon {
+    transition: transform 0.3s ease;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
 }
 </style>
