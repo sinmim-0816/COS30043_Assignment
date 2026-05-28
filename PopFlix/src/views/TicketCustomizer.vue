@@ -194,7 +194,7 @@ const selectBackground = (url, index) => {
 
             <section v-if="activeTab === 'Shape'" class="control-group">
                 <div class="grid-options">
-                    <div v-for="(s, i) in shapes" :key="i" class="option-card" @click="currentShape = s">
+                    <div v-for="(s, i) in shapes" :key="i" class="option-card" @click="currentShape = s" :class="{ 'active-bg': currentShape === s }">
                         <img :src="`/shapes/shape-${i + 1}.png`" />
                     </div>
                 </div>
@@ -223,7 +223,7 @@ const selectBackground = (url, index) => {
                     <button class="reset-btn" @click="backdropOpacity = 1">Reset</button>
                 </div>
                 <label class="d-flex my-3 justify-between">
-                    <span class="me-3">Color</span>
+                    <span class="me-3 text-color">Color</span>
                     <div class="mode-toggle">
                         <button @click="colorMode = 'solid'" :class="{ active: colorMode === 'solid' }">Solid</button>
                         <button @click="colorMode = 'gradient'"
@@ -236,7 +236,7 @@ const selectBackground = (url, index) => {
                         class="color-picker ms-2" />
                     <span class="text-accent ms-3">{{ colorMode === 'solid' ? accentColor : 'Gradient' }}</span>
                     <label v-if="colorMode === 'gradient'" class="d-flex mt-3 justify-between">
-                        <span class="me-2">Gradient Angle</span>
+                        <span class="me-2 text-color">Gradient Angle</span>
                         <span class="text-accent">{{ gradientAngle }}°</span>
                     </label>
                     <div v-if="colorMode === 'gradient'" class="rotation-control">
@@ -495,7 +495,7 @@ const selectBackground = (url, index) => {
 }
 
 .sidebar-scrollable::-webkit-scrollbar-thumb {
-    background: #333;
+    background:var(--scroll-bg);
     border-radius: 4px;
 }
 
@@ -520,9 +520,9 @@ const selectBackground = (url, index) => {
 }
 
 .option-card.active-bg {
-    border: 2px solid #ffffff;
+    border: 2px solid var(--selected-border);
     transform: scale(0.95);
-    box-shadow: 0 0 10px rgba(253, 253, 253, 0.5);
+    box-shadow: 0 0 10px var(--selected-box-shadow);
 }
 
 .option-card img {
@@ -628,7 +628,7 @@ const selectBackground = (url, index) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #1a1a1a;
+    background: var(--bg-color);
     color: #888;
     font-size: 12px;
     font-weight: bold;
@@ -731,9 +731,9 @@ const selectBackground = (url, index) => {
     align-items: center;
     justify-content: center;
     padding: 10px;
-    background: #1a1e2b;
+    background: var(--bg-color);
     border: 1px solid #333;
-    color: #e0e0e0;
+    color: var(--text-color);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -742,7 +742,7 @@ const selectBackground = (url, index) => {
 
 .info-btn:hover {
     border-color: #527aff;
-    background: #252a3d;
+    background: var(--info-hover);
     color: #fff;
 }
 
@@ -751,21 +751,21 @@ const selectBackground = (url, index) => {
     flex-direction: column;
     gap: 10px;
     padding: 15px;
-    background: #1a1e2b;
+    background: var(--bg-color);
     border-radius: 8px;
     margin-top: 15px;
 }
 
 .settings-panel label {
     font-size: 0.85rem;
-    color: #888;
+    color: var(--text-color);
 }
 
 .settings-panel input,
 .settings-panel select {
-    background: #0e111b;
+    background: var(--bg-color);
     border: 1px solid #333;
-    color: white;
+    color: var(--text-color);
     padding: 5px;
     border-radius: 4px;
 }

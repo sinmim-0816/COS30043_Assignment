@@ -97,6 +97,10 @@ body,
   --register-hover: rgba(21, 21, 21, 0.8);
   --label-color: rgba(97, 96, 96, 0.815);
   --strength-bg: rgba(219, 219, 219, 0.511);
+  --scroll-bg: #dbdbdb;
+  --selected-border: #e53935;
+  --selected-box-shadow: rgba(229, 57, 53, 0.2);
+  --info-hover: #ff4444;
 }
 
 html.dark {
@@ -158,6 +162,10 @@ html.dark {
   --register-hover: rgba(255, 255, 255, 0.8);
   --label-color: color: rgba(255, 255, 255, 0.815);
   --strength-bg: rgba(255, 255, 255, 0.1);
+  --scroll-bg: #333;
+  --selected-border: #ffffff;
+  --selected-box-shadow: rgba(253, 253, 253, 0.5);
+  --info-hover: #252a3d;
 }
 
 .premium-label {
