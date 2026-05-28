@@ -72,7 +72,9 @@ const openPreview = async () => {
 const confirmSave = async () => {
     if (!activeTicket.value) return;
     try {
-        await save(activeTicket.value.bookingId, previewImageUrl.value, ticketDescription.value);
+        const imageToSave = previewImageUrl.value || await captureTicket();
+        previewImageUrl.value = imageToSave;
+        await save(activeTicket.value.bookingId, imageToSave, ticketDescription.value);
         alert('Design saved successfully!');
         isModalOpen.value = false;
     } catch (err) {

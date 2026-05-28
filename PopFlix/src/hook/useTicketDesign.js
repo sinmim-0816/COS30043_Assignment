@@ -9,7 +9,7 @@ export function useTicketDesign() {
         isLoading.value = true;
         try {
             return await ticketDesignService.saveDesign({
-                booking_id: bookingId,
+                booking_id: String(bookingId),
                 design_image: designImage,
                 description: description
             });
