@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import * as htmlToImage from 'html-to-image';
 import VueDraggableResizable from 'vue-draggable-resizable-vue3';
 import QrcodeVue from 'qrcode.vue';
-import { ExternalLink } from 'lucide-vue-next';
+import { ExternalLink,X } from 'lucide-vue-next';
 
 // Import other hook and components
 import { useMovies } from '@/hook/useMovies';
@@ -27,17 +27,18 @@ import TicketShape11 from '@/components/TicketShape11.vue';
 import TicketShape12 from '@/components/TicketShape12.vue';
 import TicketShape13 from '@/components/TicketShape13.vue';
 import TicketShape14 from '@/components/TicketShape14.vue';
-import TicketShape15 from '@/components/TicketShape15.vue';
 
 const route = useRoute();
 const { fetchMovieDetails, isLoading } = useMovies();
 const { fetchTicketDetails, isTicketsLoading } = useTickets();
 const activeTicket = ref(null);
 
-const shapes = [TicketShape1, TicketShape2, TicketShape3, TicketShape4, TicketShape5, TicketShape6,TicketShape7,TicketShape8,TicketShape9,TicketShape10,TicketShape11,TicketShape12,TicketShape13,TicketShape14,TicketShape15];
+const shapes = [TicketShape1, TicketShape2, TicketShape3, TicketShape4, TicketShape5, TicketShape6,TicketShape7,TicketShape8,TicketShape9,TicketShape10,TicketShape11,TicketShape12,TicketShape13,TicketShape14];
 const currentShape = shallowRef(TicketShape1);
 const tabs = ['Shape', 'Picture', 'Components'];
 const activeTab = ref('Shape');
+const isModalOpen = ref(false);
+const previewImageUrl = ref('');
 
 const ticketRef = ref(null);
 const movieTitle = ref('');
@@ -56,6 +57,29 @@ const textElements = ref([]);
 const selectedText = ref(null);
 const { save, isLoading: isSaving } = useTicketDesign();
 const ticketDescription = ref('');
+
+const openPreview = async () => {
+    try {
+        const dataUrl = await captureTicket();
+        previewImageUrl.value = dataUrl;
+        isModalOpen.value = true;
+    } catch (err) {
+        alert("Failed to generate preview. Please try again.");
+        console.error(err);
+    }
+};
+
+const confirmSave = async () => {
+    if (!activeTicket.value) return;
+    try {
+        await save(activeTicket.value.bookingId, previewImageUrl.value, ticketDescription.value);
+        alert('Design saved successfully!');
+        isModalOpen.value = false;
+    } catch (err) {
+        console.error(err);
+        alert('Failed to save design');
+    }
+};
 
 const selectText = (el) => {
     selectedText.value = el;
@@ -235,46 +259,30 @@ const captureTicket = async () => {
         throw err;
     }
 };
-const shareImage = async () => {
+const triggerShare = async () => {
     try {
-        const dataUrl = await captureTicket();
-        const response = await fetch(dataUrl);
+        const response = await fetch(previewImageUrl.value);
         const blob = await response.blob();
+        const file = new File([blob], 'my-popflix-ticket.png', { type: 'image/png' });
 
-        if (navigator.share) {
+        if (navigator.share && navigator.canShare({ files: [file] })) {
             await navigator.share({
-                files: [new File([blob], 'my-popflix-ticket.png', { type: 'image/png' })],
+                files: [file],
                 title: 'My Ticket',
-                text: 'Check out my cinema ticket design!'
+                text: ticketDescription.value || 'Check out my cinema ticket design!'
             });
         } else {
             const link = document.createElement('a');
-            link.href = dataUrl;
+            link.href = previewImageUrl.value;
             link.download = 'my-popflix-ticket.png';
             link.click();
         }
     } catch (err) {
-        alert('Could not share image. Please try again.');
-        console.log(err);
+        console.error(err);
+        alert('Sharing not supported on this browser.');
     }
 };
 
-const handleSave = async () => {
-    if (!activeTicket.value) return;
-    
-    try {
-        const base64Image = await captureTicket();
-        await save(
-            activeTicket.value.bookingId, 
-            base64Image, 
-            ticketDescription.value
-        );
-        alert('Design saved successfully!');
-    } catch (err) {
-        console.error(err);
-        alert('Failed to save design');
-    }
-};
 </script>
 
 <template>
@@ -443,9 +451,82 @@ const handleSave = async () => {
                 </div>
             </div>
 
-            <button @click="shareImage" class="share-btn ">
-                <ExternalLink size="18" class="me-2 mb-1" />Share
+            <button @click="openPreview" class="share-btn">
+                <ExternalLink size="18" class="me-2 mb-1" />Preview & Save
             </button>
+
+            <v-dialog
+            v-model="isModalOpen"
+            max-width="950"
+            content-class="ticket-preview-dialog"
+            >
+            <v-card class="preview-modal-card">
+                
+                <div class="preview-header">
+                <div>
+                    <h5 class="preview-title">Ticket Preview</h5>
+                    <p class="preview-subtitle">
+                    Review your customized PopFlix ticket before saving or sharing.
+                    </p>
+                </div>
+
+                <v-btn
+                    icon
+                    variant="text"
+                    @click="isModalOpen = false"
+                >
+                    <X/>
+                </v-btn>
+                </div>
+
+                <div class="preview-body">
+
+                <div class="preview-image-wrapper">
+                    <img
+                    :src="previewImageUrl"
+                    class="preview-image"
+                    />
+                </div>
+
+                <div class="preview-sidebar">
+
+                    <div class="preview-section">
+                    <label class="preview-label">
+                        Description
+                    </label>
+
+                    <v-textarea
+                        v-model="ticketDescription"
+                        placeholder="Describe your movie night..."
+                        variant="outlined"
+                        rows="10"
+                        auto-grow
+                        class="preview-input"
+                    />
+                    </div>
+
+                    
+
+                    <div class="preview-actions-asymmetric">
+                        <v-btn variant="text" class="cancel-btn" @click="isModalOpen = false">
+                            Cancel
+                        </v-btn>
+
+                        <div class="right-group">
+                            <v-btn variant="outlined" class="share-btn-style" @click="triggerShare">
+                                Share
+                            </v-btn>
+                            <v-btn class="save-btn-style" :loading="isSaving" @click="confirmSave">
+                                Save Design
+                            </v-btn>
+                        </div>
+                    </div>
+
+                </div>
+                </div>
+
+            </v-card>
+            </v-dialog>
         </main>
     </v-container>
 </template>
@@ -925,10 +1006,8 @@ const handleSave = async () => {
     position: absolute;
     inset: 0;
     z-index: 0;
-    /* Ensure height is explicit so the capture library sees the area */
     min-height: 430px; 
     width: 100%;
-    /* Ensure the color logic applies correctly */
     background-size: cover;
     background-position: center;
 }
@@ -938,4 +1017,133 @@ const handleSave = async () => {
     object-fit: cover;
     display: block;
 }
+:deep(.ticket-preview-dialog) {
+    border-radius: 24px;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+}
+
+.preview-modal-card {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: var(--border-card);
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+.preview-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 24px 28px;
+    border-bottom: 1px solid var(--dropdown-divider);
+    background: var(--header-bg);
+    backdrop-filter: blur(10px);
+}
+
+.preview-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text-color);
+}
+
+.preview-subtitle {
+    color: var(--muted-text-color);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.preview-image-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-image {
+    display: block; 
+    width: 100%;
+    max-width: 560px;
+    object-fit: contain;
+}
+
+.preview-sidebar {
+    padding: 28px;
+    border-left: 1px solid var(--dropdown-divider);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+    background: rgba(255,255,255,0.02);
+}
+
+.preview-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.preview-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+:deep(.preview-input .v-field) {
+    background: var(--bg-color);
+    border-radius: 14px;
+}
+
+:deep(.preview-input textarea) {
+    color: var(--text-color);
+}
+
+.preview-actions-asymmetric {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.right-group {
+    display: flex;
+    gap: 12px;
+}
+
+.cancel-btn { 
+    color: #888; 
+    text-transform: none; 
+}
+
+.share-btn-style { 
+    border: 1px solid #333; 
+    border-radius: 8px; 
+}
+
+.save-btn-style { 
+    background: #527aff !important;
+    color: white; 
+    border-radius: 8px; 
+    font-weight: bold;
+}
+.preview-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start; 
+    min-height: 500px;
+}
+
+@media (max-width: 900px) {
+    .preview-body {
+        grid-template-columns: 1fr;
+    }
+
+    .preview-sidebar {
+        border-left: none;
+        border-top: 1px solid var(--dropdown-divider);
+    }
+
+    .preview-image {
+        max-width: 100%;
+    }
+}
+
 </style>
