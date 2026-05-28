@@ -264,7 +264,7 @@ button {
     position: absolute;
     top: calc(100% + 10px);
     right: 0;
-    background: rgba(16, 24, 40, 0.95);
+    background: var(--bg-color);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -282,7 +282,7 @@ button {
     align-items: center;
     gap: 0.75rem;
     padding: 10px 16px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-color);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -290,13 +290,13 @@ button {
 }
 
 .dropdown-item:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: white;
+    background: var(--dropdown-hover);
+    color: var(--text-color);
 }
 
 .dropdown-divider {
     height: 1px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--dropdown-divider);
     margin: 6px 0;
 }
 
