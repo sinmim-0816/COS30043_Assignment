@@ -335,13 +335,6 @@ const submitForm = async () => {
 </template>
 
 <style scoped>
-.strength-meter {
-    height: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 15px;
-}
 
 .strength-container {
     margin-top: 1.5rem;

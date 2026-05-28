@@ -91,6 +91,7 @@ body,
   --login-bg: linear-gradient(135deg, #ff4d4d, #ff5252);
   --register-hover: rgba(21, 21, 21, 0.8);
   --label-color: rgba(97, 96, 96, 0.815);
+  --strength-bg: rgba(219, 219, 219, 0.511);
 }
 
 html.dark {
@@ -151,6 +152,7 @@ html.dark {
   --login-bg: linear-gradient(135deg, #ff4d4d, #b30000);
   --register-hover: rgba(255, 255, 255, 0.8);
   --label-color: color: rgba(255, 255, 255, 0.815);
+  --strength-bg: rgba(255, 255, 255, 0.1);
 }
 
 .premium-label {
@@ -165,6 +167,14 @@ html.dark {
   box-shadow: 0 4px 15px rgba(255, 82, 82, 0.3);
   background: var(--login-bg);
   border-radius: 10px;
+}
+
+.strength-meter {
+    height: 10px;
+    background: var(--strength-bg);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 15px;
 }
 
 .hover-red:hover {

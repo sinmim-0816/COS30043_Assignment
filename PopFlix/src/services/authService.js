@@ -36,5 +36,10 @@ export const authService = {
             newPassword
         });
         return response.data;
-    }
+    },
+
+    async verifyResetToken(token) {
+        const response = await backendClient.get(API_ENDPOINTS.VERIFY_RESET_TOKEN(token));
+        return response.data;
+    },
 };

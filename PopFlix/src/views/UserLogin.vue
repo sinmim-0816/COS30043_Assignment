@@ -30,8 +30,13 @@ onMounted(() => {
         showAuthBadge.value = true;
         window.history.replaceState({}, document.title);
     }
+    else if (window.history.state?.errorMessage) {
+        authMessage.value = window.history.state.errorMessage;
+        isSuccess.value = false;
+        showAuthBadge.value = true;
+        window.history.replaceState({}, document.title);
+    }
 });
-
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useResetPassword } from '@/hook/useResetPassword';
 import AuthLayout from '@/components/AuthLayout.vue';
@@ -7,13 +7,17 @@ import { Lock, Info, Eye, EyeOff, Check, X } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
-const { handleReset, isLoading, errorMessage } = useResetPassword();
+const { handleReset, isLoading, errorMessage, verifyToken } = useResetPassword();
 
 const password = ref('');
 const confirmPassword = ref('');
 const showPassword = ref(false);
 const showConPassword = ref(false);
 const isTypingPassword = ref(false);
+
+const isCheckingToken = ref(true);
+const isTokenValid = ref(false);
+const tokenError = ref('');
 
 const token = route.query.token;
 const isConfirmMatch = computed(() => password.value && password.value === confirmPassword.value);
@@ -55,6 +59,36 @@ const passwordError = computed(() => {
         return 'Password does not meet requirements';
     }
     return '';
+});
+
+onMounted(async () => {
+    if (!token) {
+        isCheckingToken.value = false;
+        isTokenValid.value = false;
+        tokenError.value = "No reset token provided in the link.";
+        router.push({
+            path: '/login',
+            state: { errorMessage: tokenError.value }
+        });
+        return;
+    }
+
+    try {
+        if (verifyToken) {
+            await verifyToken(token);
+        }
+        isTokenValid.value = true;
+    } catch (error) {
+        isTokenValid.value = false;
+        const msg = error.response?.data?.message || errorMessage.value || "This reset link is invalid or has expired.";
+        
+        router.replace({
+            path: '/login',
+            state: { errorMessage: msg } 
+        });
+    } finally {
+        isCheckingToken.value = false;
+    }
 });
 
 const submit = async () => {
@@ -190,14 +224,6 @@ const submit = async () => {
 </template>
 
 <style scoped>
-.strength-meter {
-    height: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 15px;
-}
-
 .strength-bar {
     height: 100%;
     transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s ease;

@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     ME: '/auth/me',
+    VERIFY_RESET_TOKEN: (token) => `/auth/verify-reset-token/${token}`,
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
     VEHICLES: '/vehicles',
@@ -22,9 +23,9 @@ export const API_ENDPOINTS = {
     PAYMENTS: '/payments',
     LOCKED_SEATS: (showtimeId) => `/bookings/locked-seats/${showtimeId}`,
     LOCKED_PARKING: (showtimeId) => `/bookings/locked-parking/${showtimeId}`,
-    TICKETS:'/ticket',
-    TICKET_DETAILS:(id)=>`/ticket/${id}`,
-    REVIEWS:'/reviews',
-    REVIEWS_BY_MOVIE: (movieId)=>`/reviews/${movieId}`,
-    
+    TICKETS: '/ticket',
+    TICKET_DETAILS: (id) => `/ticket/${id}`,
+    REVIEWS: '/reviews',
+    REVIEWS_BY_MOVIE: (movieId) => `/reviews/${movieId}`,
+
 };
