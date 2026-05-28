@@ -480,10 +480,11 @@ h2 {
 .session-time-btn {
     min-width: 100px;
     height: 45px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgb(75, 73, 73);
     font-weight: bold;
     letter-spacing: 0.5px;
     transition: all 0.2s ease;
+    color: var(--text-color) !important;
 }
 
 .gap-3 {
@@ -492,13 +493,6 @@ h2 {
 
 .selection {
     max-width: 85vw;
-}
-
-.session-time-btn {
-    min-width: 100px;
-    height: 54px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.2s ease-in-out;
 }
 
 .session-time-btn:hover {

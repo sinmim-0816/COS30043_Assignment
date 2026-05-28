@@ -93,6 +93,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/faq',
+        name: 'FAQ',
+        component: TheaterPage,
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/customize-tickets/:movieId/:bookingId',
         name: "CustomizeTickets",
         component: TicketCustomizer,

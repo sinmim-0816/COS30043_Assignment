@@ -36,26 +36,92 @@ const newReview = ref({
 const activeTicket = computed(() => tickets.value[selectedTicketIndex.value]);
 
 const countdowns = computed(() => {
-    return tickets.value.map(t => {
+    return tickets.value.reduce((acc, t) => {
         const diff = new Date(t.startTime) - currentTime.value;
-        if (diff <= 0) return { expired: true, text: 'Completed', hrs: '00', mins: '00', secs: '00', critical: false };
+
+        if (diff <= 0) {
+            acc[t.id] = {
+                expired: true,
+                text: 'Completed',
+                hrs: '00',
+                mins: '00',
+                secs: '00',
+                critical: false
+            };
+
+            return acc;
+        }
 
         const totalSecs = Math.floor(diff / 1000);
         const totalMins = Math.floor(totalSecs / 60);
         const totalHrs = Math.floor(totalMins / 60);
 
-        const hrs = String(totalHrs).padStart(2, '0');
+        const hrs = String(totalHrs % 24).padStart(2, '0');
         const mins = String(totalMins % 60).padStart(2, '0');
         const secs = String(totalSecs % 60).padStart(2, '0');
 
-        return {
+        // Calendar-based day difference
+        const now = new Date(currentTime.value);
+        const target = new Date(t.startTime);
+
+        const startOfNow = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+        );
+
+        const startOfTarget = new Date(
+            target.getFullYear(),
+            target.getMonth(),
+            target.getDate()
+        );
+
+        const calendarDayDiff = Math.round(
+            (startOfTarget - startOfNow) / (1000 * 60 * 60 * 24)
+        );
+
+        let text = '';
+
+        if (totalHrs < 4) {
+            text = `${hrs}h ${mins}m left`;
+        } else if (calendarDayDiff === 0) {
+            text = 'Today';
+        } else if (calendarDayDiff === 1) {
+            text = '1 Day Away';
+        } else {
+            text = `${calendarDayDiff} Days Away`;
+        }
+
+        acc[t.id] = {
             expired: false,
-            text: totalHrs < 4 ? `${hrs}h ${mins}m left` : `${Math.ceil(totalHrs / 24)} Days Away`,
-            hrs, mins, secs,
+            text,
+            hrs,
+            mins,
+            secs,
             critical: totalHrs < 4
         };
-    });
+
+        return acc;
+    }, {});
 });
+
+const isTicketReviewable = (ticket) => {
+    const start = new Date(ticket.startTime);
+
+    const runtimeText = ticket.runtime || '';
+
+    const hoursMatch = runtimeText.match(/(\d+)h/);
+    const minsMatch = runtimeText.match(/(\d+)m/);
+
+    const hours = hoursMatch ? Number(hoursMatch[1]) : 0;
+    const mins = minsMatch ? Number(minsMatch[1]) : 0;
+
+    const endTime = new Date(
+        start.getTime() + ((hours * 60 + mins) * 60 * 1000)
+    );
+
+    return currentTime.value >= endTime;
+};
 
 let timerInstance = null;
 onMounted(async () => {
@@ -197,7 +263,7 @@ const submitReview = async () => {
                 </div>
 
                 <div v-else class="cyber-ticket-stack-container" :class="{ 'overlay-active': isOverlayOpen }">
-                    <div v-for="(t, idx) in sortedTickets" :key="t.id"
+                    <div v-for="(t) in sortedTickets" :key="t.id"
                         class="horizontal-ticket-stub-card position-relative mb-3" :class="{
                             'selected-card': isOverlayOpen && selectedTicketIndex === tickets.indexOf(t),
 
@@ -246,8 +312,8 @@ const submitReview = async () => {
                                     </div>
 
                                     <span class="status-badge-pill"
-                                        :class="[countdowns[idx].expired ? 'expired' : (countdowns[idx].critical ? 'flash' : 'active')]">
-                                        <Clock size="12" class="me-1" /> {{ countdowns[idx].text }}
+                                        :class="[countdowns[t.id].expired ? 'expired' : (countdowns[t.id].critical ? 'flash' : 'active')]">
+                                        <Clock size="12" class="me-1" /> {{ countdowns[t.id].text }}
                                     </span>
                                 </div>
                             </div>
@@ -268,7 +334,7 @@ const submitReview = async () => {
                                 <span class="text-uppercase tracking-widest text-grey font-weight-black"
                                     style="font-size: 8px;">FAST PASS</span>
                                 <div class="d-flex justify-center mt-3">
-                                    <v-btn class=" review-btn rounded-pill" @click.stop="openReviewDialog(t)">
+                                    <v-btn v-if="isTicketReviewable(t)" class=" review-btn rounded-pill" @click.stop="openReviewDialog(t)">
                                         <span>
                                             <Pencil size="16" class="me-2" />
                                         </span>Leave a Review

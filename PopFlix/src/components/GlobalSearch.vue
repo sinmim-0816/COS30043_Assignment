@@ -20,9 +20,9 @@ const isOpen = computed({
 // State
 const searchQuery = ref('');
 const activeCategory = ref('All');
-const categories = ['All', 'Movies', 'Cinemas', 'Experiences'];
+const categories = ['All', 'Movies', 'Cinemas', 'FAQs'];
 const isLoading = ref(false);
-const results = ref({ movies: [], cinemas: [] });
+const results = ref({ movies: [], cinemas: [], faqs: [] });
 
 // Debounce logic
 let searchTimeout;
@@ -30,7 +30,7 @@ const handleSearch = () => {
     clearTimeout(searchTimeout);
     
     if (!searchQuery.value.trim()) {
-        results.value = { movies: [], cinemas: [] };
+        results.value = { movies: [], cinemas: [], faqs: [] };
         return;
     }
 
@@ -61,15 +61,16 @@ const closeSearch = () => {
     // Optional: Clear search when closed, or leave it so they can resume searching
     setTimeout(() => {
         searchQuery.value = '';
-        results.value = { movies: [], cinemas: [] };
+        results.value = { movies: [], cinemas: [], faqs: [] };
         activeCategory.value = 'All';
     }, 300); // Wait for slide-out animation to finish
 };
 
 const goToResult = (item) => {
     closeSearch();
-    if (item.type === 'Movie') router.push(`/movies/${item.id}`);
-    if (item.type === 'Cinema') router.push(`/cinemas?id=${item.id}`);
+    if (item.type === 'Movie') router.push(`/movie/${item.id}`);
+    if (item.type === 'Cinema') router.push(`/showtimes?cinema=${item.id}`);
+    if (item.type === 'FAQ') router.push('/faq');
 };
 </script>
 
@@ -175,7 +176,31 @@ const goToResult = (item) => {
                         </v-list-item>
                     </template>
 
-                    <div v-if="results.movies.length === 0 && results.cinemas.length === 0" class="text-center py-16 text-grey">
+                    <template v-if="results.faqs.length > 0">
+                        <div class="d-flex align-center px-3 mb-2 mt-6">
+                            <h4 class="text-uppercase text-caption font-weight-black text-red-accent-3 tracking-widest">FAQs</h4>
+                            <v-divider class="ms-3 border-opacity-25"></v-divider>
+                        </div>
+
+                        <v-list-item 
+                            v-for="faq in results.faqs" 
+                            :key="'f-'+faq.id"
+                            class="result-item rounded-xl mb-2 py-3 px-4"
+                            @click="goToResult(faq)"
+                        >
+                            <template v-slot:prepend>
+                                <div class="icon-box me-4 shadow-sm">
+                                    <Search size="24" class="text-red-accent-3"/>
+                                </div>
+                            </template>
+                            <v-list-item-title class="font-weight-bold text-body-1">{{ faq.title }}</v-list-item-title>
+                            <v-list-item-subtitle class="d-flex align-center mt-2 text-grey-lighten-1">
+                                <span class="text-truncate">{{ faq.answer }}</span>
+                            </v-list-item-subtitle>
+                        </v-list-item>
+                    </template>
+
+                    <div v-if="results.movies.length === 0 && results.cinemas.length === 0 && results.faqs.length === 0" class="text-center py-16 text-grey">
                         <X size="48" class="mb-4 opacity-50 mx-auto" />
                         <h4 class="font-weight-medium">No results found for "{{ searchQuery }}"</h4>
                         <p class="text-caption mt-1">Check your spelling or try a different term.</p>

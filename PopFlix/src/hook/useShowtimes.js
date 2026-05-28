@@ -43,8 +43,8 @@ export function useShowtimes() {
 
     const filterSessions = (movieId, cinemaId) => {
         return allSessions.value.filter(session =>
-            session.movie_id === movieId &&
-            session.cinema_id === cinemaId
+            String(session.movie_id) === String(movieId) &&
+            String(session.cinema_id) === String(cinemaId)
         );
     };
 
