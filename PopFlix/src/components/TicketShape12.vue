@@ -22,7 +22,7 @@ defineProps({
 			</linearGradient>
 		</defs>
 		
-<path fill="#0e111b" opacity="1.000000" stroke="none"
+<path fill="var(--bg-color)" opacity="1.000000" stroke="none"
 	d="
 M928.000000,629.000000 
 	C618.707092,629.000000 309.914185,629.000000 1.060636,629.000000 
@@ -50,7 +50,7 @@ M143.500000,120.991882
 	C220.152069,138.853226 216.981689,130.698288 216.708710,120.991882 
 	C192.431686,120.991882 168.465851,120.991882 143.500000,120.991882 
 z"/>
-<path :fill="imageSource ? 'url(#ticketPattern)' : (colorMode === 'solid' ? fillColor : 'url(#ticketGradient)')"
+<path stroke="black" :fill="imageSource ? 'url(#ticketPattern)' : (colorMode === 'solid' ? fillColor : 'url(#ticketGradient)')"
 	d="
 M670.000000,569.000000 
 	C574.021423,569.000000 478.542877,569.000000 382.679016,569.000000 
@@ -59,7 +59,7 @@ M670.000000,569.000000
 	C1162.628174,270.242828 1162.628174,419.287811 1162.628174,569.000000 
 	C998.634460,569.000000 834.567261,569.000000 670.000000,569.000000 
 z"/>
-<path :fill="imageSource ? 'url(#ticketPattern)' : (colorMode === 'solid' ? fillColor : 'url(#ticketGradient)')" 
+<path stroke="black" :fill="imageSource ? 'url(#ticketPattern)' : (colorMode === 'solid' ? fillColor : 'url(#ticketGradient)')" 
 	d="
 M144.000000,120.991882 
 	C168.465851,120.991882 192.431686,120.991882 216.708710,120.991882 

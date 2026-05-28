@@ -7,7 +7,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/effect-fade';
 import { addDays } from 'date-fns';
-import { Star, CirclePlay, ChevronRight, BadgeInfo, Tag, ClockFading, MessageCircle, ChevronLeft, BellRing } from '@lucide/vue';
+import { Star, CirclePlay, ChevronRight, BadgeInfo, Tag, ClockFading, MessageCircle, ChevronLeft, BellRing, ChevronsDown } from '@lucide/vue';
 import { useRouter } from 'vue-router';
 
 // Import other hooks and components
@@ -35,6 +35,11 @@ const activeTab = ref(0);
 const experienceCategories = ref([]);
 const activeExperienceIndex = ref(0);
 
+const hasScrolledExperiences = ref(false);
+
+const handleExperienceScroll = (event) => {
+    hasScrolledExperiences.value = event.target.scrollTop > 10;
+};
 const onSwiper = (swiper) => {
     swiperInstance.value = swiper;
 };
@@ -485,8 +490,8 @@ onMounted(async () => {
                 </div>
 
                 <v-row class="align-stretch">
-                    <v-col cols="12" md="4" lg="3">
-                        <div class="experience-list-container">
+                    <v-col cols="12" md="4" lg="3" class="position-relative">
+                        <div class="experience-list-container" @scroll="handleExperienceScroll">
                             <div 
                                 v-for="(cat, index) in experienceCategories" 
                                 :key="cat.key"
@@ -502,9 +507,19 @@ onMounted(async () => {
                                         {{ cat.desc }}
                                     </p>
                                 </div>
-                                <ChevronRight v-if="activeExperienceIndex === index" class="active-arrow" size="20"/>
                             </div>
                         </div>
+
+                        <v-fade-transition>
+                            <div
+                                v-if="!hasScrolledExperiences && experienceCategories.length > 5"
+                                class="scroll-indicator"
+                            >
+                                <div class="modern-scroll-indicator">
+                                    <ChevronsDown size="25" class="scroll-icon" />
+                                </div>
+                            </div>
+                        </v-fade-transition>
                     </v-col>
 
                     <v-col cols="12" md="8" lg="9">
@@ -873,9 +888,8 @@ onMounted(async () => {
 }
 
 .feature-col-small .feature-card {
-    min-height: 400px;
+    min-height: 440px;
     width: 350px;
-    margin-top: 20px;
     align-self: center;
 }
 
@@ -1015,5 +1029,40 @@ onMounted(async () => {
 #custom-ticket-cta{
     margin-top:4.5rem;
     justify-content: center;
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modern-scroll-indicator {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--movie-btn);
+}
+
+.scroll-icon {
+    animation: arrowMove 2s infinite;
+}
+
+@keyframes arrowMove {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateY(4px);
+        opacity: 1;
+    }
 }
 </style>

@@ -184,7 +184,7 @@ const selectBackground = (url, index) => {
 <template>
     <v-container fluid class="customizer-layout" width="100vw">
         <aside class="sidebar-scrollable">
-            <h4 class="mt-4">Customize Ticket</h4>
+            <h4 class="mt-5">Customize Ticket</h4>
 
             <div class="tabs">
                 <button v-for="tab in tabs" :key="tab" :class="{ active: activeTab === tab }" @click="activeTab = tab">
@@ -215,7 +215,7 @@ const selectBackground = (url, index) => {
                     </div>
                 </div>
                 <label class="d-flex mt-5 justify-between">
-                    <span class="me-2">Opacity</span>
+                    <span class="me-2 text-color">Opacity</span>
                     <span class="text-accent">{{ (backdropOpacity * 100).toFixed(0) }}%</span>
                 </label>
                 <div class="rotation-control">
@@ -361,7 +361,7 @@ const selectBackground = (url, index) => {
     grid-template-columns: 250px 1fr;
     gap: 40px;
     padding: 40px 40px 0 10px;
-    background: #0e111b;
+    background: var(--bg-color);
     color: #fff;
     min-height: 100vh;
 }
@@ -480,7 +480,7 @@ const selectBackground = (url, index) => {
 }
 
 .tabs button.active {
-    color: #fff;
+    color: var(--text-color);
     border-bottom-color: #e53935;
 }
 

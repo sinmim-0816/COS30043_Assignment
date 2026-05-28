@@ -20,6 +20,11 @@ h2 {
   margin: 0 auto;
 }
 
+h4,
+h5 {
+  color: var(--header-color);
+}
+
 :deep(.v-tab--selected) {
   background: rgba(255, 82, 82, 0.1) !important;
   border-radius: 12px;
@@ -170,11 +175,11 @@ html.dark {
 }
 
 .strength-meter {
-    height: 10px;
-    background: var(--strength-bg);
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 15px;
+  height: 10px;
+  background: var(--strength-bg);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 15px;
 }
 
 .hover-red:hover {

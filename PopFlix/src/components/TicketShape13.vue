@@ -22,7 +22,7 @@ defineProps({
 			</linearGradient>
 		</defs>
 		
-<path fill="#0e111b" opacity="1.000000" stroke="none"
+<path fill="var(--bg-color)" opacity="1.000000" stroke="none"
 	d="
 M970.000000,596.000000 
 	C646.666687,596.000000 323.833374,596.000000 1.000043,596.000000 
@@ -101,7 +101,7 @@ M1022.499939,565.152710
 	C991.694763,564.300842 993.445312,565.328979 997.003418,565.217102 
 	C1005.161499,564.960510 1013.333496,565.146423 1022.499939,565.152710 
 z"/>
-<path :fill="imageSource ? 'url(#ticketPattern)' : (colorMode === 'solid' ? fillColor : 'url(#ticketGradient)')"
+<path stroke="black" :fill="imageSource ? 'url(#ticketPattern)' : (colorMode === 'solid' ? fillColor : 'url(#ticketGradient)')"
 	d="
 M1021.999878,565.152710 
 	C1013.333496,565.146423 1005.161499,564.960510 997.003418,565.217102 
