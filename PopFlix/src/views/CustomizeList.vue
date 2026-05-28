@@ -19,7 +19,19 @@ const goToCustomize = (ticket) => {
 </script>
 
 <template>
-    <v-app>
+    <template v-if="isTicketsLoading">
+        <div class="loading-wrapper">
+            <div class="loader-content">
+                <v-progress-circular indeterminate color="red-accent-3" size="70" width="4">
+                    <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
+                </v-progress-circular>
+
+                <p class="mt-6 loading-text">Loading...</p>
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </template>
+    <v-app v-else>
         <v-container fluid class="customization-dashboard" width="100vw">
             <h2>Customize Tickets</h2>
             <v-row v-if="!isTicketsLoading" class="mt-4">

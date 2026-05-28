@@ -28,5 +28,6 @@ export const API_ENDPOINTS = {
     TICKET_DETAILS: (id) => `/ticket/${id}`,
     REVIEWS: '/reviews',
     REVIEWS_BY_MOVIE: (movieId) => `/reviews/${movieId}`,
-
+    TICKET_DESIGNS: '/ticket-designs',
+    GET_TICKET_DESIGN: (bookingId) => `/ticket-designs/${bookingId}`,
 };

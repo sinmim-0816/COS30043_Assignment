@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, shallowRef, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import html2canvas from 'html2canvas';
+import * as htmlToImage from 'html-to-image';
 import VueDraggableResizable from 'vue-draggable-resizable-vue3';
 import QrcodeVue from 'qrcode.vue';
 import { ExternalLink } from 'lucide-vue-next';
@@ -10,6 +10,7 @@ import { ExternalLink } from 'lucide-vue-next';
 import { useMovies } from '@/hook/useMovies';
 import { useTickets } from '@/hook/useTickets';
 import { getGenreName } from '@/utils/genre';
+import { useTicketDesign } from '@/hook/useTicketDesign';
 
 // Import your SVG shapes
 import TicketShape1 from '@/components/TicketShape1.vue';
@@ -53,6 +54,8 @@ const accentColor2 = ref('#ff0000');
 const gradientAngle = ref(90);
 const textElements = ref([]);
 const selectedText = ref(null);
+const { save, isLoading: isSaving } = useTicketDesign();
+const ticketDescription = ref('');
 
 const selectText = (el) => {
     selectedText.value = el;
@@ -152,32 +155,125 @@ watch(currentShape, () => {
     selectedBgIndex.value = -1;
 })
 
-const shareImage = async () => {
-    const canvas = await html2canvas(ticketRef.value, {
-        backgroundColor: null, useCORS: true,
-        allowTaint: false
-    });
-    const dataUrl = canvas.toDataURL('image/png');
+const bg = ref({ x: 0, y: 0, width: 700, height: 430, src: '' });
 
-    const blob = await (await fetch(dataUrl)).blob();
-    if (navigator.share) {
-        navigator.share({
-            files: [new File([blob], 'my-popflix-ticket.png', { type: 'image/png' })]
-        });
-    } else {
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = 'my-popflix-ticket.png';
-        link.click();
+const loadImageAsDataUrl = async (url) => {
+    if (!url) return '';
+    if (url.startsWith('data:') || url.startsWith('blob:')) return url;
+
+    const response = await fetch(url, { mode: 'cors' });
+    if (!response.ok) throw new Error(`Failed to load image: ${response.status}`);
+
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(String(reader.result || ''));
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+};
+
+const selectBackground = async (url, index) => {
+    selectedBgIndex.value = index;
+
+    if (!url) {
+        movieBackdrop.value = '';
+        bg.value.src = '';
+        return;
+    }
+
+    try {
+        const safeUrl = await loadImageAsDataUrl(url);
+        movieBackdrop.value = safeUrl;
+        bg.value.src = safeUrl;
+    } catch (error) {
+        console.warn('Backdrop conversion failed, falling back to original URL:', error);
+        movieBackdrop.value = url;
+        bg.value.src = url;
     }
 };
 
-const bg = ref({ x: 0, y: 0, width: 700, height: 430, src: '' });
+const captureTicket = async () => {
+    try {
+        const node = ticketRef.value;
 
-const selectBackground = (url, index) => {
-    movieBackdrop.value = url;
-    bg.value.src = url;
-    selectedBgIndex.value = index;
+        if (!node) {
+            throw new Error('Ticket node missing');
+        }
+        const originalBg = node.style.background;
+
+        if (colorMode.value === 'solid') {
+            node.style.background = accentColor.value;
+        } else {
+            node.style.background = `
+                linear-gradient(
+                    ${gradientAngle.value}deg,
+                    ${accentColor.value},
+                    ${accentColor2.value}
+                )
+            `;
+        }
+
+        const canvas = await htmlToImage.toCanvas(node, {
+            cacheBust: true,
+            pixelRatio: 2,
+            skipFonts: true,
+            useCORS: true,
+            backgroundColor: null,
+
+            filter: (domNode) => {
+                return !domNode.classList?.contains('share-btn');
+            }
+        });
+
+        node.style.background = originalBg;
+
+        return canvas.toDataURL('image/png');
+
+    } catch (err) {
+        console.error('Capture failed:', err);
+        throw err;
+    }
+};
+const shareImage = async () => {
+    try {
+        const dataUrl = await captureTicket();
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+
+        if (navigator.share) {
+            await navigator.share({
+                files: [new File([blob], 'my-popflix-ticket.png', { type: 'image/png' })],
+                title: 'My Ticket',
+                text: 'Check out my cinema ticket design!'
+            });
+        } else {
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = 'my-popflix-ticket.png';
+            link.click();
+        }
+    } catch (err) {
+        alert('Could not share image. Please try again.');
+        console.log(err);
+    }
+};
+
+const handleSave = async () => {
+    if (!activeTicket.value) return;
+    
+    try {
+        const base64Image = await captureTicket();
+        await save(
+            activeTicket.value.bookingId, 
+            base64Image, 
+            ticketDescription.value
+        );
+        alert('Design saved successfully!');
+    } catch (err) {
+        console.error(err);
+        alert('Failed to save design');
+    }
 };
 </script>
 
@@ -306,11 +402,12 @@ const selectBackground = (url, index) => {
                 transition: 'transform 0.1s ease-out'
             }">
                 <div class="canvas-content-wrapper">
-                    <div class="actual-bg-layer" :style="{
-                        backgroundImage: `url(${movieBackdrop})`,
-                        opacity: backdropOpacity,
-                        backgroundColor: colorMode === 'solid' ? accentColor : 'transparent'
-                    }"></div>
+                    <div class="actual-bg-layer" :style="{ 
+                        backgroundColor: colorMode === 'solid' ? accentColor : 'transparent',
+                        background: colorMode === 'gradient' ? `linear-gradient(${gradientAngle}deg, ${accentColor}, ${accentColor2})` : ''
+                    }">
+                        <img v-if="movieBackdrop" :src="movieBackdrop" class="bg-img" :style="{ opacity: backdropOpacity }" />
+                    </div>
                     <div class="mask-layer">
                         <component :is="currentShape" :fillColor="accentColor" :accentColor="accentColor"
                             :accentColor2="accentColor2" :colorMode="colorMode" :gradientAngle="gradientAngle"
@@ -403,6 +500,7 @@ const selectBackground = (url, index) => {
     height: 60%;
     border-radius: 12px;
     margin-top: 100px;
+    background: var(--bg-color);
 }
 
 .backdrop-layer {
@@ -681,6 +779,7 @@ const selectBackground = (url, index) => {
     position: relative;
     width: 100%;
     height: 100%;
+    background: inherit;
 }
 
 .mask-layer {
@@ -821,5 +920,22 @@ const selectBackground = (url, index) => {
     width: 2px;
     height: 100%;
     background: black;
+}
+.actual-bg-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    /* Ensure height is explicit so the capture library sees the area */
+    min-height: 430px; 
+    width: 100%;
+    /* Ensure the color logic applies correctly */
+    background-size: cover;
+    background-position: center;
+}
+.bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 </style>

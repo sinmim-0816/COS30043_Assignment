@@ -12,11 +12,26 @@ defineProps({
 <template>
 	<svg viewBox="0 0 1280 854" preserveAspectRatio="none" class="ticket-svg">
 		<defs>
-			<pattern id="ticketPattern" width="100%" height="100%" patternUnits="userSpaceOnUse">
-				<image :href="imageSource" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"
-					:opacity="imageOpacity" />
+			<pattern
+				v-if="imageSource"
+				id="ticketPattern"
+				width="100%"
+				height="100%"
+				patternUnits="userSpaceOnUse"
+			>
+				<image
+					:href="imageSource"
+					width="100%"
+					height="100%"
+					preserveAspectRatio="xMidYMid slice"
+					:opacity="imageOpacity"
+				/>
 			</pattern>
-			<linearGradient id="ticketGradient" :gradientTransform="`rotate(${gradientAngle})`">
+
+			<linearGradient
+				id="ticketGradient"
+				:gradientTransform="`rotate(${gradientAngle})`"
+			>
 				<stop offset="0%" :stop-color="accentColor" />
 				<stop offset="100%" :stop-color="accentColor2" />
 			</linearGradient>

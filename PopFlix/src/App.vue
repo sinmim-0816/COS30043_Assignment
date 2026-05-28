@@ -1,6 +1,5 @@
 <script setup>
 import TopBar from '@/components/TopBar.vue';
-import FooterView from '@/components/FooterView.vue';
 </script>
 
 <template>
