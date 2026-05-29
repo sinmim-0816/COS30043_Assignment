@@ -92,7 +92,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <header :class="{ 'transparent-header': isAuthPage }">
+    <header :class="{
+        'transparent-header': isAuthPage && !isSearchOpen,
+        'search-open-header': isSearchOpen
+    }">
         <router-link to="/">
             <img :src="logo" alt="PopFlix Logo" class="company_logo">
         </router-link>
@@ -454,5 +457,12 @@ button {
     nav ul {
         display: none;
     }
+}
+
+.search-open-header {
+    background: var(--header-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-color);
 }
 </style>

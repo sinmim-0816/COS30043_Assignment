@@ -136,7 +136,7 @@ const goToResult = (item) => {
                     <template v-if="results.movies.length > 0">
                         <div class="d-flex align-center px-3 mb-3 mt-3">
                             <h4 class="text-uppercase text-caption tracking-widest">Movies</h4>
-                            <v-divider class="ms-3 border-opacity-25"></v-divider>
+                            <v-divider class="ms-3 search-divider"></v-divider>
                         </div>
 
                         <v-list-item 
@@ -152,8 +152,8 @@ const goToResult = (item) => {
                                     class="result-poster me-4"
                                 ></v-img>
                             </template>
-                            <v-list-item-title class="font-weight-bold ">{{ movie.title }}</v-list-item-title>
-                            <v-list-item-subtitle class="d-flex align-center mt-2 text-grey-lighten-1">
+                            <v-list-item-title class="fs-5 search-color">{{ movie.title }}</v-list-item-title>
+                            <v-list-item-subtitle class="d-flex align-center mt-2 text-color">
                                 <Film size="14" class="me-1" />
 
                                 <span class="text-truncate">
@@ -171,7 +171,7 @@ const goToResult = (item) => {
                     <template v-if="results.cinemas.length > 0">
                         <div class="d-flex align-center px-3 mb-2 mt-6">
                             <h4 class="text-uppercase text-caption  tracking-widest">Cinemas</h4>
-                            <v-divider class="ms-3 border-opacity-25"></v-divider>
+                            <v-divider class="ms-3 search-divider"></v-divider>
                         </div>
 
                         <v-list-item 
@@ -185,15 +185,15 @@ const goToResult = (item) => {
                                     <MapPin size="24" class="text-red-accent-3"/>
                                 </div>
                             </template>
-                            <v-list-item-title>{{ cinema.title }}</v-list-item-title>
+                            <v-list-item-title class="search-color">{{ cinema.title }}</v-list-item-title>
                             <v-list-item-subtitle class="text-truncate mt-1 text-color">{{ cinema.subtitle }}</v-list-item-subtitle>
                         </v-list-item>
                     </template>
 
                     <template v-if="results.faqs.length > 0">
                         <div class="d-flex align-center px-3 mb-2 mt-6">
-                            <h4 class="text-uppercase text-caption tracking-widest">FAQs</h4>
-                            <v-divider class="ms-3 border-opacity-25"></v-divider>
+                            <h4 class="text-uppercase text-caption  tracking-widest">FAQs</h4>
+                            <v-divider class="ms-3 search-divider"></v-divider>
                         </div>
 
                         <v-list-item 
@@ -207,7 +207,7 @@ const goToResult = (item) => {
                                     <Search size="24" class="text-red-accent-3"/>
                                 </div>
                             </template>
-                            <v-list-item-title >{{ faq.title }}</v-list-item-title>
+                            <v-list-item-title class="search-color">{{ faq.title }}</v-list-item-title>
                             <v-list-item-subtitle class="d-flex align-center mt-2 text-color">
                                 <span class="text-truncate">{{ faq.answer }}</span>
                             </v-list-item-subtitle>
@@ -264,7 +264,7 @@ const goToResult = (item) => {
 .search-panel {
     width: 100%;
     height: 100%;
-    background: var(--bg-color);
+    background: var(--search-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 0;
@@ -278,6 +278,11 @@ const goToResult = (item) => {
 
 .bg-subtle {
     background: var(--card-bg);
+}
+
+.search-divider {
+    opacity: 1 !important;
+    border-color: var(--border-color) !important;
 }
 
 .search-input {
@@ -308,15 +313,11 @@ const goToResult = (item) => {
     width: 60px;
     height: 60px;
     border-radius: 16px;
-    background:white;
+    background:var(--bg-color);
     border: 1px solid rgba(255, 82, 82, 0.423);
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.shadow-sm {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .tracking-widest {
