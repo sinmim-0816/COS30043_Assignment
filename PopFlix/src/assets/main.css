@@ -127,6 +127,7 @@ body,
   --hover-bg: rgba(0, 0, 0, 0.04);
   --border-color: rgba(0, 0, 0, 0.08);
   --search-bg: #faf7f2;
+  --search-color: white;
 }
 
 html.dark {
@@ -218,6 +219,7 @@ html.dark {
   --hover-bg: rgba(255, 255, 255, 0.06);
   --border-color: rgba(255, 255, 255, 0.08);
   --search-bg: #111827;
+  --search-color: rgb(235, 234, 234);
 }
 
 .premium-label {
@@ -268,6 +270,18 @@ html.dark {
 
 .icon-icon {
   color: var(--loading-icon);
+}
+
+.custom-search {
+  max-width: 450px;
+  background-color: var(--search-color);
+  border-radius: 50px;
+  color: black;
+  outline: none;
+  border: 1px solid grey;
+}
+.tool {
+  padding: 0 5rem;
 }
 
 @keyframes squareReveal {

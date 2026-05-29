@@ -25,6 +25,7 @@ const activeSchedule = ref('Now Showing');
 const showModal = ref(false);
 const currentIndex = ref(0);
 const showFilterDrawer = ref(false);
+const searchQuery = ref('');
 
 const findSessionForMovie = (movieId) => {
     const now = new Date();
@@ -158,6 +159,10 @@ const finalFilteredMovies = computed(() => {
         const matchExp = activeExp.value === 'All' ||
             movie.experiences?.some(e => e.toUpperCase() === activeExp.value.toUpperCase());
 
+        const matchSearch = !searchQuery.value || 
+            movie.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            movie.overview.toLowerCase().includes(searchQuery.value.toLowerCase());
+
         let matchSchedule = false;
         const releaseDate = new Date(movie.release_date);
 
@@ -183,7 +188,7 @@ const finalFilteredMovies = computed(() => {
         const [minRange, maxRange] = sidebarFilters.value.ratingRange || [0, 10];
         const matchStars = movie.vote_average >= minRange && movie.vote_average <= maxRange;
 
-        return matchExp && matchSchedule && matchGenre && matchLang && matchCert && matchStars;
+        return matchExp && matchSchedule && matchGenre && matchLang && matchCert && matchStars && matchSearch;
     });
 
     const sortType = sidebarFilters.value.sortBy;
@@ -299,22 +304,37 @@ onBeforeUnmount(() => {
                         </v-fade-transition>
                     </v-btn>
                 </div>
-                <v-col cols="10">
-                    <v-tabs v-model="activeSchedule" bg-color="transparent" color="red-accent-4" align-tabs="start"
-                        class="custom-tabs">
-                        <v-tab v-for="tab in ['Now Showing', 'Kids', 'Coming Soon']" :key="tab" :value="tab"
-                            :class="getTabClass(tab)">
-                            {{ tab }}
-                        </v-tab>
-                    </v-tabs>
-                </v-col>
-                <v-col cols="2">
+                </v-row>
+                <div class="d-flex justify-space-between tool my-3">
+                    <v-text-field
+                        v-model="searchQuery"
+                        placeholder="Search movies..."
+                        prepend-inner-icon="mdi-magnify"
+                        variant="plain"
+                        density="compact"
+                        hide-details
+                        clearable
+                        class="custom-search px-2 py-0"
+                    ></v-text-field>
                     <v-btn variant="outlined" prepend-icon="mdi-filter-variant"
-                        @click="showFilterDrawer = true">Filter-By</v-btn>
-                    <FilterSideBar v-model="showFilterDrawer" :filters="sidebarFilters" :movies="featuredMovies"
-                        @close="showFilterDrawer = false" @apply-filters="handleApplyFilters" />
-                </v-col>
-            </v-row>
+                            @click="showFilterDrawer = true">Filter-By
+                        </v-btn>
+                        <FilterSideBar v-model="showFilterDrawer" :filters="sidebarFilters" :movies="featuredMovies"
+                            @close="showFilterDrawer = false" @apply-filters="handleApplyFilters" />
+                </div>
+                        
+                <v-row class="ms-3">
+                    <v-col cols="12">
+                        <v-tabs v-model="activeSchedule" bg-color="transparent" color="red-accent-4" align-tabs="start"
+                            class="custom-tabs">
+                            <v-tab v-for="tab in ['Now Showing', 'Kids', 'Coming Soon']" :key="tab" :value="tab"
+                                :class="getTabClass(tab)">
+                                {{ tab }}
+                            </v-tab>
+                        </v-tabs>
+                    </v-col>
+                </v-row>
+                
 
             <v-expand-transition>
                 <div v-if="activeFilterPills.length" class=" mt-2 pills mb-4 d-flex align-center flex-wrap gap-2">
@@ -493,4 +513,5 @@ h2 {
     color: var(--tab-inactive-color) !important;
     transition: color 0.3s ease;
 }
+
 </style>

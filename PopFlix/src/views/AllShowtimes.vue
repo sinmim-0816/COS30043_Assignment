@@ -21,7 +21,6 @@ const activeExperiences = ref({});
 const router=useRouter();
 const route = useRoute();
 const showFilterDrawer=ref(false);
-
 const sidebarFilters=ref({
     genre: [],
     language: [],
@@ -275,12 +274,12 @@ onMounted(async () => {
                         </div>
 
                         <v-btn
-                        variant="outlined"
-                        prepend-icon="mdi-filter-variant"
-                        @click="showFilterDrawer = true"
-                        class="me-3"
-                        >
-                        Filter-By
+                            variant="outlined"
+                            prepend-icon="mdi-filter-variant"
+                            @click="showFilterDrawer = true"
+                            class="me-3"
+                            >
+                            Filter-By
                         </v-btn>
                     </div>
 
