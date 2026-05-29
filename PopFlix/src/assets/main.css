@@ -394,6 +394,7 @@ html.dark {
   font-weight: 900;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  font-size: clamp(0.65rem, 1vw, 0.95rem);
 }
 
 .cinema-badge {

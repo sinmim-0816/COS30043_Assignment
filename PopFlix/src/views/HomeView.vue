@@ -362,9 +362,9 @@ onMounted(async () => {
                 <v-window v-model="activeTab" class="mx-3">
                     <v-window-item v-for="n in 3" :key="n" :value="n - 1">
                         <div class="swiper-wrapper-relative">
-                            <Swiper :key="activeTab" :modules="[Navigation]" :slides-per-view="1" :space-between="20"
+                            <Swiper :key="activeTab" :modules="[Navigation]" :slides-per-view="2.2" :space-between="12"
                                 :navigation="{ nextEl: '.swiper-wrapper-relative .custom-next', prevEl: '.swiper-wrapper-relative .custom-prev' }"
-                                :breakpoints="{ '640': { slidesPerView: 2.5 }, '1024': { slidesPerView: 4.5 } }"
+                                :breakpoints="{ '500': { slidesPerView: 3.0, spaceBetween: 10 }, '640': { slidesPerView: 3.2, spaceBetween: 6 }, '1224': { slidesPerView: 4.5, spaceBetween: 20 } }"
                                 class="movie-swiper mt-4" :pagination="false">
                                 <SwiperSlide v-for="movie in displayMovies" :key="movie?.id">
                                     <v-hover v-slot="{ isHovering, props }">
@@ -376,7 +376,7 @@ onMounted(async () => {
                                                         backgroundColor: getDisplayExperience(movie).color,
                                                         color: getDisplayExperience(movie).textColor
                                                     }"
-                                                    class="px-3 fs-6 text-uppercase cinema-badge d-flex justify-center m-2 experience-font">
+                                                    class=" text-uppercase cinema-badge d-flex justify-center m-2 experience-font">
                                                     {{ getDisplayExperience(movie).name }}
                                                 </v-chip>
                                                 <!-- Cert Icon -->
@@ -386,13 +386,13 @@ onMounted(async () => {
                                                 <div class="card-action-overlay d-flex flex-column pa-4">
                                                     <v-btn variant="flat" class="info p-0"
                                                         @click="gotoMovieDetails(movie?.id)">
-                                                        <BadgeInfo size="28" color="white" class="mb-2" />
-                                                        <span class="text-white ms-2 mb-2">More Info</span>
+                                                        <BadgeInfo color="white" class="mb-2 info-icon" />
+                                                        <span class="text-white info-text ms-2 mb-2">More Info</span>
                                                     </v-btn>
 
 
                                                     <div class="position-absolute bottom-0 overlay-container">
-                                                        <h3 class="text-white mb-1 fs-5">{{ movie?.title }}</h3>
+                                                        <h3 class="text-white mb-1 title">{{ movie?.title }}</h3>
                                                         <div class="d-flex align-center mb-1">
                                                             <Star size="14" fill="#f5c518" color="#f5c518"
                                                                 class="me-1" />
@@ -812,9 +812,23 @@ onMounted(async () => {
 .info {
     cursor: pointer;
     display: flex;
-    width: 110px;
+    width: fit-content;
+    min-width: unset;
     justify-content: flex-start;
     background-color: transparent !important;
+    transition: all 0.3s ease;
+}
+
+.info-icon {
+    width: 28px;
+    height: 28px;
+    transition: all 0.3s ease;
+}
+
+.info-text {
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
 .info:hover {
@@ -833,6 +847,7 @@ onMounted(async () => {
 .now-showing-poster {
     width: 100%;
     min-height: 360px;
+    position:relative;
 }
 
 .now-showing-poster :deep(img) {
@@ -841,7 +856,10 @@ onMounted(async () => {
 
 .card-action-overlay {
     width: 100%;
-    max-width: 320px;
+    max-width: 250px;
+    position:absolute;
+    top:0;
+    left:0;
 }
 
 .overlay-container {
@@ -982,6 +1000,10 @@ onMounted(async () => {
     transform: translateY(-2px);
 }
 
+.title{
+    font-size:20px
+}
+
 @media (max-width: 960px) {
     .slider_img {
         height: min(640px, 82vh);
@@ -1066,7 +1088,7 @@ onMounted(async () => {
     }
 
     .now-showing-poster {
-        min-height: 300px;
+        min-height: 240px;
     }
 
     .card-action-overlay {
@@ -1076,15 +1098,38 @@ onMounted(async () => {
 
     .overlay-container {
         max-width: 100%;
+        
+    }
+
+    .overlay-container h3 {
+        font-size: 1rem;
+    }
+
+    .overlay-container .text-caption,
+    .overlay-container .text-grey-lighten-2 {
+        font-size: 0.72rem;
+        line-height: 1.2;
     }
 
     .movie-btn {
         width: 100%;
-        max-width: 180px;
+        max-width: 150px;
+        font-size: 0.75rem;
+        height: 34px;
     }
+
+    
 
     .info {
         width: auto;
+    }
+    .info-icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .info-text {
+        font-size: 0.8rem;
     }
 }
 
@@ -1126,6 +1171,10 @@ onMounted(async () => {
     .bottom-fade {
         height: 30vh;
     }
+
+    .title{
+        font-size:12px !important;
+    }
     .overlay-gradient {
         background:
             linear-gradient(
@@ -1157,23 +1206,42 @@ onMounted(async () => {
     }
 
     .now-showing-poster {
-        min-height: 260px;
+        min-height: 210px;
     }
 
     .card-action-overlay {
-        padding: 0.85rem;
+        padding: 0.65rem;
     }
 
     .overlay-container h3 {
-        font-size: 1.05rem;
+        font-size: 0.95rem;
+    }
+
+    .overlay-container .d-flex.align-center.mb-1,
+    .overlay-container .text-grey-lighten-2 {
+        margin-bottom: 0.15rem !important;
     }
 
     .movie-btn {
-        max-width: none;
+        height: 32px;
+        font-size: 0.72rem;
     }
 
     .custom-nav-btn {
         top: 46%;
+    }
+
+    .info-icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .info-text {
+        font-size: 0.7rem;
+    }
+
+    .info {
+        gap: 2px;
     }
 }
 #movie-matchmaker {
