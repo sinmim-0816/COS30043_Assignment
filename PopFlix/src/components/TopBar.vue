@@ -5,10 +5,11 @@ import {
     Search,
     User,
     LogOut,
+    ChevronDown,
+    Menu,
     Ticket,
-    ChevronDown
 } from '@lucide/vue'
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 // import Logo
@@ -24,6 +25,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const isSearchOpen = ref(false)
+const isMobileMenuOpen = ref(false)
 
 const isLoggedIn = computed(() => !!authStore.user)
 const currentUser = computed(() => authStore.user)
@@ -69,12 +71,14 @@ const toggleDropdown = (event) => {
 
 const handleLogout = () => {
     isDropdownOpen.value = false
+    isMobileMenuOpen.value = false
     authStore.logout()
     router.push('/')
 }
 
 const navigateTo = (routeName) => {
     isDropdownOpen.value = false
+    isMobileMenuOpen.value = false
     router.push({ name: routeName })
 }
 
@@ -82,13 +86,38 @@ const closeDropdown = () => {
     isDropdownOpen.value = false
 }
 
+const closeMobileMenu = () => {
+    isMobileMenuOpen.value = false
+}
+
+const toggleMobileMenu = () => {
+    isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+const handleResize = () => {
+    if (window.innerWidth > 768) {
+        isMobileMenuOpen.value = false
+    }
+}
+
 onMounted(() => {
     document.addEventListener('click', closeDropdown)
+    window.addEventListener('resize', handleResize);
 })
 
 onUnmounted(() => {
     document.removeEventListener("click", closeDropdown)
+    window.removeEventListener('resize', handleResize);   
 })
+
+watch(
+    () => route.fullPath,
+    () => {
+        isDropdownOpen.value = false
+        isMobileMenuOpen.value = false
+        isSearchOpen.value = false
+    }
+)
 </script>
 
 <template>
@@ -100,7 +129,7 @@ onUnmounted(() => {
             <img :src="logo" alt="PopFlix Logo" class="company_logo">
         </router-link>
         <!-- Navigation -->
-        <nav v-if="showNavLinks">
+        <nav v-if="showNavLinks" class="desktop-nav">
             <ul @mouseleave="handleMouseLeave" class="nav-list-wrapper">
                 <li class="hover-capsule" :style="hoverStyle"></li>
                 <li @mouseenter="handleMouseEnter"><router-link to="/movies">Movies</router-link></li>
@@ -111,27 +140,40 @@ onUnmounted(() => {
         </nav>
         <div class="nav-right-container">
             <!-- Search -->
-            <button type="button" class="p-2" v-if="isLoggedIn" @click="isSearchOpen = true">
+            <button type="button" class="p-2 desktop-action" v-if="isLoggedIn" @click="isSearchOpen = true">
                 <Search class="icon" />
             </button>
 
             <GlobalSearch v-model="isSearchOpen" />
             <!-- Notification -->
-            <button type="button" class="p-2" v-if="isLoggedIn">
+            <button type="button" class="p-2 desktop-action" v-if="isLoggedIn">
                 <Bell class="icon" />
             </button>
-            <div class="theme-toggle-wrapper">
+            <div class="theme-toggle-wrapper desktop-action">
                 <ThemeToggle/>
             </div>
             <!-- Login/Register -->
-            <div v-if="isLoggedIn" class="dropdown-wrapper">
+            <template v-if="isLoggedIn">
+                <div class="dropdown-wrapper desktop-profile">
+                    <div
+                        @click="toggleDropdown"
+                        class="user-profile-trigger"
+                        :class="{ 'active-trigger': isDropdownOpen }"
+                    >
+                        <div class="avatar-circle">
+                            {{ currentUser.firstName.charAt(0).toUpperCase() }}
+                        </div>
 
-                <div @click="toggleDropdown" class="user-profile-trigger" :class="{ 'active-trigger': isDropdownOpen }">
-                    <div class="avatar-circle">
-                        {{ currentUser.firstName.charAt(0).toUpperCase() }}
+                        <span class="user-name-text">
+                            {{ currentUser.firstName }}
+                        </span>
+
+                        <ChevronDown
+                            size="14"
+                            class="chevron-icon"
+                            :class="{ 'rotate-chevron': isDropdownOpen }"
+                        />
                     </div>
-                    <span class="user-name-text">{{ currentUser.firstName }}</span>
-                    <ChevronDown size="14" class="chevron-icon" :class="{ 'rotate-chevron': isDropdownOpen }" />
                 </div>
 
                 <transition name="dropdown-fade">
@@ -140,6 +182,7 @@ onUnmounted(() => {
                             <User size="16" />
                             <span>View Profile</span>
                         </li>
+
                         <li @click="navigateTo('MyTickets')" class="dropdown-item">
                             <Ticket size="16" />
                             <span>My Tickets</span>
@@ -154,19 +197,79 @@ onUnmounted(() => {
                     </ul>
                 </transition>
 
-            </div>
+            </template>
 
-            <div v-else class="auth-buttons-group">
-                <router-link to="/register" class="register-btn px-4 py-2">
-                    Register
-                </router-link>
-                <router-link to="/login" class="login-btn px-4 py-2 me-2">
-                    <User class="icon me-1" size="22" /> Login
-                </router-link>
-            </div>
+            <template v-else>
+
+                <div class="auth-buttons-group desktop-action">
+                    <router-link to="/register" class="register-btn px-4 py-2">
+                        Register
+                    </router-link>
+
+                    <router-link to="/login" class="login-btn px-4 py-2 me-2">
+                        <User class="icon me-1" size="22" />
+                        Login
+                    </router-link>
+                </div>
+
+            </template>
+
+            <button
+                v-if="showNavLinks"
+                type="button"
+                class="p-2 mobile-menu-button m-0"
+                @click.stop="toggleMobileMenu"
+                aria-label="Open menu"
+            >
+                <Menu />
+            </button>
         </div>
 
     </header>
+    <transition name="mobile-dropdown">
+    <div
+        v-if="isMobileMenuOpen"
+        class="mobile-dropdown-menu"
+    >
+        <nav class="mobile-dropdown-links">
+            <router-link to="/movies" @click="closeMobileMenu">
+                Movies
+            </router-link>
+
+            <router-link to="/showtimes" @click="closeMobileMenu">
+                Showtimes
+            </router-link>
+
+            <router-link to="/theaters" @click="closeMobileMenu">
+                Cinemas
+            </router-link>
+
+            <router-link to="/customize-list" @click="closeMobileMenu">
+                Customization
+            </router-link>
+
+            <template v-if="isLoggedIn">
+                <button
+                    class="mobile-logout-btn"
+                    @click="handleLogout"
+                >
+                    <LogOut size="18" />
+                    Logout
+                </button>
+            </template>
+
+            <template v-else>
+                <router-link to="/login" @click="closeMobileMenu">
+                    Login
+                </router-link>
+
+                <router-link to="/register" @click="closeMobileMenu">
+                    Register
+                </router-link>
+            </template>
+        </nav>
+    </div>
+</transition>
 </template>
 
 <style scoped>
@@ -201,6 +304,15 @@ nav ul li {
 .nav-right-container {
     display: flex;
     align-items: center;
+}
+
+.mobile-menu-button {
+    display: none;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    background: none !important;
 }
 
 button {
@@ -433,11 +545,10 @@ button {
 .theme-toggle-wrapper {
     display: flex;
     align-items: center;
-    margin-right: 0.5rem;
 }
 
 .theme-toggler {
-    background-color: rgba(212, 212, 212, 0.15);
+    background-color: rgba(135, 135, 135, 0.15);
     backdrop-filter: blur(15px);
     border: none;
     cursor: pointer;
@@ -453,16 +564,211 @@ button {
 .theme-toggler:hover {
     background-color: rgba(255, 255, 255, 0.25);
 }
-@media (max-width: 768px) {
-    nav ul {
-        display: none;
-    }
-}
 
 .search-open-header {
     background: var(--header-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-nav-drawer {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border:1px solid red;
+}
+
+.mobile-menu-shell {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+}
+
+.mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--dropdown-divider);
+}
+
+.mobile-menu-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.mobile-menu-close {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0;
+}
+
+.mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mobile-nav-links a,
+.mobile-auth-link {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 600;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    background: var(--glass-btn);
+}
+
+.mobile-nav-links a.router-link-exact-active {
+    background: rgba(255, 82, 82, 0.12);
+    color: #ff5252;
+}
+
+.mobile-menu-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--dropdown-divider);
+}
+
+.mobile-action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    margin-right: 0;
+    text-align: left;
+}
+
+.logout-action {
+    color: #ff5252;
+}
+
+.mobile-theme-toggle {
+    padding: 0.25rem 0;
+}
+
+.mobile-user-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    background: var(--glass-btn);
+    border-radius: 12px;
+}
+
+.mobile-user-name {
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.mobile-user-email {
+    font-size: 0.85rem;
+    color: var(--muted-text-color);
+}
+
+.login-variant {
+    background: var(--login-bg);
+    color: #fff;
+}
+
+.mobile-dropdown-menu {
+    position: fixed;
+    top: 65px;
+    left: 0;
+    width: 100%;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 999;
+    padding: 1rem;
+}
+
+.mobile-dropdown-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mobile-dropdown-links a,
+.mobile-logout-btn {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.mobile-dropdown-links a:hover,
+.mobile-logout-btn:hover {
+    background: rgba(117, 117, 117, 0.1);
+}
+
+.mobile-dropdown-links a.router-link-exact-active {
+    color: #ff5252;
+    background: rgba(255, 82, 82, 0.12);
+}
+
+.mobile-logout-btn {
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #ff5252;
+    margin-right: 0;
+    background: none;
+}
+
+.mobile-dropdown-enter-active,
+.mobile-dropdown-leave-active {
+    transition: all 0.3s ease;
+}
+
+.mobile-dropdown-enter-from,
+.mobile-dropdown-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+.mobile-dropdown-enter-to,
+.mobile-dropdown-leave-from {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .desktop-nav, .desktop-profile {
+        display: none;
+    }
+
+    .mobile-menu-button {
+        display: inline-flex;
+    }
+
+    .nav-right-container {
+        margin-left: auto;
+    }
+
+    header {
+        gap: 0.5rem;
+    }
+
+}
+
+@media (min-width: 769px) {
+    .mobile-dropdown-menu {
+        display: none !important;
+    }
 }
 </style>

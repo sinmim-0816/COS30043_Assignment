@@ -52,7 +52,7 @@ body,
   --text-color: #0a0a0a;
   --header-color: #041435;
   --card-bg: #ffffff;
-  --header-bg: rgba(255, 255, 255, 0.8);
+  --header-bg: rgba(255, 255, 255, 1);
   --tab-inactive-color: #000000;
   --hero-gradient: linear-gradient(135deg, #fff8f025, #fdf3e850);
   --btn-color: rgb(186, 78, 78);
@@ -135,7 +135,7 @@ html.dark {
   --bg-color: #0a0e17;
   --text-color: #ffffff;
   --card-bg: #121826;
-  --header-bg: rgba(26, 38, 63, 0.8);
+  --header-bg: rgba(26, 38, 63, 1);
   --header-color: white;
   --tab-inactive-color: #ffffff;
   --hero-gradient: linear-gradient(
