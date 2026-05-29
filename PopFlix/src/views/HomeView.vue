@@ -364,7 +364,7 @@ onMounted(async () => {
                         <div class="swiper-wrapper-relative">
                             <Swiper :key="activeTab" :modules="[Navigation]" :slides-per-view="2.2" :space-between="12"
                                 :navigation="{ nextEl: '.swiper-wrapper-relative .custom-next', prevEl: '.swiper-wrapper-relative .custom-prev' }"
-                                :breakpoints="{ '500': { slidesPerView: 3.0, spaceBetween: 10 }, '640': { slidesPerView: 3.2, spaceBetween: 6 }, '1224': { slidesPerView: 4.5, spaceBetween: 20 } }"
+                                :breakpoints="{ '400': { slidesPerView: 2.5, spaceBetween: 5 }, '640': { slidesPerView: 3.0, spaceBetween: 6 }, '1224': { slidesPerView: 4.5, spaceBetween: 20 } }"
                                 class="movie-swiper mt-4" :pagination="false">
                                 <SwiperSlide v-for="movie in displayMovies" :key="movie?.id">
                                     <v-hover v-slot="{ isHovering, props }">
@@ -413,7 +413,13 @@ onMounted(async () => {
                                                         </div>
                                                         <v-btn :color="activeTab === 2 ? 'white' : 'red-accent-3'"
                                                             :variant="activeTab === 2 ? 'outlined' : 'flat'"
-                                                            :class="['rounded-2', activeTab == 2 ? '' : 'movie-btn', 'mb-4 d-block mx-auto mt-2']"
+                                                                :class="[
+                                                            'rounded-2',
+                                                            {
+                                                                'movie-btn': activeTab !== 2
+                                                            },
+                                                            'mb-4 d-block mx-auto mt-2'
+                                                        ]"
                                                             @click="activeTab === 2 ? null : handleBuyNowRedirect(movie)">
                                                             <BellRing size="16" class="me-1" v-if="activeTab === 2" />{{
                                                                 activeTab === 2 ? 'Remind Me' : 'Buy Now' }}
@@ -856,7 +862,6 @@ onMounted(async () => {
 
 .card-action-overlay {
     width: 100%;
-    max-width: 250px;
     position:absolute;
     top:0;
     left:0;
@@ -1032,7 +1037,7 @@ onMounted(async () => {
     .trailer-btn,
     .movie-btn {
         width: 100%;
-        max-width: 220px;
+        max-width: 180px;
     }
 
     .hero-visual-col {
@@ -1093,7 +1098,6 @@ onMounted(async () => {
 
     .card-action-overlay {
         max-width: 100%;
-        padding: 1rem;
     }
 
     .overlay-container {
@@ -1208,11 +1212,6 @@ onMounted(async () => {
     .now-showing-poster {
         min-height: 210px;
     }
-
-    .card-action-overlay {
-        padding: 0.65rem;
-    }
-
     .overlay-container h3 {
         font-size: 0.95rem;
     }
@@ -1240,9 +1239,6 @@ onMounted(async () => {
         font-size: 0.7rem;
     }
 
-    .info {
-        gap: 2px;
-    }
 }
 #movie-matchmaker {
     background-color: var(--bg-color); 
