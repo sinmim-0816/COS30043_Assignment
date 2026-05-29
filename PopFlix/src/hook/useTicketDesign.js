@@ -21,5 +21,19 @@ export function useTicketDesign() {
         }
     };
 
-    return { save, isLoading, error };
+    const fetchByBooking = async (bookingId) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await ticketDesignService.getDesign(bookingId);
+            return response.data;
+        } catch (err) {
+            error.value = err;
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    return { save, isLoading, error, fetchByBooking };
 }

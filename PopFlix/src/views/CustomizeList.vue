@@ -1,12 +1,17 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useTickets } from '@/hook/useTickets';
-import { MapPin, ArrowRight } from 'lucide-vue-next';
+import { MapPin, ArrowRight,X } from 'lucide-vue-next';
+
+// Import other hook and components
 import FooterView from '@/components/FooterView.vue';
+import { useTickets } from '@/hook/useTickets';
+import { useTicketDesign } from '@/hook/useTicketDesign';
+import { resolveBackendAssetPath } from '@/utils/FormatPicture';
 
 const router = useRouter();
 const { ticketsList: tickets, isTicketsLoading, fetchTickets } = useTickets();
+const { fetchByBooking } = useTicketDesign();
 
 onMounted(fetchTickets);
 
@@ -15,6 +20,21 @@ const goToCustomize = (ticket) => {
         name: 'CustomizeTickets',
         params: { movieId: ticket.movie_id, bookingId: ticket.bookingId }
     });
+};
+
+const openDesignDialog = async (ticket) => {
+    ticket.showDialog = true;
+
+    if (!ticket.designs) {
+        try {
+            ticket.loadingDesigns = true;
+            ticket.designs = await fetchByBooking(ticket.bookingId);
+        } catch (err) {
+            console.error("Failed to load designs", err);
+        } finally {
+            ticket.loadingDesigns = false;
+        }
+    }
 };
 </script>
 
@@ -43,12 +63,63 @@ const goToCustomize = (ticket) => {
                             <div class="movie-meta">
 
 
-                                <button class="design-pill fs-6" @click="t.showDialog = true">
+                                <button class="design-pill fs-6" @click="openDesignDialog(t)">
                                     <span class="icon">🎨</span> View Designs
                                 </button>
                             </div>
-
                         </div>
+                        <v-dialog v-model="t.showDialog" max-width="500">
+                            <v-card>
+                                <v-card-title class="d-flex justify-space-between align-center px-4 pt-4">
+                                    <span class="text-h6">Saved Designs</span>
+                                    <v-btn icon variant="text" size="small" @click="t.showDialog = false">
+                                        <X size="20" />
+                                    </v-btn>
+                                </v-card-title>
+                                <v-card-text>
+                                    <div v-if="t.loadingDesigns" class="text-center py-10">
+                                        <v-progress-circular indeterminate color="red"></v-progress-circular>
+                                    </div>
+
+                                    <div v-else-if="!t.designs || t.designs.length === 0" class="text-center py-5">
+                                        <p>No designs saved for this ticket.</p>
+                                    </div>
+                                    
+                                    <v-carousel 
+                                        v-else 
+                                        hide-delimiters 
+                                        :show-arrows="t.designs.length > 1 ? 'hover' : false" 
+                                        height="450"
+                                        class="rounded-lg carousel"
+                                    >
+                                        <v-carousel-item
+                                            v-for="(design, i) in t.designs"
+                                            :key="i"
+                                        >
+                                            <v-card class="h-100 d-flex flex-column" >
+                                                <v-img
+                                                    :src="resolveBackendAssetPath(design.design_image)"
+                                                    height="300"
+                                                    contain
+                                                    width="100vw"
+                                                    class="design-img"
+                                                ></v-img>
+
+                                                <v-card-text>
+                                                    <h4 class="text-h6 font-weight-bold mb-1">Design {{ i + 1 }}</h4>
+                                                    <p class="text-body-2 text-grey-darken-1 mb-2">
+                                                        {{ design.description || 'No description provided.' }}
+                                                    </p>
+                                                    <div class="text-caption text-grey">
+                                                        Created on: {{ new Date(design.created_at).toLocaleDateString() }}
+                                                    </div>
+                                                </v-card-text>
+                                            </v-card>
+                                        </v-carousel-item>
+                                    </v-carousel>
+                                </v-card-text>
+                            </v-card>
+                        </v-dialog>
 
                         <div class="card-body">
                             <h3>{{ t.title }}</h3>
@@ -88,7 +159,7 @@ const goToCustomize = (ticket) => {
 }
 
 .movie-card {
-     background: var(--card-bg);
+    background: var(--card-bg);
     border-radius: 16px;
     border: 1px solid rgba(14, 14, 14, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
