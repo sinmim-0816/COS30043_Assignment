@@ -262,9 +262,9 @@ onMounted(async () => {
                 <SwiperSlide v-for="movie in featuredMovies.slice(0, 10)" :key="movie?.id" class="slider_img">
                     <div class="overlay-gradient"></div>
                     <div class="bottom-fade"></div>
-                    <v-img :src="getImageURL(movie?.backdrop)" :alt="movie?.title" class="hero_bg" />
+                    <v-img :src="getImageURL(movie?.backdrop)" :alt="movie?.title" class="hero_bg" cover height="100%" />
                     <v-container fluid class="overlay-elements fill-height">
-                        <v-row align="end" class="fill-height">
+                        <v-row align="end" class="fill-height hero-row">
                             <v-col class="hero_content" cols="12" md="6">
                                 <div class="d-flex align-center gap-3 mb-2">
                                     <v-img :src="getCertImage(getCertificate(movie))" contain width="45px" height="45px"
@@ -301,14 +301,14 @@ onMounted(async () => {
                                     </v-btn>
                                 </v-row>
                             </v-col>
-                            <v-col cols="6">
+                            <v-col cols="12" md="6" class="hero-visual-col">
                                 <v-row class="fill-height d-flex align-items-center" id="poster_section">
                                     <v-col cols="3" class="poster-thumb d-flex align-items-center"
                                         v-for="(backdrop, index) in movie?.backdrops?.slice(0, 3)" :key="index">
                                         <img :src="getImageURL(backdrop)" alt="Poster Image">
                                     </v-col>
                                 </v-row>
-                                <div class="d-flex mb-3">
+                                <div class="d-flex mb-3 Movjustify-content-center">
 
                                     <div v-for="actor in (movie?.actors?.slice(0, 5) || [])" :key="actor.name"
                                         class="actors me-4">
@@ -346,14 +346,14 @@ onMounted(async () => {
         <section id="now-showing" class="pt-2">
             <v-container v-if="!isLoading" class="reveal-on-load" fluid>
                 <h2>Movie Showtime</h2>
-                <div class="mt-4 mx-5 d-flex align-center justify-space-between mb-8">
-                    <v-tabs v-model="activeTab" bg-color="transparent">
+                <div class="now-showing-toolbar mt-4 mx-5 mb-8">
+                    <v-tabs v-model="activeTab" bg-color="transparent" class="now-showing-tabs">
                         <v-tab v-for="(tab, index) in ['Now Showing', 'Kids', 'Coming Soon']" :key="index"
                             :value="index" :class="getTabClass(index)">
                             {{ tab }}
                         </v-tab>
                     </v-tabs>
-                    <RouterLink to="/movies">
+                    <RouterLink to="/movies" class="now-showing-link">
                         <v-btn variant="text" class="hidden-sm-and-down rounded theme-tab-inactive">See More
                             <ChevronRight />
                         </v-btn>
@@ -370,7 +370,7 @@ onMounted(async () => {
                                     <v-hover v-slot="{ isHovering, props }">
                                         <v-card v-bind="props" class="movie-booking-card rounded-x1"
                                             :elevation="isHovering ? 12 : 2">
-                                            <v-img :src="getImageURL(movie?.poster)" cover height="26vw">
+                                            <v-img :src="getImageURL(movie?.poster)" cover class="now-showing-poster">
                                                 <v-chip v-if="getDisplayExperience(movie)"
                                                     :key="getDisplayExperience(movie).name" :style="{
                                                         backgroundColor: getDisplayExperience(movie).color,
@@ -596,34 +596,41 @@ onMounted(async () => {
 .slider_img {
     position: relative;
     width: 100%;
-    height: 700px;
-    
+    height: min(700px, 90vh);
+    overflow: hidden;
+}
+
+.hero_bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .hero_bg img,
 .poster-thumb img {
     width: 100%;
-    height: 100vh;
+    height: 100%;
     object-fit: cover;
     z-index: 5;
+    
 }
 
 .overlay-elements {
     position: absolute;
-    bottom: 0%;
-    left: 5%;
+    inset: 0;
     z-index: 12;
     color: white;
     font-family: 'Roboto', sans-serif;
-    width: 95vw !important;
-    z-index: 12;
-    margin-bottom: 3rem;
+    width: 100% !important;
+    padding: 0 4rem 2rem;
 }
 
 .hero_content {
     padding: 2rem;
     font-size: 1.5rem;
     user-select: none;
+    max-width: 700px;
 }
 
 .overlay-gradient {
@@ -655,10 +662,12 @@ onMounted(async () => {
 
 #poster_section {
     height: 30vh !important;
+    justify-content: center;
 }
 
 .poster-thumb {
     width: 15vw !important;
+    
 }
 
 .poster-thumb img {
@@ -715,7 +724,26 @@ onMounted(async () => {
     position: relative;
     z-index: 21;
     padding: 2rem 3rem 0 3rem !important;
+    overflow: hidden;
 }
+
+.now-showing-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.now-showing-tabs {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.now-showing-link {
+    flex: 0 0 auto;
+}
+
 .v-tab {
     width: 150px;
 }
@@ -739,6 +767,8 @@ onMounted(async () => {
 .swiper-wrapper-relative {
     position: relative;
     padding: 0 55px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .custom-nav-btn {
@@ -795,6 +825,30 @@ onMounted(async () => {
     width: 40px;
     height: 40px;
 }
+
+.movie-booking-card {
+    overflow: hidden;
+}
+
+.now-showing-poster {
+    width: 100%;
+    min-height: 360px;
+}
+
+.now-showing-poster :deep(img) {
+    object-fit: cover;
+}
+
+.card-action-overlay {
+    width: 100%;
+    max-width: 320px;
+}
+
+.overlay-container {
+    width: 100%;
+    max-width: 280px;
+}
+
 .theme-tab-inactive {
     color: var(--tab-inactive-color) !important;
     transition: color 0.3s ease;
@@ -929,6 +983,45 @@ onMounted(async () => {
 }
 
 @media (max-width: 960px) {
+    .slider_img {
+        height: min(640px, 82vh);
+    }
+
+    .overlay-elements {
+        padding: 0 1.5rem 1.5rem;
+    }
+
+    .hero_content {
+        padding: 1rem;
+        font-size: 1.1rem;
+        max-width: 100%;
+    }
+
+    .hero_content h1 {
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        line-height: 1.05;
+    }
+
+    #details {
+        max-width: 100%;
+        font-size: 14px;
+    }
+
+    .trailer-btn,
+    .movie-btn {
+        width: 100%;
+        max-width: 220px;
+    }
+
+    .hero-visual-col {
+        display: none !important;
+    }
+
+    .overlay-elements .v-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
     .custom-feature-layout {
         grid-template-columns: 1fr;
         min-height: auto;
@@ -940,6 +1033,147 @@ onMounted(async () => {
     .experience-list-container {
         max-height: 300px;
         margin-bottom: 24px;
+    }
+
+    #now-showing {
+        padding: 1.5rem 1rem 0 1rem !important;
+    }
+
+    .now-showing-toolbar {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        align-items: flex-start;
+    }
+
+    .now-showing-tabs {
+        width: 100%;
+        order: 2;
+        overflow-x: auto;
+    }
+
+    .now-showing-link {
+        order: 1;
+        margin-left: auto;
+    }
+
+    .swiper-wrapper-relative {
+        padding: 0 38px;
+    }
+
+    .custom-nav-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    .now-showing-poster {
+        min-height: 300px;
+    }
+
+    .card-action-overlay {
+        max-width: 100%;
+        padding: 1rem;
+    }
+
+    .overlay-container {
+        max-width: 100%;
+    }
+
+    .movie-btn {
+        width: 100%;
+        max-width: 180px;
+    }
+
+    .info {
+        width: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .slider_img {
+        height: 620px;
+    }
+
+    .overlay-elements {
+        padding: 0 1.5rem 1.5rem;
+    }
+
+    .hero_content {
+        padding: 0.5rem;
+    }
+
+    .hero_content h1 {
+        font-size: 1.9rem;
+    }
+
+    #rate_icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .trailer-btn,
+    .movie-btn {
+        max-width: 200px !important;
+    }
+
+    .movie-btn{
+        margin-bottom: 2rem;
+    }
+
+    .overlay-elements .v-col {
+        padding: 0;
+    }
+
+    .bottom-fade {
+        height: 30vh;
+    }
+    .overlay-gradient {
+        background:
+            linear-gradient(
+                to top,
+                rgba(0, 0, 0, 0.92) 0%,
+                rgba(0, 0, 0, 0.75) 40%,
+                rgba(0, 0, 0, 0.45) 70%,
+                rgba(0, 0, 0, 0.35) 100%
+            );
+    }
+
+    .now-showing-toolbar {
+        gap: 0.75rem;
+        margin-bottom: 1rem !important;
+    }
+
+    .v-tab {
+        width: auto;
+        min-width: 96px;
+        padding: 0 14px;
+    }
+
+    .swiper-wrapper-relative {
+        padding: 0 30px;
+    }
+
+    .movie-booking-card {
+        margin: 0 2px;
+    }
+
+    .now-showing-poster {
+        min-height: 260px;
+    }
+
+    .card-action-overlay {
+        padding: 0.85rem;
+    }
+
+    .overlay-container h3 {
+        font-size: 1.05rem;
+    }
+
+    .movie-btn {
+        max-width: none;
+    }
+
+    .custom-nav-btn {
+        top: 46%;
     }
 }
 #movie-matchmaker {
@@ -998,7 +1232,6 @@ onMounted(async () => {
     border: 2px dashed #ff5252;
 }
 
-/* Responsive adjustment for mobile */
 @media (max-width: 600px) {
     .scroll-animate.is-visible .ticket-left {
         transform: translateY(10px) translateX(-80px) rotate(-15deg) scale(0.8);

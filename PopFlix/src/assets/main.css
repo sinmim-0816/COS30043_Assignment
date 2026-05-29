@@ -135,7 +135,7 @@ html.dark {
   --bg-color: #0a0e17;
   --text-color: #ffffff;
   --card-bg: #121826;
-  --header-bg: rgba(26, 38, 63, 1);
+  --header-bg: rgba(26, 38, 63);
   --header-color: white;
   --tab-inactive-color: #ffffff;
   --hero-gradient: linear-gradient(
