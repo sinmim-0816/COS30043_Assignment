@@ -7,7 +7,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/effect-fade';
 import { addDays } from 'date-fns';
-import { Star, CirclePlay, ChevronRight, BadgeInfo, Tag, ClockFading, MessageCircle, ChevronLeft, BellRing, ChevronsDown } from '@lucide/vue';
+import { Star, CirclePlay, ChevronRight, BadgeInfo, Tag, ClockFading, MessageCircle, ChevronLeft, BellRing, ChevronsDown, ChevronsRight } from '@lucide/vue';
 import { useRouter } from 'vue-router';
 
 // Import other hooks and components
@@ -343,7 +343,7 @@ onMounted(async () => {
             </v-dialog>
             <div class="section-connector"></div>
         </section>
-        <section id="now-showing" class="pt-2">
+        <section id="now-showing">
             <v-container v-if="!isLoading" class="reveal-on-load" fluid>
                 <h2>Movie Showtime</h2>
                 <div class="now-showing-toolbar mt-4 mx-5 mb-8">
@@ -435,7 +435,7 @@ onMounted(async () => {
                                 <ChevronLeft size="32" />
                             </button>
                             <button class="custom-nav-btn custom-next">
-                                <ChevronRight size="32" />
+                                <ChevronsRight size="32" />
                             </button>
                         </div>
                     </v-window-item>
@@ -488,7 +488,7 @@ onMounted(async () => {
             </v-container>
         </section>
         <section id="experiences" >
-            <v-container fluid class="px-5 px-md-10">
+            <v-container fluid class="">
                 <div class="text-center mb-5">
                     <h2 class="text-h3 font-weight-black mx-auto">
                         Immersive ways <br/> to watch your movie.
@@ -496,7 +496,7 @@ onMounted(async () => {
                 </div>
 
                 <v-row class="align-stretch">
-                    <v-col cols="12" md="4" lg="3" class="position-relative">
+                    <v-col cols="12" md="4" lg="3" class="position-relative experience-sidebar">
                         <div class="experience-list-container" @scroll="handleExperienceScroll">
                             <div 
                                 v-for="(cat, index) in experienceCategories" 
@@ -522,13 +522,14 @@ onMounted(async () => {
                                 class="scroll-indicator"
                             >
                                 <div class="modern-scroll-indicator">
-                                    <ChevronsDown size="25" class="scroll-icon" />
+                                    <ChevronsDown size="25" class="scroll-icon desktop-only" />
+                                    <ChevronsRight size="28" class="scroll-icon mobile-only" />
                                 </div>
                             </div>
                         </v-fade-transition>
                     </v-col>
 
-                    <v-col cols="12" md="8" lg="9">
+                    <v-col cols="12" md="8" lg="9" class="experience-panel">
                         <div v-if="expLoading" class="fill-height w-100 d-flex justify-center align-center" style="min-height: 400px;">
                             <v-progress-circular indeterminate color="red-accent-3" size="50"></v-progress-circular>
                         </div>
@@ -539,7 +540,7 @@ onMounted(async () => {
                                 <div class="d-flex flex-column feature-col-small">
                                     <div v-if="experienceData[0]" class="feature-card rounded-xl overflow-hidden position-relative">
                                         <v-img :src="experienceData[0].image_url" cover class="h-100 w-100 feature-img">
-                                            <div class="fill-height bottom-gradient"></div>
+                                            <div class=" bottom-gradient"></div>
                                             <div class="position-absolute bottom-0 pa-4 text-white z-index-2">
                                                 <h3 class="font-weight-bold mb-1 text-h6">{{ experienceData[0].title }}</h3>
                                                 <p class="text-caption text-grey-lighten-1 mb-0 text-truncate">{{ experienceData[0].subtitle || experienceData[0].description }}</p>
@@ -551,7 +552,7 @@ onMounted(async () => {
                                         color="red-accent-3" 
                                         variant="flat"
                                         height="60"
-                                        class="rounded-xl font-weight-bold text-white text-subtitle-1 text-none mt-4 shadow-md view-all-btn"
+                                        class="rounded-xl font-weight-bold text-white text-subtitle-1 text-none mt-4 shadow-md view-all-btn view-all-btn-desktop"
                                         @click="viewMoreExperiences"
                                     >
                                         View All Experiences
@@ -573,6 +574,19 @@ onMounted(async () => {
 
                             </div>
                         </v-fade-transition>
+
+                        <v-btn 
+                            color="red-accent-3" 
+                            variant="flat"
+                            height="52"
+                            class="rounded-xl font-weight-bold text-white text-subtitle-1 text-none mt-4 shadow-md view-all-btn view-all-btn-mobile"
+                            @click="viewMoreExperiences"
+                        >
+                            <span class="d-inline-flex align-center view-all-label">
+                                View All Experiences
+                                <ChevronRight size="20" class="ms-1 experience-cta-icon" />
+                            </span>
+                        </v-btn>
                     </v-col>
                 </v-row>
             </v-container>
@@ -890,7 +904,6 @@ onMounted(async () => {
 
 #experiences {
     background-color: transparent;
-    padding:0 7rem
 }
 
 .experience-list-container {
@@ -989,6 +1002,12 @@ onMounted(async () => {
     bottom: 0;
 }
 
+
+#experiences {
+    padding: 0 13rem;
+}
+
+
 .z-index-2 {
     z-index: 2;
 }
@@ -1000,6 +1019,10 @@ onMounted(async () => {
     background: var(--movie-btn);
 }
 
+.view-all-btn-mobile {
+    display: none;
+}
+
 .view-all-btn:hover {
     background-color: #d32f2f !important;
     transform: translateY(-2px);
@@ -1008,6 +1031,15 @@ onMounted(async () => {
 .title{
     font-size:20px
 }
+
+.desktop-only {
+    display: block;
+}
+
+.mobile-only {
+    display: none;
+}
+
 
 @media (max-width: 960px) {
     .slider_img {
@@ -1135,9 +1167,21 @@ onMounted(async () => {
     .info-text {
         font-size: 0.8rem;
     }
+    
+    #experiences {
+        padding: 0 1rem;
+    }
+
 }
 
 @media (max-width: 600px) {
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-only {
+        display: block;
+    }
     .slider_img {
         height: 620px;
     }
@@ -1237,6 +1281,110 @@ onMounted(async () => {
 
     .info-text {
         font-size: 0.7rem;
+    }
+    #experiences h2 {
+        font-size: clamp(1.6rem, 6vw, 2.2rem);
+        line-height: 1.15;
+    }
+
+    .experience-sidebar,
+    .experience-panel {
+        width: 100%;
+    }
+
+    .experience-list-container {
+        max-height: none;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(180px, 72%);
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 0 0.5rem;
+        gap: 10px;
+        scroll-snap-type: x proximity;
+        
+    }
+
+    .experience-item {
+        min-height: 120px;
+        padding: 14px 16px;
+        scroll-snap-align: start;
+        align-items: flex-start;
+        
+    }
+
+    .experience-item.active {
+        transform: none;
+    }
+
+    .experience-item .desc-text {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+    }
+
+    .scroll-indicator {
+        display: none;
+    }
+
+    .custom-feature-layout {
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .feature-col-large {
+        width: 90%;
+    }
+    .feature-col-large .feature-card {
+        height: 350px !important;
+    }
+    .feature-col-small .feature-card{
+        width: 400px;
+        height: 200px !important;
+    }
+
+    .view-all-btn {
+        width: 100%;
+        max-width: 90%;
+        height: 52px;
+    }
+
+    .feature-col-small .feature-card .text-h6 {
+        font-size: 1rem !important;
+    }
+
+    .feature-col-large .text-h4 {
+        font-size: 1.25rem !important;
+    }
+
+    .feature-col-large .text-body-1 {
+        font-size: 0.95rem !important;
+    }
+
+    .view-all-btn-desktop {
+        display: none;
+    }
+
+    .view-all-btn-mobile {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 1rem !important;
+        justify-content: center;
+        gap: 0.5rem;
+        overflow: visible;
+    }
+
+    .view-all-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        white-space: nowrap;
+    }
+
+    .experience-cta-icon {
+        flex-shrink: 0;
     }
 
 }
