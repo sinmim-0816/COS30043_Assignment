@@ -3,10 +3,11 @@ import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMovieDetails } from '@/hook/useMovieDetails';
 import { useReviews } from '@/hook/useReviews';
+import { useReminders } from '@/hook/useReminder';
 import { movieRepository } from '@/services/movieRepository';
 import { getGenreName } from '@/utils/genre';
 import { getCertImage } from '@/utils/AgeRating';
-import { Star, Calendar, ArrowLeft, CirclePlay, Timer, ChevronLeft, ChevronRight, Bell } from 'lucide-vue-next';
+import { Star, Calendar, ArrowLeft, CirclePlay, Timer, ChevronLeft, ChevronRight, Bell, CheckCircle, Info } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
@@ -27,12 +28,16 @@ const {
 } = useMovieDetails();
 
 const { reviews, fetchReviews } = useReviews();
+const { isProcessing, hasReminder, checkReminderStatus, setReminder } = useReminders();
 
 const activeVideoIdx = ref(null);
 const castTrack = ref(null);
 const isAtStart = ref(true);
 const isAtEnd = ref(false);
 const showStickyBuy = ref(false);
+const showToast = ref(false);
+const toastMessage = ref('');
+const isSuccess = ref(true);
 
 const handleScroll = () => {
     showStickyBuy.value = window.scrollY > 500;
@@ -84,7 +89,17 @@ const handleBuyOrRemind = async () => {
             },
         });
     } else {
-        console.log("Remind Me feature triggered!");
+        try {
+            await setReminder(route.params.id);
+            toastMessage.value = "Reminder set! We will email you 1 day before release.";
+            isSuccess.value = true;
+            showToast.value = true;
+        } catch (error) {
+            console.log("Error sending reminder: ",error);
+            toastMessage.value = "Failed to set reminder. Please try again.";
+            isSuccess.value = false;
+            showToast.value = true;
+        }
     }
 };
 
@@ -125,6 +140,7 @@ onMounted(async () => {
     const id = route.params.id;
     await loadMovieDetails(id);
     await fetchReviews(id);
+    await checkReminderStatus(id);
     setTimeout(() => {
         initObserver();
         updateScrollButtons();
@@ -166,6 +182,22 @@ const getClipClass = (index) => {
 </script>
 
 <template>
+    <v-snackbar 
+        v-model="showToast" 
+        location="top" 
+        :timeout="3000" 
+        color="transparent" 
+        elevation="0" 
+        variant="flat"
+        class="mt-4"
+    >
+        <div class="d-flex justify-center w-100">
+            <div class="premium-toast-badge d-flex align-center gap-2" :class="isSuccess ? 'success' : 'not-success'">
+                <component :is="isSuccess ? CheckCircle : Info" size="20" class="text-white" />
+                <span class="badge-text">{{ toastMessage }}</span>
+            </div>
+        </div>
+    </v-snackbar>
     <template v-if="isLoading">
         <div class="loading-wrapper">
             <div class="loader-content">
@@ -188,9 +220,10 @@ const getClipClass = (index) => {
                 variant="flat" 
                 class="movie-btn sticky-btn py-4 fs-6 mt-3 rounded-2"
                 @click="handleBuyOrRemind"
+                :disabled="(!isReleased && hasReminder) || isProcessing"
             >
                 <Bell v-if="!isReleased" class="me-2"/>
-                {{ isReleased ? 'Buy Now' : 'Remind Me' }}
+                {{ isReleased ? 'Buy Now' : (hasReminder ? 'Reminder Set' : 'Remind Me') }}
             </v-btn>
         </v-fade-transition>
         <v-main>
@@ -277,9 +310,10 @@ const getClipClass = (index) => {
                                                 variant="flat" 
                                                 class="movie-btn py-4 fs-6 rounded-2" 
                                                 @click="handleBuyOrRemind"
+                                                :disabled="(!isReleased && hasReminder) || isProcessing"
                                             >
                                                 <Bell v-if="!isReleased" class="me-2"/>
-                                                {{ isReleased ? 'Buy Now' : 'Remind Me' }}
+                                                {{ isReleased ? 'Buy Now' : (hasReminder ? 'Reminder Set' : 'Remind Me') }}
                                             </v-btn>
                                         </v-row>
                                     </div>
