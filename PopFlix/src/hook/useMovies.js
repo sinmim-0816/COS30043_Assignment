@@ -9,6 +9,15 @@ const isLoading=ref(true);
 let isFetching=false;
 const comingSoonMovies=ref([]);
 const isComingSoonLoaded=ref(false);
+const allMovies=ref([]);
+const allMoviesMeta=ref({
+    page: 1,
+    limit: 25,
+    total: 0,
+    totalPages: 1,
+    availableLanguages: [],
+});
+const allMoviesLoading=ref(false);
 
 export function useMovies(){
     const getImageURL = (path) => path ? `${IMAGE_BASE_URL}${path}` : null;
@@ -120,6 +129,67 @@ export function useMovies(){
             isFetching = false;
         }
     };
+
+    // Inside useMovies.js
+
+const fetchAllMoviesPage = async (params = {}) => {
+    // Destructure to set defaults for page/limit, while keeping the rest of the object
+    const { 
+        page = 1, 
+        limit = 24 
+    } = params;
+
+    error.value = null;
+    allMoviesLoading.value = true;
+
+    try {
+        // Pass the entire params object directly to the repository
+        // This ensures schedule, experience, genres, etc., are included
+        const res = await movieRepository.getAllMovies(params);
+        
+        const payload = res.data || {};
+        const results = payload.results || [];
+
+        allMovies.value = results.map((movie) => ({
+            ...movie,
+            poster: getImageURL(movie.poster),
+            runtime: formatRuntime(movie.runtime || 0),
+            experiences: movie.experiences || [],
+        }));
+
+        allMoviesMeta.value = {
+            page: payload.page || page,
+            limit: payload.limit || limit,
+            total: payload.total || 0,
+            totalPages: payload.totalPages || 1,
+            availableLanguages: payload.availableLanguages || [],
+        };
+
+        return {
+            movies: allMovies.value,
+            meta: allMoviesMeta.value,
+        };
+    } catch (err) {
+        error.value = "Failed to load movies. Please try again later.";
+        console.error(err);
+
+        allMovies.value = [];
+        allMoviesMeta.value = {
+            page,
+            limit,
+            total: 0,
+            totalPages: 1,
+            availableLanguages: [],
+        };
+
+        return {
+            movies: [],
+            meta: allMoviesMeta.value,
+        };
+    } finally {
+        allMoviesLoading.value = false;
+    }
+};
 
     const fetchHeroMovies = async () => {
         if (isFetching) return;
@@ -338,6 +408,12 @@ export function useMovies(){
         getLanguageName,
         getCertificate,
         fetchMovieDetails,
-        error, comingSoonMovies, fetchComingSoonMovies
+        error,
+        comingSoonMovies,
+        fetchComingSoonMovies,
+        allMovies,
+        allMoviesMeta,
+        allMoviesLoading,
+        fetchAllMoviesPage,
     }
 }

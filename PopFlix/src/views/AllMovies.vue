@@ -14,18 +14,33 @@ import { useShowtimes } from '@/hook/useShowtimes';
 import { addDays } from 'date-fns';
 import FooterView from '@/components/FooterView.vue';
 
-const { featuredMovies = featuredMovies, getImageURL = getImageURL, getLanguageName = getLanguageName, getCertificate = getCertificate, fetchHeroMovies, comingSoonMovies, fetchComingSoonMovies } = useMovies();
+const {
+    allMovies,
+    allMoviesMeta,
+    allMoviesLoading,
+    fetchAllMoviesPage,
+    getImageURL = getImageURL,
+    getLanguageName = getLanguageName,
+    getCertificate = getCertificate,
+} = useMovies();
 const { items: experiences, loading, loadExperiences } = useExperience();
 const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
 const router = useRouter();
 const route = useRoute();
-
-const activeExp = ref('All');
+const initialExp = route.query.exp && EXPERIENCE_NAMES.includes(String(route.query.exp).toUpperCase())
+    ? String(route.query.exp).toUpperCase()
+    : 'All';
+const activeExp = ref(initialExp);
 const activeSchedule = ref('Now Showing');
 const showModal = ref(false);
 const currentIndex = ref(0);
 const showFilterDrawer = ref(false);
 const searchQuery = ref('');
+const currentPage = ref(1);
+const pageSize = ref(25);
+const isPageLoading = computed(() => allMoviesLoading.value);
+const allMoviesBase = ref([]);
+const baseCaptured = ref(false);
 
 const findSessionForMovie = (movieId) => {
     const now = new Date();
@@ -104,6 +119,7 @@ const gotoMovieDetails = (movieId) => {
 
 const handleApplyFilters = (newFilters) => {
     sidebarFilters.value = newFilters;
+    currentPage.value = 1;
 };
 
 const setPageScrollLocked = (locked) => {
@@ -148,60 +164,44 @@ const getTabClass = (tabName) => {
     return 'theme-tab-inactive';
 };
 
-const finalFilteredMovies = computed(() => {
-    const now = new Date();
+const finalFilteredMovies = computed(() => allMovies.value);
 
-    const sourceMovies = activeSchedule.value === "Coming Soon"
-        ? comingSoonMovies.value
-        : featuredMovies.value;
+const loadMoviesPage = async (page = 1) => {
+    const schedule = activeSchedule.value === 'Kids'
+        ? 'kids'
+        : activeSchedule.value === 'Coming Soon'
+            ? 'coming_soon'
+            : 'now_showing';
 
-    let filtered = sourceMovies.filter(movie => {
-        const matchExp = activeExp.value === 'All' ||
-            movie.experiences?.some(e => e.toUpperCase() === activeExp.value.toUpperCase());
-
-        const matchSearch = !searchQuery.value || 
-            movie.title.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
-            (movie.overview && movie.overview.toLowerCase().includes(searchQuery.value.toLowerCase()));
-
-        let matchSchedule = false;
-        const releaseDate = new Date(movie.release_date);
-
-        if (activeSchedule.value === "Now Showing") {
-            matchSchedule = releaseDate <= now;
-        } else if (activeSchedule.value === "Kids") {
-            const isKids = movie.genres.includes('16') || movie.genres.includes('10751');
-            matchSchedule = isKids && releaseDate <= now;
-        } else if (activeSchedule.value === "Coming Soon") {
-            matchSchedule = releaseDate > now;
-        }
-
-        const matchGenre = !sidebarFilters.value.genre?.length ||
-            sidebarFilters.value.genre.some(id => movie.genres.includes(String(id)));
-
-        const matchLang = !sidebarFilters.value.language?.length ||
-            sidebarFilters.value.language.includes(movie.language);
-
-        const movieCert = getCertificate(movie);
-        const matchCert = !sidebarFilters.value.rating?.length ||
-            sidebarFilters.value.rating.includes(movieCert);
-
-        const [minRange, maxRange] = sidebarFilters.value.ratingRange || [0, 10];
-        const matchStars = movie.vote_average >= minRange && movie.vote_average <= maxRange;
-
-        return matchExp && matchSchedule && matchGenre && matchLang && matchCert && matchStars && matchSearch;
+    await fetchAllMoviesPage({
+        page,
+        limit: pageSize.value,
+        search: searchQuery?.value?.trim(),
+        schedule,
+        experience: activeExp.value,
+        genres: sidebarFilters.value.genre,
+        languages: sidebarFilters.value.language,
+        ratings: sidebarFilters.value.rating,
+        minRating: sidebarFilters.value.ratingRange?.[0],
+        maxRating: sidebarFilters.value.ratingRange?.[1],
+        sortBy: sidebarFilters.value.sortBy,
     });
-
-    const sortType = sidebarFilters.value.sortBy;
-    if (sortType === 'latest') {
-        filtered.sort((a, b) => new Date(b.release_date) - new Date(a.release_date));
-    } else if (sortType === 'rating') {
-        filtered.sort((a, b) => b.vote_average - a.vote_average);
-    } else if (sortType === 'popularity') {
-        filtered.sort((a, b) => b.popularity - a.popularity);
+    if (!baseCaptured.value) {
+        try {
+            allMoviesBase.value = Array.isArray(allMovies.value) ? allMovies.value.slice() : [];
+            baseCaptured.value = true;
+        } catch (e) {
+            console.error('Failed to capture base movies snapshot:', e);
+        }
     }
 
-    return filtered;
-});
+    currentPage.value = allMoviesMeta.value.page || page;
+};
+
+const handlePageChange = async (page) => {
+    currentPage.value = page;
+    await loadMoviesPage(page);
+};
 
 const activeFilterPills = computed(() => {
     const pills = [];
@@ -236,23 +236,25 @@ const removePill = (pill) => {
     } else if (pill.type === 'range') {
         sidebarFilters.value.ratingRange = [0, 10];
     }
+    currentPage.value = 1;
 };
 
 onMounted(async () => {
-    if (featuredMovies.value.length === 0) {
-        await fetchHeroMovies();
-    }
-    if (comingSoonMovies.value.length === 0) {
-        await fetchComingSoonMovies();
-    }
-    if (route.query.exp) {
-        const passedExp = String(route.query.exp).toUpperCase();
-        
-        if (EXPERIENCE_NAMES.includes(passedExp)) {
-            activeExp.value = passedExp;
-        }
-    }
+    await loadMoviesPage(1);
 })
+
+watch([activeSchedule, searchQuery, activeExp], async () => {
+    currentPage.value = 1;
+    await loadMoviesPage(1);
+});
+
+watch(
+    () => JSON.stringify(sidebarFilters.value),
+    async () => {
+        currentPage.value = 1;
+        await loadMoviesPage(1);
+    },
+);
 
 watch(showFilterDrawer, (open) => {
     setPageScrollLocked(open);
@@ -265,7 +267,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template >
-    <template v-if="featuredMovies.length === 0 && comingSoonMovies.length === 0">
+    <template v-if="isPageLoading && allMovies.length === 0">
         <div class="loading-wrapper">
             <div class="loader-content">
                 <v-progress-circular indeterminate color="red-accent-3" size="70" width="4">
@@ -316,10 +318,10 @@ onBeforeUnmount(() => {
                         clearable
                         class="custom-search px-2 py-0"
                     ></v-text-field>
-                    <v-btn variant="outlined" prepend-icon="mdi-filter-variant"
+                <v-btn variant="outlined" prepend-icon="mdi-filter-variant"
                             @click="showFilterDrawer = true">Filter-By
                         </v-btn>
-                        <FilterSideBar v-model="showFilterDrawer" :filters="sidebarFilters" :movies="featuredMovies"
+                        <FilterSideBar v-model="showFilterDrawer" :filters="sidebarFilters" :movies="allMovies" :languages="allMoviesMeta.availableLanguages"
                             @close="showFilterDrawer = false" @apply-filters="handleApplyFilters" />
                 </div>
                         
@@ -338,8 +340,14 @@ onBeforeUnmount(() => {
 
             <v-expand-transition>
                 <div v-if="activeFilterPills.length" class=" mt-2 pills mb-4 d-flex align-center flex-wrap gap-2">
-                    <v-chip v-for="pill in activeFilterPills" :key="pill.type + pill.id" closable variant="outlined"
-                        color="white gap-2" @click:close="removePill(pill)">
+                    <v-chip
+                        v-for="pill in activeFilterPills"
+                        :key="pill.type + pill.id"
+                        closable
+                        variant="outlined"
+                        class="filter-pill"
+                        @click:close="removePill(pill)"
+                    >
                         {{ pill.label }}
                     </v-chip>
                 </div>
@@ -418,6 +426,15 @@ onBeforeUnmount(() => {
                         </v-hover>
                     </template>
                 </masonry-wall>
+            </div>
+            <div v-if="allMoviesMeta.totalPages > 1" class="pagination-shell d-flex flex-column align-center mt-10 mb-6">
+                <v-pagination
+                    :model-value="currentPage"
+                    :length="allMoviesMeta.totalPages"
+                    rounded="circle"
+                    :total-visible="7"
+                    @update:model-value="handlePageChange"
+                />
             </div>
             <v-dialog v-model="showModal" max-width="750" persistent class="overflow-hidden" scrim="#0a0e17"
                 :opacity="0.8" :retain-focus="false">
@@ -512,6 +529,51 @@ h2 {
 .theme-tab-inactive {
     color: var(--tab-inactive-color) !important;
     transition: color 0.3s ease;
+}
+
+.pagination-shell {
+    padding: 0 1rem;
+}
+
+.filter-pill {
+    background-color: var(--pill-bg);
+    color: var(--pill-color);
+    border: 1px solid var(--text-color);
+    transition: all 0.3s ease;
+}
+
+
+@media (max-width: 768px) {
+    h2 {
+        margin-top: 9vh !important;
+        font-size: 1.6rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .custom-tabs {
+        padding: 0 1rem;
+    }
+
+    .tool {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0 1rem;
+    }
+
+    .pills {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    .masonry-wall {
+        margin-left: 1rem !important;
+        margin-right: 1rem !important;
+    }
+
+    .pagination-shell {
+        padding: 0 1rem 1rem;
+    }
 }
 
 </style>

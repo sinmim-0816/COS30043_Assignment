@@ -287,6 +287,7 @@ onMounted(async () => {
                         v-model="showFilterDrawer"
                         :filters="sidebarFilters"
                         :movies="featuredMovies"
+                        :initial-movies="featuredMovies"
                         @close="showFilterDrawer = false"
                         @apply-filters="handleApplyFilters"
                     />

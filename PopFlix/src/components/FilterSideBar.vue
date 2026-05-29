@@ -11,16 +11,25 @@ const props = defineProps({
         type:Array,
         default:()=>[]
     },
+    languages:{
+        type:Array,
+        default:()=>[]
+    },
     filters:Object
 });
 const emit = defineEmits(['update:modelValue', 'apply-filters','close']);
 
 const availableLanguages=computed(()=>{
-    if(!props.movies){
+    if(props.languages && props.languages.length){
+        return [...new Set(props.languages)].filter(Boolean);
+    }
+
+    const source = props.movies;
+    if(!source || !source.length){
         return [];
     }
 
-    const codes=[...new Set(props.movies.map(m=>m.language))].filter(Boolean);
+    const codes=[...new Set(source.map(m=>m.language))].filter(Boolean);
     return [...codes];
 })
 
@@ -359,7 +368,10 @@ watch(()=>props.filters, (newFilters)=>{
     background: var(--lang-hover-bg);
     border-color: var(--lang-hover-border);
 }
-
+.filter-expansion :deep(.v-expansion-panel-title__icon .v-icon) {
+    color: var(--text-color) !important;
+    transition: color 0.25s ease;
+}
 .language-label {
     color: var(--lang-text);
     font-size: 0.92rem;

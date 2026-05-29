@@ -154,7 +154,7 @@ watch(
             </div>
             <!-- Login/Register -->
             <template v-if="isLoggedIn">
-                <div class="dropdown-wrapper desktop-profile">
+                <div class="dropdown-wrapper desktop-profile me-2">
                     <div
                         @click="toggleDropdown"
                         class="user-profile-trigger"
@@ -177,7 +177,7 @@ watch(
                 </div>
 
                 <transition name="dropdown-fade">
-                    <ul v-if="isDropdownOpen" class="profile-dropdown-menu">
+                    <ul v-if="isDropdownOpen" class="profile-dropdown-menu me-2">
                         <li @click="navigateTo('Profile')" class="dropdown-item">
                             <User size="16" />
                             <span>View Profile</span>

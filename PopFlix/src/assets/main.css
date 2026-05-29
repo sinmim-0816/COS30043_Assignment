@@ -129,6 +129,7 @@ body,
   --search-bg: #faf7f2;
   --search-color: white;
   --player-bg: white;
+  --pill-bg: rgba(0, 0, 0, 0.05);
 }
 
 html.dark {
@@ -222,6 +223,7 @@ html.dark {
   --search-bg: #111827;
   --search-color: rgb(235, 234, 234);
   --player-bg: #0d0d12;
+  --pill-bg: rgba(255, 255, 255, 0.08);
 }
 
 .premium-label {
