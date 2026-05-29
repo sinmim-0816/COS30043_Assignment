@@ -3,9 +3,10 @@ import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMovieDetails } from '@/hook/useMovieDetails';
 import { useReviews } from '@/hook/useReviews';
+import { movieRepository } from '@/services/movieRepository';
 import { getGenreName } from '@/utils/genre';
 import { getCertImage } from '@/utils/AgeRating';
-import { Star, Calendar, ArrowLeft, CirclePlay, Timer, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { Star, Calendar, ArrowLeft, CirclePlay, Timer, ChevronLeft, ChevronRight, Bell } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
@@ -53,6 +54,37 @@ const scrollCast = (direction) => {
             left: scrollAmount,
             behavior: 'smooth'
         });
+    }
+};
+
+const isReleased = computed(() => {
+    if (!movie.value?.release_date) return false;
+    return new Date(movie.value.release_date) <= new Date();
+});
+
+const handleBuyOrRemind = async () => {
+    if (isReleased.value) {
+        const response = await movieRepository.getMovieShowtimes(route.params.id);
+        const showtimes = response?.data ?? [];
+        const firstShowtime = Array.isArray(showtimes) ? showtimes[0] : null;
+
+        if (!firstShowtime?.id) {
+            console.warn('No showtimes available for this movie yet.');
+            return;
+        }
+
+        router.push({
+            name: 'TicketBooking',
+            params: {
+                movieId: route.params.id,
+                showtimeId: firstShowtime.id,
+            },
+            query: {
+                exp: firstShowtime.experience?.exp_key || 'DOLBY',
+            },
+        });
+    } else {
+        console.log("Remind Me feature triggered!");
     }
 };
 
@@ -151,9 +183,14 @@ const getClipClass = (index) => {
             <ArrowLeft />
         </v-btn>
         <v-fade-transition>
-            <v-btn v-if="showStickyBuy" variant="flat" 
-                class="movie-btn sticky-btn py-4 fs-6 mt-3 rounded-2">
-                Buy Now
+            <v-btn 
+                v-if="showStickyBuy" 
+                variant="flat" 
+                class="movie-btn sticky-btn py-4 fs-6 mt-3 rounded-2"
+                @click="handleBuyOrRemind"
+            >
+                <Bell v-if="!isReleased" class="me-2"/>
+                {{ isReleased ? 'Buy Now' : 'Remind Me' }}
             </v-btn>
         </v-fade-transition>
         <v-main>
@@ -188,10 +225,10 @@ const getClipClass = (index) => {
                                         </v-chip>
                                     </div>
                                     <h1 class="text-h2 font-weight-black text-white mb-2">{{ movie?.title }}</h1>
-                                    <h4 class="fs-6 font-italic  text-color ps-2 italic-quote tagline">
+                                    <h4 class="fs-6 font-italic  text-white ps-2 italic-quote tagline">
                                         "{{ movie?.tagline || movie?.overview.split('.')[0] + '.' }}"
                                     </h4>
-                                    <div class="d-flex align-center gap-2 mb-8 text-color">
+                                    <div class="d-flex align-center gap-2 mb-8 text-white">
                                         <span>
                                             <Timer size="20" />
                                         </span>
@@ -236,8 +273,13 @@ const getClipClass = (index) => {
                                     </div>
                                     <div class="d-flex gap-4 mt-3">
                                         <v-row>
-                                            <v-btn variant="flat"  class="movie-btn py-4 fs-6 rounded-2">
-                                                Buy Now
+                                            <v-btn 
+                                                variant="flat" 
+                                                class="movie-btn py-4 fs-6 rounded-2" 
+                                                @click="handleBuyOrRemind"
+                                            >
+                                                <Bell v-if="!isReleased" class="me-2"/>
+                                                {{ isReleased ? 'Buy Now' : 'Remind Me' }}
                                             </v-btn>
                                         </v-row>
                                     </div>
@@ -722,7 +764,7 @@ const getClipClass = (index) => {
 
 .player-area {
     margin-top: 2rem;
-    background: #0d0d12;
+    background: var(--player-bg);
     margin: 0px 95px;
     display: flex;
     justify-content: center;
@@ -759,7 +801,7 @@ const getClipClass = (index) => {
 .now-title {
     font-size: 16px;
     font-weight: 600;
-    color: #fff;
+    color: var(--text-color);
     margin-left: 5px;
 }
 

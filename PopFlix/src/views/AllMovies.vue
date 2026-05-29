@@ -160,8 +160,8 @@ const finalFilteredMovies = computed(() => {
             movie.experiences?.some(e => e.toUpperCase() === activeExp.value.toUpperCase());
 
         const matchSearch = !searchQuery.value || 
-            movie.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-            movie.overview.toLowerCase().includes(searchQuery.value.toLowerCase());
+            movie.title.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+            (movie.overview && movie.overview.toLowerCase().includes(searchQuery.value.toLowerCase()));
 
         let matchSchedule = false;
         const releaseDate = new Date(movie.release_date);
