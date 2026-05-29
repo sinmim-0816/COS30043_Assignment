@@ -60,7 +60,6 @@ const countdowns = computed(() => {
         const mins = String(totalMins % 60).padStart(2, '0');
         const secs = String(totalSecs % 60).padStart(2, '0');
 
-        // Calendar-based day difference
         const now = new Date(currentTime.value);
         const target = new Date(t.startTime);
 

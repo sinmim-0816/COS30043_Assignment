@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { Search, Film, MapPin, X, Loader2 } from 'lucide-vue-next';
 import backendClient from '@/api/backendClient'; 
+import { getGenreName } from '@/utils/genre';
 
 const props = defineProps({
     modelValue: Boolean
@@ -58,12 +59,11 @@ watch(activeCategory, () => {
 
 const closeSearch = () => {
     isOpen.value = false;
-    // Optional: Clear search when closed, or leave it so they can resume searching
     setTimeout(() => {
         searchQuery.value = '';
         results.value = { movies: [], cinemas: [], faqs: [] };
         activeCategory.value = 'All';
-    }, 300); // Wait for slide-out animation to finish
+    }, 300);
 };
 
 const goToResult = (item) => {
@@ -84,28 +84,33 @@ const goToResult = (item) => {
     >
         <v-sheet class="search-panel d-flex flex-column">
             
-            <div class="search-header px-6 py-6 d-flex align-center border-bottom">
-                <Search class="text-red-accent-3 me-4" size="28" />
+            <div class="search-header px-4 py-2 d-flex align-center border-bottom">
+                <Search class="text-red-accent-3 me-4" size="25" />
                 <input 
                     v-model="searchQuery" 
                     @input="handleSearch"
                     type="text" 
-                    class="search-input text-h5 font-weight-medium" 
+                    class="search-input" 
                     placeholder="Search Popflix..." 
                     autofocus
                 />
-                <v-btn icon="mdi-close" variant="tonal" size="small" color="grey-lighten-1" @click="closeSearch"></v-btn>
+                <v-btn variant="plain" class="text-color" @click="closeSearch">
+                    <X/>
+                </v-btn>
             </div>
 
-            <div class="px-6 py-4 border-bottom bg-subtle">
-                <v-chip-group v-model="activeCategory" selected-class="text-white bg-red-accent-3" mandatory>
-                    <v-chip 
-                        v-for="cat in categories" 
-                        :key="cat" 
+            <div class="px-6 py-2 border-bottom bg-subtle">
+                <v-chip-group
+                    v-model="activeCategory"
+                    selected-class="selected-search-chip"
+                    mandatory
+                >
+                    <v-chip
+                        v-for="cat in categories"
+                        :key="cat"
                         :value="cat"
-                        variant="outlined" 
-                        color="grey-lighten-1"
-                        class="font-weight-bold px-5"
+                        variant="outlined"
+                        class="search-chip font-weight-bold px-4 me-3"
                         size="large"
                     >
                         {{ cat }}
@@ -113,7 +118,7 @@ const goToResult = (item) => {
                 </v-chip-group>
             </div>
 
-            <div class="results-container flex-grow-1 overflow-y-auto px-4 py-2">
+            <div class="results-container overflow-y-auto px-4">
                 
                 <div v-if="!searchQuery" class="d-flex flex-column align-center justify-center h-100 text-grey-darken-1 py-16">
                     <Search size="64" class="mb-4 opacity-50" />
@@ -126,11 +131,11 @@ const goToResult = (item) => {
                     <span class="text-grey">Searching...</span>
                 </div>
 
-                <v-list v-else class="bg-transparent" lines="two">
+                <v-list v-else class="bg-transparent px-4" lines="two">
                     
                     <template v-if="results.movies.length > 0">
-                        <div class="d-flex align-center px-3 mb-2 mt-4">
-                            <h4 class="text-uppercase text-caption font-weight-black text-red-accent-3 tracking-widest">Movies</h4>
+                        <div class="d-flex align-center px-3 mb-3 mt-3">
+                            <h4 class="text-uppercase text-caption tracking-widest">Movies</h4>
                             <v-divider class="ms-3 border-opacity-25"></v-divider>
                         </div>
 
@@ -144,19 +149,28 @@ const goToResult = (item) => {
                                 <v-img 
                                     :src="`https://image.tmdb.org/t/p/w200${movie.image}`" 
                                     cover 
-                                    class="result-poster rounded-lg me-4 shadow-sm"
+                                    class="result-poster me-4"
                                 ></v-img>
                             </template>
-                            <v-list-item-title class="font-weight-bold text-body-1">{{ movie.title }}</v-list-item-title>
+                            <v-list-item-title class="font-weight-bold ">{{ movie.title }}</v-list-item-title>
                             <v-list-item-subtitle class="d-flex align-center mt-2 text-grey-lighten-1">
-                                <Film size="14" class="me-1" /> Movie
+                                <Film size="14" class="me-1" />
+
+                                <span class="text-truncate">
+                                    <span
+                                        v-for="(genreId, index) in movie.genres"
+                                        :key="genreId"
+                                    >
+                                        {{ getGenreName(genreId) }}<span v-if="index < movie.genres.length - 1">, </span>
+                                    </span>
+                                </span>
                             </v-list-item-subtitle>
                         </v-list-item>
                     </template>
 
                     <template v-if="results.cinemas.length > 0">
                         <div class="d-flex align-center px-3 mb-2 mt-6">
-                            <h4 class="text-uppercase text-caption font-weight-black text-red-accent-3 tracking-widest">Cinemas</h4>
+                            <h4 class="text-uppercase text-caption  tracking-widest">Cinemas</h4>
                             <v-divider class="ms-3 border-opacity-25"></v-divider>
                         </div>
 
@@ -171,14 +185,14 @@ const goToResult = (item) => {
                                     <MapPin size="24" class="text-red-accent-3"/>
                                 </div>
                             </template>
-                            <v-list-item-title class="font-weight-bold text-body-1">{{ cinema.title }}</v-list-item-title>
-                            <v-list-item-subtitle class="text-truncate mt-1 text-grey-lighten-1">{{ cinema.subtitle }}</v-list-item-subtitle>
+                            <v-list-item-title>{{ cinema.title }}</v-list-item-title>
+                            <v-list-item-subtitle class="text-truncate mt-1 text-color">{{ cinema.subtitle }}</v-list-item-subtitle>
                         </v-list-item>
                     </template>
 
                     <template v-if="results.faqs.length > 0">
                         <div class="d-flex align-center px-3 mb-2 mt-6">
-                            <h4 class="text-uppercase text-caption font-weight-black text-red-accent-3 tracking-widest">FAQs</h4>
+                            <h4 class="text-uppercase text-caption tracking-widest">FAQs</h4>
                             <v-divider class="ms-3 border-opacity-25"></v-divider>
                         </div>
 
@@ -189,12 +203,12 @@ const goToResult = (item) => {
                             @click="goToResult(faq)"
                         >
                             <template v-slot:prepend>
-                                <div class="icon-box me-4 shadow-sm">
+                                <div class="icon-box me-4">
                                     <Search size="24" class="text-red-accent-3"/>
                                 </div>
                             </template>
-                            <v-list-item-title class="font-weight-bold text-body-1">{{ faq.title }}</v-list-item-title>
-                            <v-list-item-subtitle class="d-flex align-center mt-2 text-grey-lighten-1">
+                            <v-list-item-title >{{ faq.title }}</v-list-item-title>
+                            <v-list-item-subtitle class="d-flex align-center mt-2 text-color">
                                 <span class="text-truncate">{{ faq.answer }}</span>
                             </v-list-item-subtitle>
                         </v-list-item>
@@ -230,6 +244,23 @@ const goToResult = (item) => {
     height: calc(100vh - 65px);
 }
 
+.search-chip {
+    transition: all 0.25s ease;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    background: transparent;
+}
+
+.search-chip:hover {
+    background: var(--hover-bg);
+}
+
+.selected-search-chip {
+    background: #ff3d3d;
+    color: white;
+    border-color: #ff5252;
+}
+
 .search-panel {
     width: 100%;
     height: 100%;
@@ -241,7 +272,6 @@ const goToResult = (item) => {
     border-top: 1px solid var(--border-color);
 }
 
-/* Light / Dark support */
 .border-bottom {
     border-bottom: 1px solid var(--border-color);
 }
@@ -256,12 +286,8 @@ const goToResult = (item) => {
     border: none;
     color: var(--text-color);
     outline: none;
+    height: 50px;
 }
-
-.search-input::placeholder {
-    color: var(--text-muted);
-}
-
 .result-item {
     transition: all 0.3s ease;
     border: 1px solid transparent;
@@ -271,7 +297,6 @@ const goToResult = (item) => {
 .result-item:hover {
     background: var(--hover-bg);
     border-color: var(--border-color);
-    transform: translateX(6px);
 }
 
 .result-poster {
@@ -283,8 +308,8 @@ const goToResult = (item) => {
     width: 60px;
     height: 60px;
     border-radius: 16px;
-    background: rgba(255, 82, 82, 0.08);
-    border: 1px solid rgba(255, 82, 82, 0.2);
+    background:white;
+    border: 1px solid rgba(255, 82, 82, 0.423);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -316,6 +341,10 @@ const goToResult = (item) => {
 /* Loading spinner */
 .spin {
     animation: spin 1s linear infinite;
+}
+.search-input::placeholder {
+  color: #868484; 
+  opacity: 1;
 }
 
 @keyframes spin {
