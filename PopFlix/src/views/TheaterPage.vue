@@ -3,17 +3,19 @@ import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Clock, MapPin, Copy, Ticket, Car, Accessibility, Coffee, Tv, Wifi, Utensils, Baby, ChevronDown } from 'lucide-vue-next';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 // Imports other hook and components
 import { useCinemas } from '@/hook/useCinemas';
 import FooterView from '@/components/FooterView.vue';
 import { useFaqs } from '@/hook/useFaqs';
+import { resolveCinemaImage } from '@/utils/FormatPicture';
 
 const { cinemas, isLoading } = useCinemas();
 const router = useRouter();
+const route=useRoute();
 
-
+console.log(cinemas.value);
 const mapContainer = ref(null);
 const map = ref(null);
 const markers = ref({});
@@ -22,6 +24,24 @@ const themeObserver = ref(null);
 const activeIndex = ref(0);
 const { allFaqs, faqCategories, isLoadingFaqs } = useFaqs();
 const activeFaqCategory = ref('');
+const scrollToFaq = ref(false);
+const expandedFaqId = ref(null);
+
+const scrollToFaqSection = async () => {
+    await nextTick();
+
+    requestAnimationFrame(() => {
+        const el = document.getElementById('faq-section');
+        if (!el) return;
+
+        const top = el.getBoundingClientRect().top + window.scrollY - 80;
+
+        window.scrollTo({
+            top,
+            behavior: 'smooth',
+        });
+    });
+};
 
 const getAmenityIcon = (label) => {
   const icons = {
@@ -38,6 +58,22 @@ const getAmenityIcon = (label) => {
 const getIsDarkTheme = () => {
     return document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
 };
+
+watch(
+  () => route.query,
+  async (query) => {
+    if (query.faqId) {
+      expandedFaqId.value = Number(query.faqId);
+
+      if (query.category) {
+        activeFaqCategory.value = query.category;
+      }
+
+      scrollToFaq.value = true;
+    }
+  },
+  { immediate: true }
+);
 
 const getTileUrl = () => {
     return getIsDarkTheme()
@@ -70,8 +106,6 @@ const initMap = () => {
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
     }).addTo(map.value);
 
-    const dummyImage = 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&q=80&w=400&h=200';
-
     cinemas.value.forEach((cinema, index) => {
         const customIcon = L.divIcon({
             className: 'custom-leaflet-marker',
@@ -83,10 +117,10 @@ const initMap = () => {
 
         const popupContent = `
             <div class="custom-leaflet-popup">
-                <img src="${dummyImage}" alt="${cinema.name}" class="popup-img" />
+                <img src="${resolveCinemaImage(cinema.image_path)}" alt="${cinema.name}" class="popup-img" />
                 <div class="popup-info">
                     <h4 class="popup-title">${cinema.name}</h4>
-                    <p class="popup-subtitle">${cinema.location_address.split(',')[0]}</p>
+                    <p class="popup-subtitle">${cinema.location_address?.split(',')[0] ?? ''}</p>
                 </div>
             </div>
         `;
@@ -112,8 +146,26 @@ const initMap = () => {
 
 watch([cinemas, isLoading, isLoadingFaqs], async ([newCinemas, loadingCinemas, loadingFaqs]) => {
     if (newCinemas.length > 0 && !loadingCinemas && !loadingFaqs) {
-        await nextTick(); 
+        await nextTick();
+
         initMap();
+
+        const cinemaId = route.query.cinema;
+
+        if (cinemaId) {
+            const index = newCinemas.findIndex(
+                c => String(c.id) === String(cinemaId)
+            );
+
+            if (index !== -1) {
+                selectCinema(index);
+            }
+        }
+
+        if (scrollToFaq.value && route.query.faqId) {
+            scrollToFaq.value = false;
+            await scrollToFaqSection();
+        }
     }
 }, { immediate: true });
 
@@ -357,7 +409,7 @@ const filteredFaqs = computed(() => {
         </div>
     </v-container>
   </div>
-  <section class="faq-section">
+  <section id="faq-section">
         <v-container fluid width="100vw">
             <div class="faq-header text-center mb-10">
                 <h2 class="faq-title mb-4">Frequently Asked Questions</h2>
@@ -367,7 +419,7 @@ const filteredFaqs = computed(() => {
             </div>
 
             <div>
-                <div class="faq-toggle-wrapper mb-3 d-flex justify-center">
+                <div class=" mb-3 d-flex justify-center">
                     <div class="faq-toggle-pill">
                         <button
                             v-for="cat in faqCategories"
@@ -381,12 +433,16 @@ const filteredFaqs = computed(() => {
                     </div>
                 </div>
 
-                <v-expansion-panels variant="accordion" class="custom-faq-panels" elevation="0">
+                <v-expansion-panels
+                    v-model="expandedFaqId"
+                    variant="accordion"
+                    class="custom-faq-panels"
+                >
                     <v-expansion-panel
                         v-for="faq in filteredFaqs"
                         :key="faq.id"
-                        class="faq-panel mb-4"
-                        elevation="0"
+                        :value="faq.id"
+                        class="faq-panel"
                     >
                         <v-expansion-panel-title class="faq-panel-title">
                             <span class=" fs-6">{{ faq.question }}</span>
@@ -747,13 +803,13 @@ const filteredFaqs = computed(() => {
     background: transparent !important;
     max-width: 1000px;
     margin:0 auto;
+    box-shadow: none !;
 }
 
 :deep(.faq-panel) {
     background: var(--card-bg) !important;
     border-radius: 8px !important;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
 }
 
 :deep(.faq-panel::before), 

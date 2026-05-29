@@ -1,9 +1,10 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { Search, Film, MapPin, X, Loader2 } from 'lucide-vue-next';
+import { Search, Film, X, Loader2 } from 'lucide-vue-next';
 import backendClient from '@/api/backendClient'; 
 import { getGenreName } from '@/utils/genre';
+import { resolveCinemaImage } from '@/utils/FormatPicture';
 
 const props = defineProps({
     modelValue: Boolean
@@ -68,9 +69,18 @@ const closeSearch = () => {
 
 const goToResult = (item) => {
     closeSearch();
-    if (item.type === 'Movie') router.push(`/movie/${item.id}`);
-    if (item.type === 'Cinema') router.push(`/showtimes?cinema=${item.id}`);
-    if (item.type === 'FAQ') router.push('/faq');
+    if (item.type === 'Movie') router.push(`/movie/${item.tmdb_id}`);
+    if (item.type === 'Cinema') router.push(`/theaters?cinema=${item.id}`);
+    if (item.type === 'FAQ') {
+        router.push({
+            path: '/theaters',
+            query: {
+                cinema: null,
+                faqId: item.id,
+                category: item.category
+            }
+        });
+    }
 };
 </script>
 
@@ -169,6 +179,7 @@ const goToResult = (item) => {
                     </template>
 
                     <template v-if="results.cinemas.length > 0">
+                        {{ console.log(results.cinemas) }}
                         <div class="d-flex align-center px-3 mb-2 mt-6">
                             <h4 class="text-uppercase text-caption  tracking-widest">Cinemas</h4>
                             <v-divider class="ms-3 search-divider"></v-divider>
@@ -181,9 +192,11 @@ const goToResult = (item) => {
                             @click="goToResult(cinema)"
                         >
                             <template v-slot:prepend>
-                                <div class="icon-box me-4 shadow-sm">
-                                    <MapPin size="24" class="text-red-accent-3"/>
-                                </div>
+                                <v-img 
+                                    :src="resolveCinemaImage(cinema.image_path)" 
+                                    cover 
+                                    class="cinema-img me-4"
+                                ></v-img>
                             </template>
                             <v-list-item-title class="search-color">{{ cinema.title }}</v-list-item-title>
                             <v-list-item-subtitle class="text-truncate mt-1 text-color">{{ cinema.subtitle }}</v-list-item-subtitle>
@@ -308,7 +321,10 @@ const goToResult = (item) => {
     width: 60px;
     height: 90px;
 }
-
+.cinema-img{
+    width: 90px;
+    height: auto;
+}
 .icon-box {
     width: 60px;
     height: 60px;
