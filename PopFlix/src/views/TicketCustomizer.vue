@@ -18,13 +18,13 @@ import TicketShape2 from '@/components/TicketShape2.vue';
 import TicketShape3 from '@/components/TicketShape3.vue';
 import TicketShape4 from '@/components/TicketShape4.vue';
 import TicketShape5 from '@/components/TicketShape5.vue';
-import TicketShape6 from '@/components/TicketShape5.vue';
-import TicketShape7 from '@/components/TicketShape6.vue';
-import TicketShape8 from '@/components/TicketShape7.vue';
-import TicketShape9 from '@/components/TicketShape8.vue';
-import TicketShape10 from '@/components/TicketShape9.vue';
-import TicketShape11 from '@/components/TicketShape10.vue';
-import TicketShape12 from '@/components/TicketShape11.vue';
+import TicketShape6 from '@/components/TicketShape6.vue';
+import TicketShape7 from '@/components/TicketShape7.vue';
+import TicketShape8 from '@/components/TicketShape8.vue';
+import TicketShape9 from '@/components/TicketShape9.vue';
+import TicketShape10 from '@/components/TicketShape10.vue';
+import TicketShape11 from '@/components/TicketShape11.vue';
+import TicketShape12 from '@/components/TicketShape12.vue';
 import TicketShape13 from '@/components/TicketShape13.vue';
 import TicketShape14 from '@/components/TicketShape14.vue';
 
@@ -383,7 +383,6 @@ const triggerShare = async () => {
                         <option value="'Bebas Neue', sans-serif">Bebas Neue (Bold Display)</option>
                         <option value="'Montserrat', sans-serif">Montserrat (Geometric)</option>
                         <option value="'Courier Prime', monospace">Courier Prime (Typewriter)</option>
-                        <option value="'Dancing Script', cursive">Dancing Script (Handwritten)</option>
                         <option value="'Roboto', sans-serif">Roboto (Readable)</option>
                         <option value="'Oswald', sans-serif">Oswald (Condensed Bold)</option>
                         <option value="'Lora', serif">Lora (Classic Serif)</option>
@@ -412,12 +411,7 @@ const triggerShare = async () => {
                 transition: 'transform 0.1s ease-out'
             }">
                 <div class="canvas-content-wrapper">
-                    <div class="actual-bg-layer" :style="{ 
-                        backgroundColor: colorMode === 'solid' ? accentColor : 'transparent',
-                        background: colorMode === 'gradient' ? `linear-gradient(${gradientAngle}deg, ${accentColor}, ${accentColor2})` : ''
-                    }">
-                        <img v-if="movieBackdrop" :src="movieBackdrop" class="bg-img" :style="{ opacity: backdropOpacity }" />
-                    </div>
+                    
                     <div class="mask-layer">
                         <component :is="currentShape" :fillColor="accentColor" :accentColor="accentColor"
                             :accentColor2="accentColor2" :colorMode="colorMode" :gradientAngle="gradientAngle"
@@ -1004,21 +998,6 @@ const triggerShare = async () => {
     height: 100%;
     background: black;
 }
-.actual-bg-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    min-height: 430px; 
-    width: 100%;
-    background-size: cover;
-    background-position: center;
-}
-.bg-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
 :deep(.ticket-preview-dialog) {
     border-radius: 24px;
     overflow: hidden;
@@ -1066,7 +1045,7 @@ const triggerShare = async () => {
     display: block; 
     width: 100%;
     max-width: 560px;
-    object-fit: contain;
+    object-fit: fill;
 }
 
 .preview-sidebar {

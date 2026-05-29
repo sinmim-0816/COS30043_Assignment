@@ -10,7 +10,7 @@ defineProps({
 });
 </script>
 <template>
-	<svg viewBox="0 0 1280 954" preserveAspectRatio="none" class="ticket-svg">
+	<svg viewBox="0 0 767 1004" preserveAspectRatio="xMidYMid meet" class="ticket-svg">
 		<defs>
 			<pattern v-if="imageSource"  id="ticketPattern" width="100%" height="100%" patternUnits="userSpaceOnUse">
 				<image :href="imageSource" width="100%" height="100%" preserveAspectRatio="xMidYMid slice"
@@ -415,6 +415,7 @@ z"/>
 	width: 100%;
 	height: 100%;
 	display: block;
+	margin: 0 auto;
 }
 
 </style>

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { MapPin, ArrowRight,X } from 'lucide-vue-next';
+import { MapPin, ArrowRight,X, ChevronLeft, ChevronRight } from 'lucide-vue-next';
 
 // Import other hook and components
 import FooterView from '@/components/FooterView.vue';
@@ -68,12 +68,14 @@ const openDesignDialog = async (ticket) => {
                                 </button>
                             </div>
                         </div>
-                        <v-dialog v-model="t.showDialog" max-width="500">
-                            <v-card>
+                        <v-dialog v-model="t.showDialog" max-width="500" >
+                            <div class="clip-tape"></div>
+                            <v-card flat class="design-card">
+                                
                                 <v-card-title class="d-flex justify-space-between align-center px-4 pt-4">
-                                    <span class="text-h6">Saved Designs</span>
+                                    <span class="fw-bold">Saved Designs</span>
                                     <v-btn icon variant="text" size="small" @click="t.showDialog = false">
-                                        <X size="20" />
+                                        <X size="25" />
                                     </v-btn>
                                 </v-card-title>
                                 <v-card-text>
@@ -92,6 +94,27 @@ const openDesignDialog = async (ticket) => {
                                         height="450"
                                         class="rounded-lg carousel"
                                     >
+                                        <template #prev="{ props }">
+                                            <v-btn 
+                                                icon 
+                                                variant="flat" 
+                                                class="nav-btn" 
+                                                @click="props.onClick"
+                                            >
+                                                <ChevronLeft size="24" />
+                                            </v-btn>
+                                        </template>
+
+                                        <template #next="{ props }">
+                                            <v-btn 
+                                                icon 
+                                                variant="flat" 
+                                                class="nav-btn" 
+                                                @click="props.onClick"
+                                            >
+                                                <ChevronRight size="24" />
+                                            </v-btn>
+                                        </template>
                                         <v-carousel-item
                                             v-for="(design, i) in t.designs"
                                             :key="i"
@@ -106,7 +129,6 @@ const openDesignDialog = async (ticket) => {
                                                 ></v-img>
 
                                                 <v-card-text>
-                                                    <h4 class="text-h6 font-weight-bold mb-1">Design {{ i + 1 }}</h4>
                                                     <p class="text-body-2 text-grey-darken-1 mb-2">
                                                         {{ design.description || 'No description provided.' }}
                                                     </p>
@@ -267,5 +289,39 @@ const openDesignDialog = async (ticket) => {
 .custom-btn:hover {
     background: #e53935;
     color: white;
+}
+
+.nav-btn {
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white !important;
+    transition: all 0.3s ease !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+
+.nav-btn:hover {
+    background: rgba(229, 57, 53, 0.8) !important;
+    transform: scale(1.1);
+}
+.v-carousel:hover .nav-btn{
+    opacity:1;
+}
+:deep(.v-carousel__controls) {
+    background: transparent !important;
+}
+.design-card{
+    box-shadow: none;
+}
+.clip-tape {
+    position: absolute;
+    top: -30px;
+    left: 35%;
+    width: 150px;
+    height: 50px;
+    background: rgba(255, 54, 54, 0.3);
+    backdrop-filter: blur(2px);
+    transform: rotate(-2deg);
+    z-index: 200;
 }
 </style>
