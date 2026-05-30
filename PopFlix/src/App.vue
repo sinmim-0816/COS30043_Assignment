@@ -1,11 +1,13 @@
 <script setup>
 import TopBar from '@/components/TopBar.vue';
+import BackToTop from './components/BackToTop.vue';
 </script>
 
 <template>
     <v-app>
         <TopBar />
         <router-view />
+        <BackToTop/>
     </v-app>
 </template>
 
