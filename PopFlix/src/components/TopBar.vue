@@ -26,6 +26,7 @@ const authStore = useAuthStore()
 
 const isSearchOpen = ref(false)
 const isMobileMenuOpen = ref(false)
+const isMobileScreen = ref(false)
 
 const isLoggedIn = computed(() => !!authStore.user)
 const currentUser = computed(() => authStore.user)
@@ -95,6 +96,7 @@ const toggleMobileMenu = () => {
 }
 
 const handleResize = () => {
+    isMobileScreen.value = window.innerWidth <= 768
     if (window.innerWidth > 768) {
         isMobileMenuOpen.value = false
     }
@@ -154,7 +156,7 @@ watch(
             </div>
             <!-- Login/Register -->
             <template v-if="isLoggedIn">
-                <div class="dropdown-wrapper desktop-profile me-2">
+                <div class="dropdown-wrapper me-2">
                     <div
                         @click="toggleDropdown"
                         class="user-profile-trigger"
@@ -164,7 +166,7 @@ watch(
                             {{ currentUser.firstName.charAt(0).toUpperCase() }}
                         </div>
 
-                        <span class="user-name-text">
+                        <span v-if="!isMobileScreen" class="user-name-text">
                             {{ currentUser.firstName }}
                         </span>
 
@@ -213,7 +215,22 @@ watch(
                 </div>
 
             </template>
-
+            <!-- <div v-if="showNavLinks" class="dropdown-wrapper me-2">
+                    <div
+                        @click="toggleDropdown"
+                        class="user-profile-trigger"
+                        :class="{ 'active-trigger': isDropdownOpen }"
+                    >
+                        <div class="avatar-circle">
+                            {{ currentUser.firstName.charAt(0).toUpperCase() }}
+                        </div>
+                        <ChevronDown
+                            size="14"
+                            class="chevron-icon"
+                            :class="{ 'rotate-chevron': isDropdownOpen }"
+                        />
+                    </div>
+                </div>-->
             <button
                 v-if="showNavLinks"
                 type="button"

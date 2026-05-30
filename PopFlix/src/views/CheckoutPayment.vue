@@ -842,40 +842,5 @@ const formattedSeats = computed(() => {
     }
 }
 
-
-/* DUMMY VOUCHER */
-:deep(.v-select__selection-text) {
-    color: #ffffff !important;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-:deep(.v-list) {
-    background-color: #121620 !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
-    padding: 4px !important;
-    border-radius: 12px !important;
-}
-
-.custom-dropdown-item {
-    border-radius: 8px;
-    margin-bottom: 2px;
-    transition: all 0.2s ease;
-}
-
-.custom-dropdown-item:hover {
-    background-color: rgba(255, 23, 68, 0.05) !important;
-}
-
-:deep(.v-field__append-inner .v-icon) {
-    color: rgba(255, 255, 255, 0.5) !important;
-    font-size: 20px;
-}
-
-:deep(.v-field__clearable .v-icon) {
-    color: rgba(255, 255, 255, 0.4) !important;
-    font-size: 16px;
-    margin-right: 4px;
-}
 </style>
 <!-- Add Loading -->

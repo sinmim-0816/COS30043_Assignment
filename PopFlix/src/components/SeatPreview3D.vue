@@ -421,4 +421,4 @@ onMounted(() => {
 }
 </style>
 
-<!-- Handle multiple seats selected -->
+<!-- TODO: Handle multiple seats selected -->
