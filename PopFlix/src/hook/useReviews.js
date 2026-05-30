@@ -9,7 +9,11 @@ export function useReviews() {
     const fetchReviews = async (movieId) => {
         isLoading.value = true;
         try {
-            reviews.value = await ReviewService.getReviewsByMovie(movieId);
+            const data = await ReviewService.getReviewsByMovie(movieId);
+            console.log(movieId)
+            console.log('Fetched reviews data:', data);
+            reviews.value = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+            console.log('Processed reviews:', reviews.value);
         } catch (err) {
             error.value = "Failed to load reviews";
             console.error(err);

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, onUnmounted } from 'vue';
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Star, Calendar, ArrowLeft, CirclePlay, Timer, ChevronLeft, ChevronRight, Bell, CheckCircle, Info } from 'lucide-vue-next';
 
@@ -158,6 +158,21 @@ onMounted(async () => {
 onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
 })
+
+// Watch for route param changes and refetch data when movie ID changes
+watch(
+    () => route.params.id,
+    async (newId) => {
+        if (newId) {
+            activeVideoIdx.value = null;
+            isVisible.value = false;
+            window.scrollY = 0;
+            await loadMovieDetails(newId);
+            await fetchReviews(newId);
+            await checkReminderStatus(newId);
+        }
+    }
+)
 
 const playFirstTrailer = () => {
     if (movie.value?.allVideos?.length > 0) {

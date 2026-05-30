@@ -10,7 +10,13 @@ export const useReminders = () => {
             const response = await reminderService.checkReminder(movieId);
             hasReminder.value = response.data.exists;
         } catch (error) {
-            console.error("Failed to check reminder status", error);
+            // If the backend returns 404, interpret as "no reminder"
+            const status = error?.response?.status;
+            if (status === 404) {
+                hasReminder.value = false;
+            } else {
+                console.error("Failed to check reminder status", error);
+            }
         }
     };
 
