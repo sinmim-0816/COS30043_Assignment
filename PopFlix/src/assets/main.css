@@ -171,6 +171,7 @@ body,
     rgba(248, 250, 252, 0.92)
   );
   --checkout-ticket-border: rgba(15, 23, 42, 0.08);
+  --opacity-bg: 0.25;
 }
 
 html.dark {
@@ -311,6 +312,7 @@ html.dark {
     rgba(255, 255, 255, 0.015)
   );
   --checkout-ticket-border: rgba(255, 255, 255, 0.08);
+  --opacity-bg: 0.2;
 }
 
 .premium-label {

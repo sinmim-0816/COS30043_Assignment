@@ -284,13 +284,13 @@ const submitReview = async () => {
                                     <div class="d-flex align-center gap-2 mb-1">
                                         <span class="experience-pill" :style="{ background: t.themeColor }">{{
                                             t.experience }}</span>
-                                        <span class="text-caption text-grey-lighten-1 font-weight-medium">{{ t.runtime
+                                        <span class="text-caption text-color fw-bold">{{ t.runtime
                                         }} • {{ t.certificate }}</span>
                                     </div>
-                                    <h4 class="text-white font-weight-bold tracking-tight mb-2">{{ t.title }}</h4>
+                                    <h4 class="text-color fw-bold mb-2">{{ t.title }}</h4>
                                     <div class="d-flex align-center gap-1 mb-2">
-                                        <Armchair size="12" class="text-grey-lighten-1" />
-                                        <span class="text-caption font-weight-bold" style="color: var(--ticket-accent)">
+                                        <Armchair size="12" class="text-color" />
+                                        <span class="text-caption fw-bold" style="color: var(--ticket-accent)">
                                             <Sofa size="18" /> {{ t.seats.join(', ') }}
                                         </span>
                                     </div>
@@ -300,12 +300,12 @@ const submitReview = async () => {
                                     class="d-flex justify-space-between align-center flex-wrap gap-2 pt-2 border-top-dashed">
                                     <div class="metadata-rows-group">
                                         <div
-                                            class="d-flex align-center text-caption text-grey-lighten-2 mb-1 font-weight-medium">
+                                            class="d-flex align-center text-caption text-color mb-1">
                                             <Calendar size="13" class="me-1" /> {{ formatDate(t.startTime) }} &bull; {{
                                                 formatTime(t.startTime) }}
                                         </div>
                                         <div
-                                            class="d-flex align-center text-caption text-grey-darken-1 font-weight-medium">
+                                            class="d-flex align-center text-caption text-color font-weight-medium">
                                             <MapPin size="13" class="me-1" /> {{ t.cinema }}
                                         </div>
                                     </div>
@@ -567,7 +567,7 @@ h2 {
     inset: 0;
     background-size: cover;
     background-position: center;
-    opacity: 0.07;
+    opacity: var(--opacity-bg);
     pointer-events: none;
 }
 
@@ -586,7 +586,7 @@ h2 {
 .stub-poster-dock {
     width: 130px;
     height: 200px;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(168, 64, 64, 0.058)
 }
 
 .notch-track-gate {
