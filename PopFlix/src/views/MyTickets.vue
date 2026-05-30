@@ -1021,7 +1021,7 @@ h2 {
 .review-btn {
     border: 1px solid rgba(245, 197, 24, 0.25);
     background: rgba(245, 197, 24, 0.05);
-    color: #f5c518;
+    color: var(--review-color);
     cursor: pointer;
     transition: all 0.3s ease;
 }

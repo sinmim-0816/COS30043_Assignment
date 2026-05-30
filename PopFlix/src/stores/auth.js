@@ -23,6 +23,20 @@ export const useAuthStore = defineStore('auth', {
 
     },
 
+    async fetchProfile() {
+      try {
+        const userData = await authService.getProfile();
+
+        this.user = userData;
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        return userData;
+      } catch (error) {
+        console.error('Failed to sync profile data:', error);
+        throw error.response?.data?.message || 'Failed to fetch profile';
+      }
+    },
+
     logout() {
       this.user = null;
       this.token = null;

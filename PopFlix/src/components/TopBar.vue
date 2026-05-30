@@ -163,11 +163,11 @@ watch(
                         :class="{ 'active-trigger': isDropdownOpen }"
                     >
                         <div class="avatar-circle">
-                            {{ currentUser.firstName.charAt(0).toUpperCase() }}
+                            {{ currentUser.firstName?.charAt(0).toUpperCase() }}
                         </div>
 
                         <span v-if="!isMobileScreen" class="user-name-text">
-                            {{ currentUser.firstName }}
+                            {{ currentUser?.firstName }}
                         </span>
 
                         <ChevronDown
