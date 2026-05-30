@@ -323,7 +323,7 @@ onBeforeUnmount(() => {
                     </v-btn>
                 </div>
                 </v-row>
-                <div class="d-flex justify-space-between flex-row my-3 mx-5 gap-3">
+                <div class="d-flex justify-space-between flex-row my-3 tool gap-3">
                     <v-text-field
                         v-model="searchQuery"
                         placeholder="Search movies..."
@@ -507,6 +507,7 @@ h2 {
     margin-top: 11vh !important;
 }
 
+
 .custom-tabs {
     padding: 0rem 3rem;
 }
@@ -629,6 +630,10 @@ h2 {
 
     .pagination-shell {
         padding: 0 1rem 1rem;
+    }
+
+    .tool{
+        padding: 0 !important;
     }
 }
 
