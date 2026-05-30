@@ -747,7 +747,7 @@ button {
     transform: translateY(0);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1008px) {
     .desktop-nav, .desktop-profile {
         display: none;
     }
@@ -766,7 +766,7 @@ button {
 
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1009px) {
     .mobile-dropdown-menu {
         display: none !important;
     }
