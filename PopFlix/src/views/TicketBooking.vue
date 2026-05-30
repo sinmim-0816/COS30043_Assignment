@@ -17,6 +17,7 @@ import { PARKING_CONFIG } from '@/utils/ParkingLayout';
 import { useBookingStore } from '@/stores/booking';
 import SeatPreview3D from '@/components/SeatPreview3D.vue';
 import { useVehicles } from '@/hook/useVehicles';
+import FooterView from '@/components/FooterView.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -409,12 +410,12 @@ const handleCheckoutStep = async () => {
             </div>
         </div>
     </template>
-    <v-app v-else full-height class="ms-4 ticket-booking-page">
+    <v-app v-else full-height class="ms-md-4 mt-5 ticket-booking-page">
         <v-main>
             <v-btn icon variant="tonal" color="white" class="back-btn" @click="router.back()">
                 <ChevronLeft />
             </v-btn>
-            <h2 class="mb-2">Reserve Booking</h2>
+            <h2 class="mb-2 mt-5">Reserve Booking</h2>
 
             <v-transition-slide-y>
                 <v-alert v-if="apiError" type="error" variant="tonal" closable class="mb-4 rounded-xl mx-auto"
@@ -425,40 +426,39 @@ const handleCheckoutStep = async () => {
 
             <section ref="selectionSection" class="booking-section">
                 <v-container fluid width="100vw">
-                    <v-row class="info-section">
-                        <v-col cols="2">
-                            <v-img :src="getImageURL(movie?.poster)" class="rounded-lg shadow-xl"
-                                width="200px position-relative">
+                    <v-row class="info-section align-center">
+                        <v-col cols="12" md="2" class="d-flex justify-center justify-md-start mb-4 mb-md-0">
+                            <v-img :src="getImageURL(movie?.poster)" class="movie-poster-frame rounded-lg shadow-xl">
                                 <v-img :src="getCertImage(getCertificate(movie))" width="45" height="45" contain
                                     class=" position-absolute bottom-0 left-0 m-2"></v-img>
                             </v-img>
                         </v-col>
-                        <v-col cols="10" class="ps-4">
+                        <v-col cols="12" md="10" class="ps-md-4 text-center text-md-start">
                             <h3>{{ movie?.title }}</h3>
                             <p class="text-h6 text-red-accent-3">{{ experienceType }} EXPERIENCE</p>
                             <v-chip v-for="id in movie?.genres" :key="id" variant="tonal" class="font-weight-bold me-2">
                                 {{ getGenreName(id) }}
                             </v-chip>
-                            <div class="d-flex">
+                            <div class="d-flex flex-wrap justify-center justify-md-start gap-3">
                                 <div class="d-flex align-center mt-2">
                                     <Star size="20" color="#f5c518" fill="#f5c518" class="me-2" />
                                     <span class="fs-5 font-weight-black text-white">{{ movie?.vote_average.toFixed(1)
                                         }}</span>
                                     <span class="fs-6 text-grey-darken-1 ms-1 mt-1">/10</span>
                                 </div>
-                                <div class="d-flex align-center gap-2 mt-2 text-grey-lighten-1 ms-3">
+                                <div class="d-flex align-center gap-2 mt-2 text-grey-lighten-1">
                                     <span>
                                         <Timer size="20" color="#42A5F5" />
                                     </span>
                                     <span>{{ movie?.runtime }}</span>
                                 </div>
                             </div>
-                            <h4 class="fs-6 font-italic  text-grey-lighten-2 ps-2 italic-quote mt-3">
+                            <h4 class="fs-6 font-italic text-grey-lighten-2 italic-quote mt-3">
                                 "{{ movie?.tagline || movie?.overview.split('.')[0] + '.' }}"
                             </h4>
                             <p class="mt-4 fw-bold">Check your Details:</p>
                             <div v-if="selectedSession"
-                                class="session-info-bar  pa-4 rounded-xl d-flex align-center flex-wrap gap-6">
+                                class="session-info-bar pa-4 rounded-xl d-flex align-center flex-wrap gap-6 justify-center justify-md-start">
 
                                 <div class="d-flex align-center">
                                     <v-icon color="red-accent-3" class="me-2">mdi-map-marker</v-icon>
@@ -498,10 +498,10 @@ const handleCheckoutStep = async () => {
 
             <section class="quick-selector-wrapper mt-4">
                 <v-container width="85vw" class="mx-auto" fluid>
-                    <div class="selector-glass-panel d-flex align-center justify-space-between px-8 py-3">
+                    <div class="selector-glass-panel d-flex align-center justify-space-between px-md-8 py-md-3">
 
                         <div class="selector-item date-group d-flex align-center">
-                            <span class="label-tiny me-4 fw-bold">Date</span>
+                            <span class="label-tiny me-md-4 fw-bold">Date</span>
                             <v-icon size="14" color="blue" class="me-2">mdi-chevron-left</v-icon>
                             <div class="mini-date-track d-flex gap-2">
                                 <div v-for="date in dateOptions" :key="date.toString()" class="mini-date-pill"
@@ -659,7 +659,7 @@ const handleCheckoutStep = async () => {
                         </v-col>
 
                         <v-col cols="12" md="8" lg="8">
-                            <div class="map-container pa-10 rounded-xl ms-5">
+                            <div class="map-container pa-md-10 rounded-xl ms-md-5">
                                 <div class="screen-wrapper">
                                     <div class="curved-screen"></div>
                                     <p class="screen-text">SCREEN</p>
@@ -720,9 +720,9 @@ const handleCheckoutStep = async () => {
 
             <section v-if="isParkingSelected && selectedSeats.length >= 1"
                 class="parking-area-wrapper mt-5 d-flex justify-center">
-                <v-container fluid class="px-5" width="92vw">
+                <v-container fluid class="px-md-5" width="92vw">
                     <v-row class="d-flex justify-center">
-                        <v-col cols="12" md="8">
+                        <v-col cols="12" lg="8">
                             <div class="map-container pa-8 rounded-xl">
                                 <div class="d-flex align-center gap-4 mb-10">
                                     <div class="car-info-pill pa-3 px-6 rounded-xl d-flex align-center cursor-pointer">
@@ -789,7 +789,7 @@ const handleCheckoutStep = async () => {
                                     </v-btn>
                                 </div>
 
-                                <div class="d-flex justify-space-between">
+                                <div class="d-flex justify-space-between car-layout">
                                     <div v-for="(zone, zIdx) in currentParking.zones" :key="zone"
                                         class="parking-zone text-center">
                                         <span class="text-overline text-grey d-block mb-4">{{ zone }}</span>
@@ -829,7 +829,7 @@ const handleCheckoutStep = async () => {
                             </div>
                         </v-col>
 
-                        <v-col cols="12" md="4">
+                        <v-col cols="12" lg="4">
                             <div class="order-sidebar pa-8">
                                 <h4 class="text-h4 mb-8">Checkout</h4>
 
@@ -870,7 +870,7 @@ const handleCheckoutStep = async () => {
                                         </span>
                                     </div>
                                     <div class="d-flex justify-space-between align-center border-top pt-4">
-                                        <span class="text-h6 font-weight-bold">Total Price</span>
+                                        <span class="text-h6 fw-bold">Total Price</span>
                                         <span class="text-h5 font-weight-black">RM {{ subtotal }}</span>
                                     </div>
                                     <v-btn block variant="outlined" rounded="pill" height="50"
@@ -1040,6 +1040,7 @@ const handleCheckoutStep = async () => {
                 </v-card-actions>
             </v-card>
         </v-dialog>
+        <FooterView/>
     </v-app>
 </template>
 
@@ -1071,11 +1072,19 @@ const handleCheckoutStep = async () => {
     margin: 0 8vw;
 }
 
+.movie-poster-frame {
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 2 / 3;
+    position: relative;
+}
+
 .session-info-bar {
     background: var(--booking-surface);
     border: 1px solid var(--booking-border);
     backdrop-filter: blur(10px);
     width: fit-content;
+    max-width: 100%;
     display: flex;
     gap: 24px;
     color: var(--booking-text);
@@ -1678,5 +1687,314 @@ const handleCheckoutStep = async () => {
 .seat-preview-body {
     height: calc(100vh - 58px);
     overflow: hidden;
+}
+
+@media (max-width: 1264px) {
+    .info-section {
+        margin: 0 4vw;
+    }
+
+    .quick-selector-wrapper {
+        width: 100% !important;
+    }
+
+    .selector-glass-panel {
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 18px 20px;
+    }
+
+    .map-container {
+        padding: 24px !important;
+        margin-left: 0 !important;
+    }
+
+    .checkout-sidebar,
+    .order-sidebar {
+        padding: 24px !important;
+    }
+
+
+
+
+
+    
+}
+
+@media (max-width: 960px) {
+    .info-section {
+        margin: 0 2.5vw;
+    }
+
+    .movie-poster-frame {
+        max-width: 180px;
+    }
+
+    .session-info-bar {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .quick-selector-wrapper {
+        margin-top: 1rem;
+    }
+
+    .selector-glass-panel {
+        border-radius: 20px;
+    }
+
+    .selector-item {
+        min-width: 160px;
+    }
+
+    .map-container {
+        padding: 20px !important;
+    }
+
+    .screen-wrapper {
+        margin-bottom: 56px;
+    }
+
+    .curved-screen {
+        width: 92%;
+    }
+
+    .seat-pill {
+        width: 28px;
+        height: 24px;
+    }
+
+    .aisle-space {
+        width: 28px;
+    }
+
+    .parking-road {
+        width: 28px;
+    }
+
+    .parking-spot {
+        height: 36px;
+    }
+
+    .seat-preview-body {
+        height: calc(100vh - 58px);
+    }
+
+    .vehicle_modal {
+        width: min(92vw, 520px);
+    }
+
+    
+}
+
+@media (max-width: 600px) {
+    .ticket-booking-page {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    h2 {
+        font-size: 1.45rem;
+        padding: 0 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .info-section {
+        margin: 0 1rem;
+    }
+
+    .movie-poster-frame {
+        max-width: 170px;
+    }
+
+    .session-info-bar {
+        padding: 16px !important;
+        border-radius: 18px;
+        width: 100%;
+    }
+
+    .quick-selector-wrapper {
+        width: calc(100vw - 1.5rem) !important;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .selector-glass-panel {
+        padding: 16px 14px;
+        gap: 14px;
+        justify-content: flex-start;
+    }
+
+    .selector-item {
+        min-width: 100%;
+    }
+
+    .label-tiny {
+        margin-bottom: 6px;
+    }
+
+    .mini-date-track {
+        overflow-x: auto;
+        width: 100%;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+    }
+
+    .mini-date-track::-webkit-scrollbar {
+        display: none;
+    }
+
+    .mini-date-pill {
+        width: 42px;
+        height: 66px;
+        flex: 0 0 auto;
+    }
+
+    .seating-area-wrapper .v-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .checkout-sidebar,
+    .order-sidebar {
+        padding: 18px !important;
+    }
+
+    .map-container {
+        padding: 16px !important;
+        border-radius: 18px;
+        overflow-x: auto;
+    }
+
+    .screen-wrapper {
+        margin-bottom: 36px;
+    }
+
+    .screen-text {
+        letter-spacing: 0.25rem;
+        font-size: 0.85rem;
+    }
+
+    .curved-screen {
+        width: 96%;
+        box-shadow:
+            0 -10px 24px rgba(164, 197, 255, 0.45),
+            0 -4px 12px rgba(164, 197, 255, 0.28),
+            0 1px 4px rgba(255, 255, 255, 0.16);
+    }
+
+    .seats-layout {
+        min-width: max-content;
+        padding-bottom: 4px;
+    }
+
+    .seat-pill {
+        width: 24px;
+        height: 22px;
+        margin-left: 2px !important;
+        margin-right: 2px !important;
+    }
+
+    .seat-pill:hover:not(.taken) {
+        transform: none;
+    }
+
+    .row-label {
+        width: 14px;
+        font-size: 0.7rem;
+    }
+
+    .aisle-space {
+        width: 20px;
+    }
+
+    .seat-pill.spacer {
+        margin-right: 20px;
+    }
+
+    .parking-zone {
+        min-width: 80px;
+    }
+
+    .parking-road {
+        width: 22px;
+        right: -2px;
+    }
+
+    .parking-spot {
+        width: 100%;
+        height: 32px;
+    }
+
+    .spot-num {
+        left: 7px;
+        font-size: 0.58rem;
+    }
+
+    .parking-area-wrapper .v-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .parking-area-wrapper > .v-container > .v-row,
+    .parking-area-wrapper .v-col {
+        width: 100%;
+    }
+
+    .parking-area-wrapper .map-container {
+        margin-bottom: 1rem;
+    }
+
+    .parking-area-wrapper .car-layout {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .parking-area-wrapper .d-flex.align-center.gap-4.mb-10 {
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 24px !important;
+    }
+
+    .vehicle_modal {
+        width: calc(100vw - 1rem);
+        max-width: 100% !important;
+        margin: 8px;
+    }
+
+    .vehicle_modal .v-card-item,
+    .vehicle_modal .v-card-text,
+    .vehicle_modal .v-card-actions {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+
+    .vehicle_modal .v-tabs {
+        overflow-x: auto;
+    }
+
+    .vehicle_modal .v-tab {
+        min-width: 140px;
+    }
+
+    .color-swatch-pill {
+        width: 32px;
+        height: 32px;
+    }
+
+    .fleet-row-item {
+        padding: 12px !important;
+    }
+
+    .seat-preview-header {
+        min-height: 52px;
+        padding: 0 12px;
+    }
+
+    .seat-preview-body {
+        height: calc(100vh - 52px);
+    }
 }
 </style>
