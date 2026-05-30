@@ -65,4 +65,12 @@ export const authService = {
             throw error.response.data.message || "Activation failed.";
         }
     },
+
+    async changePassword(userId, currentPassword, newPassword) {
+        const response = await backendClient.post(API_ENDPOINTS.CHANGE_PASSWORD, {
+            currentPassword,
+            newPassword,
+        });
+        return response.data;
+    },
 };

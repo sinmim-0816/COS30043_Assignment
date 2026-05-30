@@ -171,6 +171,20 @@ body,
     rgba(248, 250, 252, 0.92)
   );
   --checkout-ticket-border: rgba(15, 23, 42, 0.08);
+  --footer-bg: linear-gradient(180deg, #faf7f2 0%, #f3ece4 100%);
+  --footer-text: #0f172a;
+  --footer-muted: rgba(15, 23, 42, 0.7);
+  --footer-border: rgba(15, 23, 42, 0.1);
+  --footer-surface: rgba(255, 255, 255, 0.72);
+  --footer-chip-bg: rgba(255, 82, 82, 0.08);
+  --footer-chip-text: #991b1b;
+  --footer-link: rgba(15, 23, 42, 0.76);
+  --footer-link-hover: #ff5252;
+  --footer-social-bg: rgba(15, 23, 42, 0.06);
+  --footer-social-hover-bg: rgba(255, 82, 82, 0.16);
+  --footer-social-hover-text: #ff5252;
+  --footer-divider: rgba(15, 23, 42, 0.08);
+  --footer-dot: rgba(15, 23, 42, 0.22);
   --opacity-bg: 0.25;
   --review-color: black;
 }
@@ -313,6 +327,20 @@ html.dark {
     rgba(255, 255, 255, 0.015)
   );
   --checkout-ticket-border: rgba(255, 255, 255, 0.08);
+  --footer-bg: linear-gradient(180deg, #0a0e17 0%, #111827 100%);
+  --footer-text: #e5e7eb;
+  --footer-muted: rgba(229, 231, 235, 0.72);
+  --footer-border: rgba(255, 255, 255, 0.08);
+  --footer-surface: rgba(255, 255, 255, 0.06);
+  --footer-chip-bg: rgba(255, 255, 255, 0.08);
+  --footer-chip-text: #ffffff;
+  --footer-link: rgba(229, 231, 235, 0.78);
+  --footer-link-hover: #ffffff;
+  --footer-social-bg: rgba(255, 255, 255, 0.08);
+  --footer-social-hover-bg: rgba(255, 82, 82, 0.22);
+  --footer-social-hover-text: #ff6b6b;
+  --footer-divider: rgba(255, 255, 255, 0.08);
+  --footer-dot: rgba(229, 231, 235, 0.34);
   --opacity-bg: 0.2;
   --review-color: #f5c518;
 }

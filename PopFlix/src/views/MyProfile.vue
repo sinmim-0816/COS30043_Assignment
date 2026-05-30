@@ -1,9 +1,10 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
-import {SquarePen, Award, MapPin, ClockFading, User, Ticket, Star, Mail, Phone, Users, Lock, XCircle, Plus, Camera} from '@lucide/vue';
+import {SquarePen, Award, MapPin, ClockFading, User, Ticket, Star, Mail, Phone, Users, Lock, XCircle, Plus, Camera, Eye, EyeOff, Check, CheckCircle, Info} from '@lucide/vue';
 
 // Import other hook and component
 import { useAuthStore } from '@/stores/auth';
+import { authService } from '@/services/authService';
 import { formatMonthYear } from '@/utils/formatDateTime';
 import { GENRE_MAP } from '@/utils/genre';
 import { resolveBackendAssetPath } from '@/utils/FormatPicture';
@@ -13,11 +14,15 @@ const isEditing = ref(false);
 const isPasswordModalOpen = ref(false);
 const avatarLoadError = ref(false)
 const authStore = useAuthStore();
+const showAuthBadge = ref(false);
+const authMessage = ref('');
+const isSuccess = ref(false);
 const currentUser = computed(() => authStore.user || {});
 const selectedGenre=ref('');
 const avatarInput = ref(null);
 const originalUser = ref(null);
 const selectedAvatarFile = ref(null);
+const isTypingPassword = ref(false);
 
 const cloneUserState = () => JSON.parse(JSON.stringify(user));
 
@@ -82,8 +87,17 @@ const saveProfile = async () => {
     avatarLoadError.value = false;
 
     isEditing.value = false;
+    
+    // Show success toast
+    authMessage.value = 'Profile updated successfully!';
+    isSuccess.value = true;
+    showAuthBadge.value = true;
   } catch (error) {
     console.error(error);
+    // Show error toast
+    authMessage.value = error?.message || 'Failed to update profile';
+    isSuccess.value = false;
+    showAuthBadge.value = true;
   }
 };
 
@@ -179,6 +193,11 @@ const security = reactive({
   newPassword: ''
 });
 
+const passwordErrors = reactive({
+  currentPassword: '',
+  newPassword: ''
+});
+
 const currentTier = computed(() => {
   const spent = Number(user.annualSpend) || 0;
   if (spent >= 2000) return 'Gold';
@@ -230,11 +249,56 @@ const closePasswordModal = () => {
   security.newPassword = '';
   showPass.curr = false;
   showPass.new = false;
+  passwordErrors.currentPassword = '';
+  passwordErrors.newPassword = '';
 };
 
-const submitPasswordMutation = () => {
-  console.log('Dispatched update payload:', JSON.stringify(security));
-  closePasswordModal();
+const submitPasswordMutation = async () => {
+  // Clear previous errors
+  passwordErrors.currentPassword = '';
+  passwordErrors.newPassword = '';
+
+  // Validate new password strength
+  if (!isNewPassValid.value) {
+    passwordErrors.newPassword = 'Password does not meet all requirements';
+    return;
+  }
+
+  if (!security.currentPassword) {
+    passwordErrors.currentPassword = 'Current password is required';
+    return;
+  }
+
+  try {
+    const userId = authStore.user?.id;
+    if (!userId) {
+      throw new Error('User ID not found');
+    }
+
+    await authService.changePassword(
+      userId,
+      security.currentPassword,
+      security.newPassword
+    );
+
+    console.log('Password changed successfully');
+    authMessage.value = 'Password changed successfully!';
+    isSuccess.value = true;
+    showAuthBadge.value = true;
+    closePasswordModal();
+  } catch (error) {
+    console.error('Password change failed:', error);
+    const errorMsg = error?.response?.data?.message || error?.message || 'Failed to change password';
+    
+    // Set error on appropriate field
+    if (errorMsg.toLowerCase().includes('incorrect')) {
+      passwordErrors.currentPassword = errorMsg;
+    } else if (errorMsg.toLowerCase().includes('different')) {
+      passwordErrors.newPassword = 'New password must be different from current password';
+    } else {
+      passwordErrors.currentPassword = errorMsg;
+    }
+  }
 };
 
 const addGenre = () => {
@@ -250,10 +314,54 @@ const addGenre = () => {
 
 const removeGenre = (index) => { user.genres.splice(index, 1); };
 
+const passwordReqs = computed(() => ({
+  length: security.newPassword.length >= 8,
+  case: /[a-z]/.test(security.newPassword) && /[A-Z]/.test(security.newPassword),
+  number: /\d/.test(security.newPassword),
+  symbol: /[!@#$%^&*(),.?":{}|<>]/.test(security.newPassword)
+}));
+
+const isNewPassValid = computed(() => {
+  return Object.values(passwordReqs.value).every(Boolean);
+});
+
+const passStrengthCount = computed(() => {
+  return Object.values(passwordReqs.value).filter(Boolean).length;
+});
+
+const passStrengthWidth = computed(() => {
+  return (passStrengthCount.value / 4) * 100 + '%';
+});
+
+const passStrengthColor = computed(() => {
+  if (passStrengthCount.value <= 1) return '#ff4d4d';
+  if (passStrengthCount.value <= 2) return '#ffa500';
+  return '#4caf50';
+});
+
+const passStrengthText = computed(() => {
+  if (passStrengthCount.value === 0) return '';
+  if (passStrengthCount.value === 1) return 'Weak';
+  if (passStrengthCount.value === 2) return 'Fair';
+  if (passStrengthCount.value === 3) return 'Good';
+  return 'Strong';
+});
 
 </script>
 
 <template>
+  <v-snackbar v-model="showAuthBadge" location="top" :timeout="5000" color="transparent" elevation="0" variant="flat"
+        class="mt-4">
+        <div class="d-flex justify-center w-100">
+            <div class="premium-toast-badge d-flex align-center gap-2" :class="isSuccess ? 'success' : 'not-success'">
+
+                <component :is="isSuccess ? CheckCircle : Info" size="20"
+                    :class="isSuccess ? 'text-white' : 'text-red'" />
+
+                <span class="badge-text">{{ authMessage }}</span>
+            </div>
+        </div>
+    </v-snackbar>
   <div class="profile-page-light">
     <header class="profile-hero-card">
       <div class="hero-left-cluster">
@@ -577,7 +685,7 @@ const removeGenre = (index) => { user.genres.splice(index, 1); };
       <div class="security-modal-container">
         <div class="modal-header">
           <div>
-            <h3 class="modal-main-title">Modify Account Password</h3>
+            <h3 class="modal-main-title">Change Account Password</h3>
             <p class="modal-subtitle">Update security credentials</p>
           </div>
           <button class="modal-close-cross" @click="closePasswordModal">⨉</button>
@@ -592,29 +700,87 @@ const removeGenre = (index) => { user.genres.splice(index, 1); };
                 v-model="security.currentPassword" 
                 placeholder="••••••••" 
                 required
+                @input="passwordErrors.currentPassword = ''"
                 class="node-field unlocked" 
               />
-              <button type="button" @click="showPass.curr = !showPass.curr" class="visibility-toggle-eye">
-                {{ showPass.curr ? 'Hide' : 'Show' }}
+              <button
+                type="button"
+                @click="showPass.curr = !showPass.curr"
+                class="visibility-toggle-eye icon-btn"
+              >
+                <Eye v-if="showPass.curr" size="18" />
+                <EyeOff v-else size="18" />
               </button>
             </div>
+            <p v-if="passwordErrors.currentPassword" class="error-text">
+              <Info size="16" class="me-2"/>{{ passwordErrors.currentPassword }}
+            </p>
           </div>
 
           <div class="interactive-input-node">
             <label class="node-label">New Password</label>
+            
             <div class="input-container">
               <input 
                 :type="showPass.new ? 'text' : 'password'" 
                 v-model="security.newPassword" 
                 placeholder="Enter new password" 
                 required
+                @focus="isTypingPassword=true"
+                @blur="isTypingPassword=false"
+                @input="passwordErrors.newPassword = ''"
                 class="node-field unlocked" 
               />
-              <button type="button" @click="showPass.new = !showPass.new" class="visibility-toggle-eye">
-                {{ showPass.new ? 'Hide' : 'Show' }}
+              <button
+                type="button"
+                @click="showPass.new = !showPass.new"
+                class="visibility-toggle-eye icon-btn"
+              >
+                <Eye v-if="showPass.new" size="18" />
+                <EyeOff v-else size="18" />
               </button>
             </div>
-          </div>
+            <p v-if="passwordErrors.newPassword" class="error-text">
+              <Info size="16" class="me-2"/>{{ passwordErrors.newPassword }}
+            </p>
+            <v-expand-transition>
+              <!-- Password Strength Bar -->
+              <div v-if="isTypingPassword" class="strength-container">
+                <div class="d-flex justify-end align-center mb-1">
+                  <span class="text-caption font-weight-bold"
+                    :style="{ color: passStrengthColor }">
+                    {{ passStrengthText }}
+                  </span>
+                </div>
+
+                <div class="strength-meter">
+                  <div class="strength-bar"
+                    :style="{
+                      width: passStrengthWidth,
+                      backgroundColor: passStrengthColor
+                    }">
+                  </div>
+                </div>
+
+                <!-- Requirements -->
+                <ul class="requirements-list mt-2">
+                  <li :class="{ valid: passwordReqs.length }">
+                    <Check size="14" /> At least 8 characters
+                  </li>
+                  <li :class="{ valid: passwordReqs.case }">
+                    <Check size="14" /> Upper & lowercase letters
+                  </li>
+                  <li :class="{ valid: passwordReqs.number }">
+                    <Check size="14" /> At least one number
+                  </li>
+                  <li :class="{ valid: passwordReqs.symbol }">
+                    <Check size="14" /> At least one symbol
+                  </li>
+                </ul>
+              </div>
+              </v-expand-transition>
+            </div>
+          
 
           <div class="modal-action-dock">
             <button type="button" class="modal-btn cancel-btn" @click="closePasswordModal">Cancel</button>
@@ -986,6 +1152,7 @@ const removeGenre = (index) => { user.genres.splice(index, 1); };
   min-height: 42px;
   display: flex;
   align-items: center;
+  position: relative;
 }
 
 .node-field, .node-textarea-field, .node-select-field {
@@ -1146,6 +1313,55 @@ const removeGenre = (index) => { user.genres.splice(index, 1); };
 .modal-close-cross:hover { color: #0f172a; }
 
 .modal-form-body { display: flex; flex-direction: column; }
+
+.strength-container {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.03);
+  border-radius: 8px;
+}
+
+.strength-meter {
+  width: 100%;
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.strength-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.requirements-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.requirements-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.requirements-list li.valid {
+  color: #059669;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: 6px;
+  margin-bottom: 0;
+  padding: 0;
+}
 
 .modal-action-dock {
   display: flex;

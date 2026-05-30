@@ -196,7 +196,7 @@ watch(
 
                         <li @click="navigateTo('MyTickets')" class="dropdown-item">
                             <Ticket size="16" />
-                            <span>My Tickets</span>
+                            <span>My Bookings</span>
                         </li>
 
                         <li class="dropdown-divider"></li>

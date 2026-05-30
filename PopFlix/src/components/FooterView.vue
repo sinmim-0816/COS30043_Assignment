@@ -1,123 +1,301 @@
 <script setup>
-import Phone from 'lucide-vue-next/dist/esm/icons/phone';
-import Mail from 'lucide-vue-next/dist/esm/icons/mail';
-import Facebook from 'lucide-vue-next/dist/esm/icons/facebook';
-import Twitter from 'lucide-vue-next/dist/esm/icons/twitter';
-import Instagram from 'lucide-vue-next/dist/esm/icons/instagram';
-import Linkedin from 'lucide-vue-next/dist/esm/icons/linkedin';
+import { Facebook, Twitter, Instagram, MessageCircle } from "lucide-vue-next"
+import Ticket from 'lucide-vue-next/dist/esm/icons/ticket';
+import Clapperboard from 'lucide-vue-next/dist/esm/icons/clapperboard';
+import MapPinned from 'lucide-vue-next/dist/esm/icons/map-pinned';
 import logo from '@/assets/popflix_logo.png';
+
+const exploreLinks = [
+  { label: 'Movies', to: '/movies' },
+  { label: 'Showtimes', to: '/showtimes' },
+  { label: 'Cinemas', to: '/theaters' },
+  { label: 'Customization', to: '/customize-list' },
+];
+
+const accountLinks = [
+  { label: 'My Profile', to: '/profile' },
+  { label: 'My Bookings', to: '/my-tickets' },
+  { label: 'Notification', to: '/notification' },
+];
+
+const supportLinks = [
+  { label: 'Help Center', to: '/theatre?category=General&faqId=1' },
+  { label: 'support@popflix.com', href: 'mailto:support@popflix.com' },
+  { label: '+60 123 456 789', href: 'tel:+60123456789' },
+];
 </script>
 
 <template>
     <footer class="footer-wrapper">
-        <v-container fluid width="100vw">
-            <v-row class="footer-top py-10">
-                <v-col cols="12" md="3">
-                    <img :src="logo" alt="PopFlix Logo" class="footer-logo mb-2" />
-                    <p class="text-grey-darken-1 mb-4">Your ultimate destination for movie tickets and the latest cinema
-                        experiences. Book now and enjoy the show.</p>
-                    <div class="social-icons d-flex gap-3">
-                        <Facebook size="20" />
-                        <Twitter size="20" />
-                        <Instagram size="20" />
-                        <Linkedin size="20" />
+        <v-container class="footer-shell" fluid>
+            <div class="footer-top">
+                <section class="footer-brand-card">
+                    <div class="brand-lockup">
+                        <img :src="logo" alt="PopFlix Logo" class="footer-logo" />
+                        
                     </div>
-                </v-col>
-
-                <v-col cols="6" md="2">
-                    <p class="fw-bold">Company</p>
-                    <ul class="footer-links">
-                        <li><router-link to="/movies">Movies</router-link></li>
-                        <li><router-link to="/theaters">Theaters</router-link></li>
-                        <li><router-link to="/showtimes">Showtimes</router-link></li>
-                    </ul>
-                </v-col>
-
-                <v-col cols="6" md="2">
-                    <p class="fw-bold">Support</p>
-                    <ul class="footer-links">
-                        <li><router-link to="/faq">Help Center</router-link></li>
-                        <li><router-link to="/contact">Contact Us</router-link></li>
-                        <li><router-link to="/feedback">Feedback</router-link></li>
-                    </ul>
-                </v-col>
-
-                <v-col cols="6" md="2">
-                    <p class="fw-bold">Links</p>
-                    <ul class="footer-links">
-                        <li><router-link to="/profile">My Profile</router-link></li>
-                        <li><router-link to="/tickets">My Tickets</router-link></li>
-                        <li><router-link to="/privacy">Privacy Policy</router-link></li>
-                    </ul>
-                </v-col>
-
-                <v-col cols="6" md="3">
-                    <p class="fw-bold">Contact Us</p>
-                    <div class="contact-item">
-                        <Phone size="16" class="me-2" /> +60 123 456 789
+                    <p class="footer-description">
+                        Your all-in-one movie booking space for showtimes, tickets, and custom cinema experiences.
+                    </p>
+                    <div class="social-icons">
+                        <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
+                            <Facebook size="18" />
+                        </a>
+                        <a href="https://twitter.com" target="_blank" rel="noreferrer" aria-label="Twitter">
+                            <Twitter size="18" />
+                        </a>
+                        <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
+                            <Instagram size="18" />
+                        </a>
+                        <a href="https://whatsapp.com" target="_blank" rel="noreferrer" aria-label="Instagram">
+                            <MessageCircle size="18" />
+                        </a>
                     </div>
-                    <div class="contact-item">
-                        <Mail size="16" class="me-2" /> support@popflix.com
-                    </div>
-                </v-col>
-            </v-row>
+                </section>
 
-            <v-divider></v-divider>
+                <section class="footer-nav-card">
+                    <p class="footer-title">
+                        <Clapperboard size="16" class="me-2" />
+                        Explore
+                    </p>
+                    <ul class="footer-links">
+                        <li v-for="link in exploreLinks" :key="link.to">
+                            <router-link :to="link.to">{{ link.label }}</router-link>
+                        </li>
+                    </ul>
+                </section>
 
-            <v-row class="footer-bottom align-center">
-                <v-col cols="12" md="6">&copy; 2026 PopFlix. All rights reserved.</v-col>
-                <v-col cols="12" md="6" class="d-flex justify-md-end gap-4">
-                    <router-link to="/privacy">Privacy Policy</router-link>
-                    <router-link to="/terms">Terms of Use</router-link>
-                    <router-link to="/sitemap">Site Map</router-link>
-                </v-col>
-            </v-row>
+                <section class="footer-nav-card">
+                    <p class="footer-title">
+                        <Ticket size="16" class="me-2" />
+                        Account
+                    </p>
+                    <ul class="footer-links">
+                        <li v-for="link in accountLinks" :key="link.to">
+                            <router-link :to="link.to">{{ link.label }}</router-link>
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="footer-nav-card">
+                    <p class="footer-title">
+                        <MapPinned size="16" class="me-2" />
+                        Support
+                    </p>
+                    <ul class="footer-links">
+                        <li v-for="link in supportLinks" :key="link.label">
+                            <router-link v-if="link.to" :to="link.to">{{ link.label }}</router-link>
+                            <a v-else :href="link.href">{{ link.label }}</a>
+                        </li>
+                    </ul>
+                    
+                </section>
+            </div>
+
+            <div class="footer-bottom">
+                <span>© 2026 PopFlix. All rights reserved.</span>
+                <div class="footer-bottom-links">
+                    <span>Built for movie lovers</span>
+                    <span class="footer-dot"></span>
+                    <span>Fast booking</span>
+                    <span class="footer-dot"></span>
+                    <span>Easy customization</span>
+                </div>
+            </div>
         </v-container>
     </footer>
 </template>
 
 <style scoped>
 .footer-wrapper {
-    background: var(--bg-color);
-    color: var(--text-color);
-    border-top: 1px solid rgba(128, 128, 128, 0.2);
-    padding:0 4rem ;
+    position: relative;
+    overflow: hidden;
+    background:var(--footer-bg);
+    color: var(--footer-text);
+    border-top: 1px solid var(--footer-border);
 }
 
+.footer-shell {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 56px 28px 28px;
+}
+
+.footer-top {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    align-items: start;
+}
+
+.footer-brand-card,
+.footer-nav-card {
+    min-width: 0;
+}
+
+.footer-brand-card {
+    padding-right: 24px;
+}
+
+.brand-lockup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
 
 .footer-logo {
-    height: 40px;
+    width: 140px;
+    height: auto;
 }
 
-h4 {
+.brand-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--footer-chip-bg);
+    color: var(--footer-chip-text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.footer-description {
+    max-width: 360px;
+    margin: 0 0 18px;
+    color: var(--footer-muted);
+    line-height: 1.8;
+}
+
+.social-icons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.social-icons a {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--footer-social-bg);
+    color: var(--footer-text);
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.social-icons a:hover {
+    transform: translateY(-2px);
+    background: var(--footer-social-hover-bg);
+    color: var(--footer-social-hover-text);
+}
+
+.footer-title {
+    display: flex;
+    align-items: center;
+    margin: 0 0 16px;
+    font-size: 0.9rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--footer-text);
 }
 
 .footer-links {
     list-style: none;
     padding: 0;
-}
-
-.footer-links li {
-    margin-bottom: 0.5rem;
+    margin: 0;
+    display: grid;
+    gap: 10px;
 }
 
 .footer-links a {
-    color: var(--text-color);
+    color: var(--footer-link);
     text-decoration: none;
-    opacity: 0.7;
+    transition: color 0.2s ease, padding-left 0.2s ease;
 }
 
 .footer-links a:hover {
-    opacity: 1;
-    color: #ff5252;
+    color: var(--footer-link-hover);
+    padding-left: 4px;
+}
+
+.contact-card {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--footer-divider);
+    display: grid;
+    gap: 12px;
 }
 
 .contact-item {
     display: flex;
     align-items: center;
-    margin-bottom: 0.5rem;
-    opacity: 0.7;
+    gap: 10px;
+    color: var(--footer-muted);
+    font-size: 0.92rem;
+}
+
+.footer-bottom {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid var(--footer-divider);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    color: var(--footer-muted);
+    font-size: 0.9rem;
+}
+
+.footer-bottom-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.footer-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--footer-dot);
+}
+
+@media (max-width: 1024px) {
+    .footer-top {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .footer-brand-card {
+        grid-column: 1 / -1;
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .footer-shell {
+        padding: 40px 16px 20px;
+    }
+
+    .footer-top {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .footer-bottom-links {
+        justify-content: flex-start;
+    }
 }
 </style>
