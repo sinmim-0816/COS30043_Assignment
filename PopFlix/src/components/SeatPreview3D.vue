@@ -1,7 +1,8 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { TresCanvas } from '@tresjs/core';
 import { Html, OrbitControls } from '@tresjs/cientos';
+import { SunMedium, MoonStar } from 'lucide-vue-next';
 
 // Import other hook and components
 import { LAYOUT_CONFIG } from '@/utils/SeatLayout';
@@ -11,6 +12,16 @@ const props = defineProps({
   experienceType: { type: String, default: 'DOLBY' },
   trailerUrl: { type: String, default: '' },
 });
+
+const isDarkTheme = ref(true);
+
+const setThemeFromApp = () => {
+  isDarkTheme.value = document.documentElement.classList.contains('dark');
+};
+
+const toggleTheme = () => {
+  isDarkTheme.value = !isDarkTheme.value;
+};
 
 const layout = computed(() => LAYOUT_CONFIG[props.experienceType] || LAYOUT_CONFIG.DOLBY);
 
@@ -118,27 +129,94 @@ const trailerEmbedUrl = computed(() => {
   if (!trailerKey.value) return '';
   return `https://www.youtube.com/embed/${trailerKey.value}?autoplay=1&mute=1&rel=0&playsinline=1`;
 });
+
+const scenePalette = computed(() => {
+  if (isDarkTheme.value) {
+    return {
+      shellBg: '#050508',
+      fog: '#050508',
+      text: '#ffffff',
+      mutedText: '#aab1c2',
+      badgeBg: 'rgba(5, 5, 8, 0.72)',
+      badgeBorder: 'rgba(255, 255, 255, 0.12)',
+      badgeText: '#ffffff',
+      floor: '#090b10',
+      riser: '#0d1018',
+      screen: '#101827',
+      screenGlow: '#6aa7ff',
+      seatBack: '#151821',
+      shellAccent: '#ced7ff',
+      shellFront: '#050508',
+    };
+  }
+
+  return {
+    shellBg: '#faf7f2',
+    fog: '#eef3ff',
+    text: '#041435',
+    mutedText: '#536277',
+    badgeBg: 'rgba(255, 255, 255, 0.84)',
+    badgeBorder: 'rgba(4, 20, 53, 0.12)',
+    badgeText: '#041435',
+    floor: '#edf2fb',
+    riser: '#dfe7f5',
+    screen: '#d7e4fb',
+    screenGlow: '#4f7cff',
+    seatBack: '#c9d4e7',
+    shellAccent: '#1d4ed8',
+    shellFront: '#fafcff',
+  };
+});
+
+const shellStyle = computed(() => ({
+  background: scenePalette.value.shellBg,
+  color: scenePalette.value.text,
+}));
+
+const badgeStyle = computed(() => ({
+  background: scenePalette.value.badgeBg,
+  borderColor: scenePalette.value.badgeBorder,
+  color: scenePalette.value.badgeText,
+}));
+
+onMounted(() => {
+  setThemeFromApp();
+});
 </script>
 
 <template>
-  <div class="seat-preview-shell">
+  <div class="seat-preview-shell" :style="shellStyle">
     <div class="scene-badge">
       <span>{{ experienceType }} layout</span>
       <strong>{{ parsedSeat.row }}{{ parsedSeat.col }}</strong>
     </div>
 
-    <TresCanvas clear-color="#050508" class="seat-preview-canvas">
-      <TresPerspectiveCamera :position="cameraPosition" :look-at="cameraTarget" :fov="48" />
-      <TresFog attach="fog" color="#050508" :near="18" :far="62" />
+    <div
+      class="theme-badge"
+      :style="badgeStyle"
+      role="button"
+      tabindex="0"
+      :aria-label="isDarkTheme ? 'Switch to light mode preview' : 'Switch to dark mode preview'"
+      @click="toggleTheme"
+      @keydown.enter.prevent="toggleTheme"
+      @keydown.space.prevent="toggleTheme"
+    >
+      <component :is="isDarkTheme ? MoonStar : SunMedium" :size="16" />
+      <span>{{ isDarkTheme ? 'Dark mode' : 'Light mode' }}</span>
+    </div>
 
-      <TresAmbientLight :intensity="0.7" color="#ced7ff" />
-      <TresDirectionalLight :position="[4, 7, 3]" :intensity="2.1" />
-      <TresPointLight :position="[selectedCoords[0], 3.2, selectedCoords[2]]" :intensity="130" :color="visualProfile.accent" :distance="8" />
-      <TresPointLight :position="[0, 4, screenPosition[2] - 1]" :intensity="80" color="#a4c5ff" :distance="18" />
+    <TresCanvas :clear-color="scenePalette.shellFront" class="seat-preview-canvas">
+      <TresPerspectiveCamera :position="cameraPosition" :look-at="cameraTarget" :fov="48" />
+      <TresFog attach="fog" :color="scenePalette.fog" :near="18" :far="62" />
+
+      <TresAmbientLight :intensity="isDarkTheme ? 0.7 : 1.2" :color="scenePalette.shellAccent" />
+      <TresDirectionalLight :position="[4, 7, 3]" :intensity="isDarkTheme ? 2.1 : 1.4" />
+      <TresPointLight :position="[selectedCoords[0], 3.2, selectedCoords[2]]" :intensity="isDarkTheme ? 130 : 95" :color="visualProfile.accent" :distance="8" />
+      <TresPointLight :position="[0, 4, screenPosition[2] - 1]" :intensity="isDarkTheme ? 80 : 50" :color="scenePalette.screenGlow" :distance="18" />
 
       <TresMesh :position="[0, -0.04, 0]">
         <TresBoxGeometry :args="[floorWidth, 0.08, floorDepth]" />
-        <TresMeshStandardMaterial color="#090b10" :roughness="0.92" />
+        <TresMeshStandardMaterial :color="scenePalette.floor" :roughness="isDarkTheme ? 0.92 : 0.82" />
       </TresMesh>
 
       <TresMesh
@@ -147,12 +225,12 @@ const trailerEmbedUrl = computed(() => {
         :position="[0, rowElevation(row.index) / 2, seatPosition(row.index, 1)[2]]"
       >
         <TresBoxGeometry :args="[floorWidth - 1, Math.max(0.04, rowElevation(row.index)), visualProfile.rowGap * 0.86]" />
-        <TresMeshStandardMaterial color="#0d1018" :roughness="0.9" />
+        <TresMeshStandardMaterial :color="scenePalette.riser" :roughness="isDarkTheme ? 0.9 : 0.84" />
       </TresMesh>
 
       <TresMesh :position="screenPosition">
         <TresBoxGeometry :args="[screenWidth, screenHeight, 0.08]" />
-        <TresMeshStandardMaterial color="#101827" :emissive="'#6aa7ff'" :emissive-intensity="0.22" />
+        <TresMeshStandardMaterial :color="scenePalette.screen" :emissive="scenePalette.screenGlow" :emissive-intensity="isDarkTheme ? 0.22 : 0.12" />
       </TresMesh>
 
       <Html
@@ -183,10 +261,10 @@ const trailerEmbedUrl = computed(() => {
       >
         <TresBoxGeometry :args="[visualProfile.width * 0.72, visualProfile.height, visualProfile.depth * 0.72]" />
         <TresMeshStandardMaterial
-          :color="seat.isSelected ? visualProfile.accent : visualProfile.seatColor"
+          :color="seat.isSelected ? visualProfile.accent : (isDarkTheme ? visualProfile.seatColor : '#dde6f5')"
           :emissive="seat.isSelected ? visualProfile.accent : '#000000'"
-          :emissive-intensity="seat.isSelected ? 0.32 : 0"
-          :roughness="0.55"
+          :emissive-intensity="seat.isSelected ? 0.32 : (isDarkTheme ? 0 : 0.04)"
+          :roughness="isDarkTheme ? 0.55 : 0.68"
         />
       </TresMesh>
 
@@ -197,10 +275,10 @@ const trailerEmbedUrl = computed(() => {
       >
         <TresBoxGeometry :args="[visualProfile.width * 0.72, visualProfile.height * 1.45, 0.14]" />
         <TresMeshStandardMaterial
-          :color="seat.isSelected ? visualProfile.accent : '#151821'"
+          :color="seat.isSelected ? visualProfile.accent : (isDarkTheme ? scenePalette.seatBack : '#c6d2e4')"
           :emissive="seat.isSelected ? visualProfile.accent : '#000000'"
-          :emissive-intensity="seat.isSelected ? 0.45 : 0"
-          :roughness="0.5"
+          :emissive-intensity="seat.isSelected ? 0.45 : (isDarkTheme ? 0 : 0.04)"
+          :roughness="isDarkTheme ? 0.5 : 0.72"
         />
       </TresMesh>
 
@@ -237,7 +315,6 @@ const trailerEmbedUrl = computed(() => {
   width: 100%;
   height: 100%;
   min-height: 70vh;
-  background: #050508;
   overflow: hidden;
 }
 
@@ -274,6 +351,36 @@ const trailerEmbedUrl = computed(() => {
   font-size: 1rem;
 }
 
+.theme-badge {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid;
+  border-radius: 10px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-badge span {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.theme-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.2);
+}
+
 .trailer-screen-in-scene {
   width: 760px;
   aspect-ratio: 16 / 5.7;
@@ -305,6 +412,11 @@ const trailerEmbedUrl = computed(() => {
 @media (max-width: 800px) {
   .trailer-screen-in-scene {
     width: 520px;
+  }
+
+  .theme-badge {
+    top: 12px;
+    right: 12px;
   }
 }
 </style>
