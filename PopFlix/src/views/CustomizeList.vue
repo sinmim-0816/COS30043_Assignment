@@ -55,7 +55,7 @@ const openDesignDialog = async (ticket) => {
         <v-container fluid class="customization-dashboard" width="100vw">
             <h2>Customize Tickets</h2>
             <v-row v-if="!isTicketsLoading" class="mt-4">
-                <v-col v-for="t in tickets" :key="t.id" cols="12" md="6" lg="3">
+                <v-col v-for="t in tickets" :key="t.id" cols="12" ms="6" md="4" lg="3">
                     <div class="movie-card">
                         <div class="poster-container">
                             <v-img :src="t.poster" cover height="180" class="rounded-t-lg"></v-img>
@@ -186,8 +186,9 @@ const openDesignDialog = async (ticket) => {
     border: 1px solid rgba(14, 14, 14, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    width: 300px;
-    height: 400px;
+    width: 300%;
+    max-width:300px;
+    max-height: 400px;
 }
 
 .poster-container {

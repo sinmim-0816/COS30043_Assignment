@@ -215,22 +215,6 @@ watch(
                 </div>
 
             </template>
-            <!-- <div v-if="showNavLinks" class="dropdown-wrapper me-2">
-                    <div
-                        @click="toggleDropdown"
-                        class="user-profile-trigger"
-                        :class="{ 'active-trigger': isDropdownOpen }"
-                    >
-                        <div class="avatar-circle">
-                            {{ currentUser.firstName.charAt(0).toUpperCase() }}
-                        </div>
-                        <ChevronDown
-                            size="14"
-                            class="chevron-icon"
-                            :class="{ 'rotate-chevron': isDropdownOpen }"
-                        />
-                    </div>
-                </div>-->
             <button
                 v-if="showNavLinks"
                 type="button"

@@ -145,6 +145,32 @@ body,
   --screen-color: rgba(2, 91, 244, 0.58);
   --seat-icon: rgba(56, 56, 56, 0.4);
   --vehicle-bg: white;
+  --checkout-surface: #ffffff;
+  --checkout-surface-strong: #ffffff;
+  --checkout-surface-soft: #f8fafc;
+  --checkout-text: #0f172a;
+  --checkout-text-soft: rgba(15, 23, 42, 0.72);
+  --checkout-text-muted: rgba(15, 23, 42, 0.55);
+  --checkout-border: rgba(15, 23, 42, 0.1);
+  --checkout-border-soft: rgba(15, 23, 42, 0.06);
+  --checkout-divider: rgba(15, 23, 42, 0.08);
+  --checkout-accent: #e11d48;
+  --checkout-accent-strong: #be123c;
+  --checkout-accent-soft: rgba(225, 29, 72, 0.08);
+  --checkout-chip-bg: rgba(15, 23, 42, 0.04);
+  --checkout-chip-border: rgba(15, 23, 42, 0.12);
+  --checkout-chip-text: #0f172a;
+  --checkout-input-bg: #ffffff;
+  --checkout-input-border: rgba(15, 23, 42, 0.08);
+  --checkout-input-placeholder: rgba(15, 23, 42, 0.45);
+  --checkout-summary-bg: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  --checkout-summary-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  --checkout-ticket-bg: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.95),
+    rgba(248, 250, 252, 0.92)
+  );
+  --checkout-ticket-border: rgba(15, 23, 42, 0.08);
 }
 
 html.dark {
@@ -254,6 +280,37 @@ html.dark {
   --booking-chip-shadow: rgba(0, 0, 0, 0.18);
   --screen-color: rgba(164, 197, 255, 0.58);
   --seat-icon: rgba(255, 255, 255, 0.629);
+
+  --checkout-surface: #121826;
+  --checkout-surface-strong: #171d2a;
+  --checkout-surface-soft: rgba(255, 255, 255, 0.03);
+  --checkout-text: #ffffff;
+  --checkout-text-soft: rgba(255, 255, 255, 0.72);
+  --checkout-text-muted: rgba(255, 255, 255, 0.5);
+  --checkout-border: rgba(255, 255, 255, 0.08);
+  --checkout-border-soft: rgba(255, 255, 255, 0.05);
+  --checkout-divider: rgba(255, 255, 255, 0.08);
+  --checkout-accent: #ff1744;
+  --checkout-accent-strong: #d50000;
+  --checkout-accent-soft: rgba(255, 23, 68, 0.08);
+  --checkout-chip-bg: rgba(255, 255, 255, 0.04);
+  --checkout-chip-border: rgba(255, 255, 255, 0.12);
+  --checkout-chip-text: #ffffff;
+  --checkout-input-bg: rgba(0, 0, 0, 0.3);
+  --checkout-input-border: rgba(255, 255, 255, 0.06);
+  --checkout-input-placeholder: rgba(255, 255, 255, 0.45);
+  --checkout-summary-bg: linear-gradient(
+    180deg,
+    rgba(18, 24, 38, 0.98) 0%,
+    rgba(11, 13, 18, 0.96) 100%
+  );
+  --checkout-summary-shadow: 0 18px 50px rgba(0, 0, 0, 0.3);
+  --checkout-ticket-bg: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.015)
+  );
+  --checkout-ticket-border: rgba(255, 255, 255, 0.08);
 }
 
 .premium-label {

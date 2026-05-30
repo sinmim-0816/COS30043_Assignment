@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ArrowLeft, Sofa, CheckCircle2 } from 'lucide-vue-next';
 
@@ -21,6 +21,14 @@ const generatedTxnId = ref('');
 const paymentMethod = ref('stripe');
 const saveInfo = ref(true);
 const isMovieLoading = ref(true);
+const isDarkTheme = ref(false);
+const themeObserver = ref(null);
+
+const syncThemeState = () => {
+    isDarkTheme.value =
+        document.documentElement.classList.contains('dark') ||
+        localStorage.getItem('theme') === 'dark';
+};
 
 // Mock form data bindings
 const cardName = ref('');
@@ -44,6 +52,17 @@ const navigateHome=()=>{
 
 // Load movie details based on current booking instance on mount
 onMounted(async () => {
+    syncThemeState();
+
+    themeObserver.value = new MutationObserver(() => {
+        syncThemeState();
+    });
+
+    themeObserver.value.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
+
     if (route.query.stage === 'payment') {
         localStorage.removeItem('completedBookingBackup');
         localStorage.removeItem('completedTxnIdBackup');
@@ -122,6 +141,10 @@ onMounted(async () => {
     }
 });
 
+onUnmounted(() => {
+    themeObserver.value?.disconnect();
+});
+
 watch(currentBooking, (newVal, oldVal) => {
     if (!newVal && oldVal && currentStage.value !== 3) {
         alert("The 8-minute reservation timeout window expired. Your locked items have been freed.");
@@ -198,12 +221,24 @@ const formattedSeats = computed(() => {
 
 <template>
     <v-app>
-    <v-container width="100vw" fluid class="fill-height bg-dark-theater" theme="dark">
+    <v-container
+        width="100vw"
+        fluid
+        class="fill-height bg-dark-theater checkout-shell"
+        :class="isDarkTheme ? 'theme-dark' : 'theme-light'"
+        :theme="isDarkTheme ? 'dark' : 'light'"
+    >
         <h2>Checkout Payment</h2>
         <v-row no-gutters class="fill-height pt-5">
             <v-col cols="12" md="5" class="d-flex flex-column align-end">
                 <div class="w-100 max-width-left p-3">
-                    <v-btn icon variant="tonal" color="white" class="back-btn" @click="goBack">
+                    <v-btn
+                        icon
+                        variant="tonal"
+                        :color="isDarkTheme ? 'white' : 'grey-darken-4'"
+                        class="back-btn"
+                        @click="goBack"
+                    >
                         <ArrowLeft />
                     </v-btn>
 
@@ -434,8 +469,8 @@ const formattedSeats = computed(() => {
 
                         </v-form>
                     </div>
-                    <div v-else class="fade-in-content ms-5">
-                        <div class="text-center ms-5">
+                    <div v-else class="fade-in-content ms-md-5">
+                        <div class="text-center ms-md-5">
                             <v-avatar size="76" class="confirmation-icon-wrap mb-4">
                                 <CheckCircle2 :size="42" color="#4caf50" />
                             </v-avatar>
@@ -493,7 +528,7 @@ const formattedSeats = computed(() => {
                         </v-card>
 
                         <v-btn color="red-accent-3" height="54"
-                            class="text-white font-weight-black letter-spacing-2 ms-3 px-8 w-100" @click="navigateHome">
+                            class="text-white font-weight-black letter-spacing-2 ms-md-3 px-8 w-100 movie-btn mb-2" @click="navigateHome">
                             View Ticket
                         </v-btn>
                     </div>
@@ -508,16 +543,19 @@ const formattedSeats = computed(() => {
 
 <style scoped>
 .bg-dark-theater {
-    background-color: #0b0d12;
+    background-color: var(--bg-color);
     min-height: 100vh;
+    color: var(--checkout-text);
 }
 
 .bg-matte-black {
-    background-color: #0e1118;
+    background-color: var(--checkout-surface);
 }
 
 .bg-deep-charcoal {
-    background-color: #121620;
+    background: var(--checkout-summary-bg);
+    border: 1px solid var(--checkout-border);
+    box-shadow: var(--checkout-summary-shadow);
     max-width: 650px;
 }
 
@@ -531,19 +569,19 @@ const formattedSeats = computed(() => {
 
 /* Glass Panels and Glowing Containers Layouts */
 .bg-glass {
-    background: rgba(255, 255, 255, 0.02) !important;
+    background: var(--checkout-surface-soft) !important;
 }
 
 .bg-glass-dark {
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--checkout-surface-soft);
 }
 
 .border-glass {
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--checkout-border-soft) !important;
 }
 
 .border-glass-soft {
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid var(--checkout-border) !important;
 }
 
 .bg-red-gradient {
@@ -594,8 +632,8 @@ const formattedSeats = computed(() => {
     font-size: 0.75rem;
     font-weight: 800;
     transition: all 0.3s ease;
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #616161;
+    background-color: var(--checkout-chip-bg);
+    color: var(--checkout-text-muted);
 }
 
 .step-badge.checked-green {
@@ -609,22 +647,22 @@ const formattedSeats = computed(() => {
 }
 
 .step-badge.active {
-    background-color: #ff1744;
+    background-color: var(--checkout-accent);
     color: #ffffff;
-    box-shadow: 0 0 12px rgba(255, 23, 68, 0.6);
+    box-shadow: 0 0 12px rgba(255, 23, 68, 0.35);
 }
 
 .step-line.line-active-red {
-    background-color: #ff1744;
+    background-color: var(--checkout-accent);
 }
 
 .step-badge.pending {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #616161;
+    background-color: var(--checkout-chip-bg);
+    color: var(--checkout-text-muted);
 }
 
 .step-line.line-pending {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--checkout-chip-bg);
 }
 
 .step-line {
@@ -640,20 +678,20 @@ const formattedSeats = computed(() => {
 
 /* Payment Gateway Selector Items */
 .method-selector {
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--checkout-border-soft);
+    background-color: var(--checkout-surface-soft);
     transition: all 0.25s ease-in-out;
 }
 
 .method-selector:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    background-color: rgba(255, 255, 255, 0.04);
+    border-color: var(--checkout-border);
+    background-color: var(--checkout-accent-soft);
 }
 
 .method-selector.active {
-    border-color: #ff1744 !important;
-    background-color: rgba(255, 23, 68, 0.04) !important;
-    box-shadow: 0 0 12px rgba(255, 23, 68, 0.2);
+    border-color: var(--checkout-accent) !important;
+    background-color: var(--checkout-accent-soft) !important;
+    box-shadow: 0 0 12px rgba(255, 23, 68, 0.15);
 }
 
 .stripe-info-alert {
@@ -663,15 +701,15 @@ const formattedSeats = computed(() => {
 
 /* Custom Vuetify Input Fields Overrides */
 :deep(.v-input-dark .v-field) {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
-    color: #ffffff !important;
+    background-color: var(--checkout-input-bg) !important;
+    border: 1px solid var(--checkout-input-border) !important;
+    color: var(--checkout-text) !important;
     border-radius: 10px !important;
     transition: border-color 0.2s;
 }
 
 :deep(.v-input-dark .v-field--focused) {
-    border-color: #ff1744 !important;
+    border-color: var(--checkout-accent) !important;
 }
 
 .checkbox-custom :deep(.v-selection-control) {
@@ -681,7 +719,7 @@ const formattedSeats = computed(() => {
 }
 
 .btn-pay-now {
-    background: linear-gradient(135deg, #ff1744 0%, #d50000 100%) !important;
+    background: var(--movie-btn);
 }
 
 /* Text and Animations Utilities */
@@ -712,12 +750,12 @@ const formattedSeats = computed(() => {
 }
 
 .confirmation-icon-wrap {
-    background: radial-gradient(circle at center, rgba(76, 175, 80, 0.22) 0%, rgba(76, 175, 80, 0.08) 65%, rgba(76, 175, 80, 0.02) 100%);
+    background: radial-gradient(circle at center, var(--checkout-accent-soft) 0%, rgba(76, 175, 80, 0.08) 65%, rgba(76, 175, 80, 0.02) 100%);
 }
 
 .confirmation-ticket {
-    background: linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015)) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: var(--checkout-ticket-bg) !important;
+    border: 1px solid var(--checkout-ticket-border) !important;
     border-radius: 16px !important;
     padding: 24px;
 }
@@ -731,12 +769,12 @@ const formattedSeats = computed(() => {
 
 .ticket-label {
     letter-spacing: 1.6px;
-    color: #ff5252;
+    color: var(--checkout-accent);
     font-weight: 800;
 }
 
 .ticket-movie {
-    color: #ffffff;
+    color: var(--checkout-text);
 }
 
 .confirmation-grid {
@@ -759,13 +797,13 @@ const formattedSeats = computed(() => {
     font-size: 0.68rem;
     text-transform: uppercase;
     letter-spacing: 1.3px;
-    color: #8e95a3;
+    color: var(--checkout-text-muted);
     font-weight: 700;
 }
 
 .item-value {
     font-size: 0.98rem;
-    color: #ffffff;
+    color: var(--checkout-text);
     font-weight: 700;
 }
 
@@ -779,15 +817,41 @@ const formattedSeats = computed(() => {
 .txn-pill {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     font-size: 0.78rem;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--checkout-chip-text);
+    background: var(--checkout-chip-bg);
+    border: 1px solid var(--checkout-chip-border);
     border-radius: 999px;
     padding: 6px 10px;
     max-width: 68%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.checkout-shell.theme-light :deep(.text-white) {
+    color: var(--checkout-text) !important;
+}
+
+.checkout-shell.theme-light :deep(.text-grey),
+.checkout-shell.theme-light :deep(.text-grey-lighten-1),
+.checkout-shell.theme-light :deep(.text-grey-lighten-2),
+.checkout-shell.theme-light :deep(.text-grey-darken-1),
+.checkout-shell.theme-light :deep(.text-grey-darken-2) {
+    color: var(--checkout-text-soft) !important;
+}
+
+.checkout-shell.theme-light :deep(.text-body-2),
+.checkout-shell.theme-light :deep(.text-caption) {
+    color: var(--checkout-text-soft);
+}
+
+.checkout-shell.theme-light :deep(.v-chip.text-white) {
+    color: #ffffff !important;
+}
+
+.checkout-shell.theme-light :deep(.v-divider) {
+    opacity: 1;
+    border-color: var(--checkout-divider);
 }
 
 .gap-2 {
@@ -839,6 +903,106 @@ const formattedSeats = computed(() => {
 @media (max-width: 700px) {
     .confirmation-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 960px) {
+    .bg-deep-charcoal {
+        max-width: 100%;
+        width: 100%;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    .max-width-left,
+    .max-width-right {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .max-width-right {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .step-tracker-pill {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .step-line {
+        width: 18px;
+        margin: 0 4px;
+    }
+
+    .confirmation-ticket,
+    .v-btn.w-100 {
+        width: 100%;
+    }
+
+    .confirmation-ticket {
+        margin-left: 0 !important;
+        padding: 18px;
+    }
+
+    .confirmation-ticket-top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .txn-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .txn-pill {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .bg-dark-theater {
+        padding-bottom: 24px;
+    }
+
+    .bg-deep-charcoal {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+    }
+
+    .max-width-left,
+    .max-width-right {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .max-width-right {
+        margin-top: 8px;
+    }
+
+    .step-tracker-pill {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .step-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+
+    .step-line {
+        width: 12px;
+    }
+
+    .confirmation-ticket {
+        padding: 16px;
+        border-radius: 14px !important;
+    }
+
+    .confirmation-grid {
+        gap: 12px;
     }
 }
 
