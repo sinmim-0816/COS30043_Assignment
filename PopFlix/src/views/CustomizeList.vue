@@ -54,8 +54,8 @@ const openDesignDialog = async (ticket) => {
     <v-app v-else>
         <v-container fluid class="customization-dashboard" width="100vw">
             <h2>Customize Tickets</h2>
-            <v-row v-if="!isTicketsLoading" class="mt-4">
-                <v-col v-for="t in tickets" :key="t.id" cols="12" ms="6" md="4" lg="3">
+            <v-row v-if="!isTicketsLoading" class="mt-4 justify-start">
+                <v-col v-for="t in tickets" :key="t.id" cols="12" sm="6" md="4" lg="3" class="d-flex justify-center">
                     <div class="movie-card">
                         <div class="poster-container">
                             <v-img :src="t.poster" cover height="180" class="rounded-t-lg"></v-img>
@@ -186,9 +186,13 @@ const openDesignDialog = async (ticket) => {
     border: 1px solid rgba(14, 14, 14, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    width: 300%;
-    max-width:300px;
-    max-height: 400px;
+    width: 100%;
+    max-width: 320px;
+    min-width: 0;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .poster-container {
@@ -213,6 +217,9 @@ const openDesignDialog = async (ticket) => {
 
 .card-body {
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .card-body h3 {
@@ -290,6 +297,41 @@ const openDesignDialog = async (ticket) => {
 .custom-btn:hover {
     background: #e53935;
     color: white;
+}
+
+@media (max-width: 960px) {
+    .customization-dashboard {
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .movie-card {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .customization-dashboard {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .movie-card {
+        max-width: 100%;
+    }
+
+    .card-body h3 {
+        font-size: 1.05rem;
+    }
+
+    .info-item {
+        font-size: 0.8rem;
+    }
+
+    .custom-btn {
+        padding: 11px;
+        font-size: 0.95rem;
+    }
 }
 
 .nav-btn {
