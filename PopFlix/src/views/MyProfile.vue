@@ -6,6 +6,7 @@ import {SquarePen, Award, MapPin, ClockFading, User, Ticket, Star, Mail, Phone, 
 import { useAuthStore } from '@/stores/auth';
 import { formatMonthYear } from '@/utils/formatDateTime';
 import { GENRE_MAP } from '@/utils/genre';
+import { resolveBackendAssetPath } from '@/utils/FormatPicture';
 
 const activeTab = ref('Profile');
 const isEditing = ref(false);
@@ -16,6 +17,15 @@ const currentUser = computed(() => authStore.user || {});
 const selectedGenre=ref('');
 const avatarInput = ref(null);
 const originalUser = ref(null);
+const selectedAvatarFile = ref(null);
+
+const cloneUserState = () => JSON.parse(JSON.stringify(user));
+
+const revokeBlobAvatar = (avatar) => {
+  if (typeof avatar === 'string' && avatar.startsWith('blob:')) {
+    URL.revokeObjectURL(avatar);
+  }
+};
 
 const triggerAvatarUpload = () => {
   avatarInput.value?.click();
@@ -26,26 +36,50 @@ const handleAvatarChange = (event) => {
 
   if (!file) return;
 
+  revokeBlobAvatar(user.avatar);
+  selectedAvatarFile.value = file;
+  avatarLoadError.value = false;
   user.avatar = URL.createObjectURL(file);
-
-  // Later:
-  // uploadAvatar(file)
 };
 
 
 const cancelEdit = () => {
   if (originalUser.value) {
+    revokeBlobAvatar(user.avatar);
     Object.assign(user, originalUser.value);
   }
 
   selectedGenre.value = '';
+  selectedAvatarFile.value = null;
   avatarLoadError.value = false;
   isEditing.value = false;
 };
 
 const saveProfile = async () => {
   try {
-    // API call here
+    const userId = authStore.user?.id;
+
+    if (!userId) {
+      throw new Error('Missing user id for profile update.');
+    }
+
+    const formData = new FormData();
+    formData.append('email', user.email || '');
+    formData.append('phone', user.mobile || '');
+    formData.append('gender', user.gender || '');
+    formData.append('location', user.location || '');
+    formData.append('bio', user.bio || '');
+    formData.append('favouriteGenres', JSON.stringify(user.genres || []));
+
+    if (selectedAvatarFile.value) {
+      formData.append('avatar', selectedAvatarFile.value);
+    }
+
+    await authStore.updateProfile(userId, formData);
+    await authStore.fetchProfile();
+    selectedAvatarFile.value = null;
+    originalUser.value = null;
+    avatarLoadError.value = false;
 
     isEditing.value = false;
   } catch (error) {
@@ -115,7 +149,8 @@ const parseGenres = (genres) => {
 const syncLocalUserFromStore = () => {
   const u = currentUser.value || {};
   user.name = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '';
-  user.avatar = u.profileImage || null;
+  user.avatar = u.profileImage ? resolveBackendAssetPath(u.profileImage) : null;
+  avatarLoadError.value = false;
   user.email = u.email || '';
   user.mobile = u.phone || '';
   user.gender = u.gender || 'Undisclosed';
@@ -132,7 +167,6 @@ const syncLocalUserFromStore = () => {
 
 
 watch(currentUser, syncLocalUserFromStore, { immediate: true });
-console.log(currentUser.value);
 
 const userInitial = computed(() => {
   const name = user.name || '';
@@ -178,6 +212,9 @@ const tabs = [
 
 // State Actions
 const toggleEditMode = () => {
+  if (!isEditing.value) {
+    originalUser.value = cloneUserState();
+  }
   isEditing.value = !isEditing.value;
 };
 

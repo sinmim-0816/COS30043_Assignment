@@ -37,6 +37,18 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    async updateProfile(userId, formData) {
+      try {
+        const updatedUser = await authService.updateProfile(userId, formData);
+        this.user = updatedUser;
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        return updatedUser;
+      } catch (error) {
+        console.error('Failed to update profile:', error);
+        throw error.response?.data?.message || 'Failed to update profile';
+      }
+    },
+
     logout() {
       this.user = null;
       this.token = null;

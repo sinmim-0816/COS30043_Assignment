@@ -19,6 +19,7 @@ import logo from '@/assets/popflix_logo.png'
 import { useAuthStore } from '@/stores/auth'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalSearch from './GlobalSearch.vue'
+import { resolveBackendAssetPath } from '@/utils/FormatPicture.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -39,7 +40,6 @@ const isAuthPage = computed(() => {
            path.startsWith('/reset-password') ||
            path.startsWith('/activate');
 })
-
 const showNavLinks = computed(() => !isAuthPage.value)
 
 const hoverStyle = ref({
@@ -163,8 +163,17 @@ watch(
                         :class="{ 'active-trigger': isDropdownOpen }"
                     >
                         <div class="avatar-circle">
-                            {{ currentUser.firstName?.charAt(0).toUpperCase() }}
-                        </div>
+                            <img
+                                v-if="currentUser?.profileImage"
+                                :src="resolveBackendAssetPath(currentUser.profileImage)"
+                                alt="User Avatar"
+                                class="avatar-img"
+                            />
+
+                            <span v-else>
+                                {{ currentUser?.firstName?.charAt(0).toUpperCase() }}
+                            </span>
+                            </div>
 
                         <span v-if="!isMobileScreen" class="user-name-text">
                             {{ currentUser?.firstName }}
@@ -361,6 +370,13 @@ button {
     font-weight: 700;
     font-size: 13px;
     box-shadow: var(--avatar-shadow);
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .user-name-text {

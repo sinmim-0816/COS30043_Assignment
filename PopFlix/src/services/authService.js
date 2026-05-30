@@ -20,6 +20,14 @@ export const authService = {
         return response.data;
     },
 
+    async updateProfile(userId, formData) {
+        const response = await backendClient.patch(
+            `/users/${userId}`,
+            formData,
+        );
+        return response.data;
+    },
+
     async register(userData) {
         try {
             const response = await backendClient.post(API_ENDPOINTS.REGISTER, userData);

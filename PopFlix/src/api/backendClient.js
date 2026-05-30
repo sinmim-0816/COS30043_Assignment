@@ -14,6 +14,14 @@ backendClient.interceptors.request.use(
     const authStore = useAuthStore();
     let token = authStore.token || localStorage.getItem('token');
 
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData && config.headers) {
+      if (typeof config.headers.set === 'function') {
+        config.headers.set('Content-Type', undefined);
+      } else {
+        delete config.headers['Content-Type'];
+      }
+    }
+
     if (token && token !== 'undefined' && token !== 'null') {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
