@@ -290,6 +290,7 @@ onMounted(async () => {
                         :initial-movies="featuredMovies"
                         @close="showFilterDrawer = false"
                         @apply-filters="handleApplyFilters"
+                        class="me-md-5"
                     />
                     </v-col>
             </v-row>
