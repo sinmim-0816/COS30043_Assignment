@@ -130,6 +130,21 @@ body,
   --search-color: white;
   --player-bg: white;
   --pill-bg: rgba(0, 0, 0, 0.05);
+  --booking-surface: rgba(255, 255, 255, 0.9);
+  --booking-surface-strong: rgba(255, 255, 255, 0.98);
+  --booking-border: rgba(4, 20, 53, 0.12);
+  --booking-border-soft: rgba(4, 20, 53, 0.08);
+  --booking-text: #041435;
+  --booking-text-soft: rgba(4, 20, 53, 0.72);
+  --booking-text-muted: rgba(4, 20, 53, 0.52);
+  --booking-ink: #ffffff;
+  --booking-accent: #5ca4e0;
+  --booking-accent-soft: rgba(70, 130, 180, 0.12);
+  --booking-chip-bg: rgba(70, 130, 180, 0.08);
+  --booking-chip-shadow: rgba(4, 20, 53, 0.08);
+  --screen-color: rgba(2, 91, 244, 0.58);
+  --seat-icon: rgba(56, 56, 56, 0.4);
+  --vehicle-bg: white;
 }
 
 html.dark {
@@ -224,6 +239,21 @@ html.dark {
   --search-color: rgb(235, 234, 234);
   --player-bg: #0d0d12;
   --pill-bg: rgba(255, 255, 255, 0.08);
+  --booking-surface: rgba(255, 255, 255, 0.04);
+  --booking-surface-strong: rgba(255, 255, 255, 0.08);
+  --vehicle-bg: #252a3d;
+  --booking-border: rgba(255, 255, 255, 0.08);
+  --booking-border-soft: rgba(255, 255, 255, 0.05);
+  --booking-text: #ffffff;
+  --booking-text-soft: rgba(255, 255, 255, 0.68);
+  --booking-text-muted: rgba(255, 255, 255, 0.45);
+  --booking-ink: #0d0d12;
+  --booking-accent: #a4c5ff;
+  --booking-accent-soft: rgba(164, 197, 255, 0.14);
+  --booking-chip-bg: rgba(255, 255, 255, 0.04);
+  --booking-chip-shadow: rgba(0, 0, 0, 0.18);
+  --screen-color: rgba(164, 197, 255, 0.58);
+  --seat-icon: rgba(255, 255, 255, 0.629);
 }
 
 .premium-label {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
     ChevronLeft, Armchair, Star, Gem, Zap, Coffee, Baby, Timer,
@@ -29,8 +29,8 @@ const lastSelectedSeat = computed(() => {
     return 'A-1';
 });
 
-const { movie, loadMovieDetails, getImageURL, getCertificate } = useMovieDetails();
-const { allSessions, fetchAllShowtimes, currentSession, fetchShowtimeById, loadInitialData } = useShowtimes();
+const { movie, loadMovieDetails, getImageURL, getCertificate, isLoading: isMovieLoading } = useMovieDetails();
+const { allSessions, fetchAllShowtimes, currentSession, fetchShowtimeById, loadInitialData, isLoading: isShowtimeLoading } = useShowtimes();
 const { userVehicles, loadUserVehicles, createNewVehicle, deleteVehicleInstance } = useVehicles();
 
 const experienceType = ref(route.query.exp || 'DOLBY');
@@ -47,6 +47,16 @@ const isVehicleModalOpen = ref(false);
 const serverLockedSeats = computed(() => bookingStore.lockedSeats);
 const serverLockedParkingSpots = computed(() => bookingStore.lockedParkingSpots);
 const activeVehicleTab = ref('new');
+const isDarkTheme = ref(false);
+const themeObserver = ref(null);
+const syncThemeState = () => {
+    isDarkTheme.value = document.documentElement.classList.contains('dark');
+};
+const seatIconColor = computed(() => {
+    return isDarkTheme.value
+        ? 'rgba(255,255,255,0.629)'
+        : 'rgba(56,56,56,0.4)';
+});
 
 const getSeatStatus = (row, col) => {
     const currentSeatId = `${experienceType.value}-${row}-${col}`.trim().toUpperCase();
@@ -55,7 +65,6 @@ const getSeatStatus = (row, col) => {
         return exactMatch.status;
     }
 
-    // Fallback to row-col matching if stored seat prefix differs in formatting.
     const targetSuffix = `${row}-${col}`.toUpperCase();
     const suffixMatch = serverLockedSeats.value.find((s) => {
         const rawSeat = (s.seatNumber || '').trim().toUpperCase();
@@ -112,6 +121,17 @@ const resetSelection = () => {
 };
 
 onMounted(async () => {
+    syncThemeState();
+
+    themeObserver.value = new MutationObserver(() => {
+        syncThemeState();
+    });
+
+    themeObserver.value.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
+
     const movieId = route.params.movieId;
     const showtimeId = route.params.showtimeId;
 
@@ -128,6 +148,10 @@ onMounted(async () => {
 
     await refreshSeatingMap();
     await loadUserVehicles();
+});
+
+onUnmounted(() => {
+    themeObserver.value?.disconnect();
 });
 
 watch(selectedSession, async (newSession) => {
@@ -373,7 +397,19 @@ const handleCheckoutStep = async () => {
 </script>
 
 <template>
-    <v-app full-height class="ms-4">
+    <template v-if="isMovieLoading || isShowtimeLoading">
+        <div class="loading-wrapper">
+            <div class="loader-content">
+                <v-progress-circular indeterminate color="red-accent-3" size="70" width="4">
+                    <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
+                </v-progress-circular>
+
+                <p class="mt-6 loading-text">Loading...</p>
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </template>
+    <v-app v-else full-height class="ms-4 ticket-booking-page">
         <v-main>
             <v-btn icon variant="tonal" color="white" class="back-btn" @click="router.back()">
                 <ChevronLeft />
@@ -465,7 +501,7 @@ const handleCheckoutStep = async () => {
                     <div class="selector-glass-panel d-flex align-center justify-space-between px-8 py-3">
 
                         <div class="selector-item date-group d-flex align-center">
-                            <span class="label-tiny me-4">Date</span>
+                            <span class="label-tiny me-4 fw-bold">Date</span>
                             <v-icon size="14" color="blue" class="me-2">mdi-chevron-left</v-icon>
                             <div class="mini-date-track d-flex gap-2">
                                 <div v-for="date in dateOptions" :key="date.toString()" class="mini-date-pill"
@@ -480,7 +516,7 @@ const handleCheckoutStep = async () => {
                         <v-divider vertical class="mx-6 opacity-10" height="40"></v-divider>
 
                         <div class="selector-item">
-                            <p class="label-tiny">Experience</p>
+                            <p class="label-tiny fw-bold">Experience</p>
                             <v-menu>
                                 <template v-slot:activator="{ props }">
                                     <div v-bind="props" class="d-flex align-center cursor-pointer">
@@ -500,7 +536,7 @@ const handleCheckoutStep = async () => {
                         <v-divider vertical class="mx-6 opacity-10" height="40"></v-divider>
 
                         <div class="selector-item">
-                            <p class="label-tiny">Time</p>
+                            <p class="label-tiny fw-bold">Time</p>
                             <v-menu>
                                 <template v-slot:activator="{ props }">
                                     <div v-bind="props" class="d-flex align-center cursor-pointer">
@@ -519,7 +555,7 @@ const handleCheckoutStep = async () => {
                         <v-divider vertical class="mx-6 opacity-10" height="40"></v-divider>
 
                         <div class="selector-item">
-                            <p class="label-tiny text-blue">Cinema</p>
+                            <p class="label-tiny text-blue fw-bold">Cinema</p>
                             <v-menu>
                                 <template v-slot:activator="{ props }">
                                     <div v-bind="props" class="d-flex align-center cursor-pointer">
@@ -592,11 +628,11 @@ const handleCheckoutStep = async () => {
 
                             <div class="payment-card p-3 rounded-xl mt-3">
                                 <div class="d-flex justify-space-between mb-2">
-                                    <span class="text-grey-darken-3">Tickets</span>
+                                    <span>Tickets</span>
                                     <span class="font-weight-bold">{{ selectedSeats.length }}</span>
                                 </div>
                                 <div class="d-flex justify-space-between mb-4">
-                                    <span class="text-grey-darken-3">Type</span>
+                                    <span >Type</span>
                                     <span class="font-weight-bold">{{ capitalizeFirst(selectedType) }}</span>
                                 </div>
 
@@ -629,8 +665,8 @@ const handleCheckoutStep = async () => {
                                     <p class="screen-text">SCREEN</p>
                                 </div>
                                 <div class="d-flex justify-end mb-4">
-                                    <v-btn variant="tonal" color="blue-lighten-3" prepend-icon="mdi-cube-outline"
-                                    @click="is3DPreviewOpen = true" :disabled="selectedSeats.length === 0" class="ar_btn">
+                                    <v-btn variant="tonal" prepend-icon="mdi-cube-outline"
+                                    @click="is3DPreviewOpen = true" :disabled="selectedSeats.length === 0">
                                         View from Seat
                                     </v-btn>
                                 </div>
@@ -648,7 +684,7 @@ const handleCheckoutStep = async () => {
                                                 <div v-if="isSeatPaid(row, col)" class="sold-out-slash"></div>
 
                                                 <component :is="getSeatIcon()" :size="14" :stroke-width="2.5"
-                                                    :color="isSeatPaid(row, col) ? '#2a2f3a' : (isSeatPending(row, col) ? '#ff9100' : (selectedSeats.includes(`${experienceType}-${row}-${col}`) ? '#0d0d12' : 'rgba(255,255,255,0.4)'))" />
+                                                    :color="isSeatPaid(row, col) ? '#2a2f3a' : (isSeatPending(row, col) ? '#ff9100' : (selectedSeats.includes(`${experienceType}-${row}-${col}`) ? '#0d0d12' : seatIconColor))" />
                                             </div>
 
                                             <div v-if="config.aisleAfter?.includes(col)" class="aisle-space"></div>
@@ -732,12 +768,12 @@ const handleCheckoutStep = async () => {
                                     </div>
                                     <div class="spot-info-pill pa-3 px-6 rounded-xl">
                                         <div class="text-caption text-grey">Your Spot</div>
-                                        <div class="font-weight-bold text-blue">{{ selectedSpot || 'Not Selected' }}
+                                        <div class="fw-bold text-blue">{{ selectedSpot || 'Not Selected' }}
                                         </div>
                                     </div>
                                     <div v-if="parkingTimeWindow" class="spot-info-pill pa-3 px-6 rounded-xl">
                                         <div class="text-caption text-grey">Free Parking Duration</div>
-                                        <div class="font-weight-bold text-green-accent-3">
+                                        <div class="fw-bold text-green-accent-3">
                                             {{ parkingTimeWindow.start }} - {{ parkingTimeWindow.end }}
                                         </div>
                                     </div>
@@ -870,12 +906,12 @@ const handleCheckoutStep = async () => {
                 </v-card>
             </v-dialog>
         </v-main>
-        <v-dialog v-model="isVehicleModalOpen" max-width="480px" persistent theme="dark">
-            <v-card class="rounded-xl overflow-hidden vehicle_modal">
+        <v-dialog v-model="isVehicleModalOpen" max-width="480px" persistent :theme="isDarkTheme ? 'dark' : 'light'">
+            <v-card class="rounded-xl overflow-hidden vehicle_modal" :theme="isDarkTheme ? 'dark' : 'light'">
                 <v-card-item class="pa-5 border-bottom  bg-matte-black">
                     <div class="d-flex justify-space-between align-center">
                         <div>
-                            <v-card-title class="text-h5 font-weight-black text-white pa-0">Manage
+                            <v-card-title class="text-h5 font-weight-black text-color pa-0">Manage
                                 Vehicles</v-card-title>
                         </div>
                         <v-btn icon size="small" variant="tonal" color="grey-lighten-1" class="closeBtn"
@@ -972,7 +1008,7 @@ const handleCheckoutStep = async () => {
                                     <div class="d-flex align-center gap-3">
                                         <div class="fleet-status-dot" :style="{ backgroundColor: v.color }"></div>
                                         <div class="min-width-0">
-                                            <div class="text-body-2 font-weight-bold text-white truncate">{{ v.model }}
+                                            <div class="text-body-2 fw-bold text-color truncate">{{ v.model }}
                                             </div>
                                             <div class="text-caption font-mono tracking-wider text-grey-lighten-1">{{
                                                 v.plateNumber }}
@@ -1008,23 +1044,47 @@ const handleCheckoutStep = async () => {
 </template>
 
 <style scoped>
+.ticket-booking-page :deep(.v-main) {
+    color: var(--booking-text);
+}
+
+.ticket-booking-page .text-white {
+    color: var(--booking-text) !important;
+}
+
+.ticket-booking-page .text-grey-lighten-1,
+.ticket-booking-page .text-grey-lighten-2,
+.ticket-booking-page .text-grey-darken-1,
+.ticket-booking-page .text-grey {
+    color: var(--booking-text-soft) !important;
+}
+
+.ticket-booking-page .back-btn {
+    color: var(--booking-text) !important;
+}
+
+.ticket-booking-page .bg-matte-black {
+    background: var(--booking-surface-strong) !important;
+}
+
 .info-section {
     margin: 0 8vw;
 }
 
 .session-info-bar {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--booking-surface);
+    border: 1px solid var(--booking-border);
     backdrop-filter: blur(10px);
     width: fit-content;
     display: flex;
     gap: 24px;
+    color: var(--booking-text);
 }
 
 .info-label {
     font-size: 0.65rem;
     text-transform: uppercase;
-    color: #777;
+    color: var(--booking-text-muted);
     margin-bottom: 2px;
     letter-spacing: 1px;
     line-height: 1;
@@ -1034,7 +1094,7 @@ const handleCheckoutStep = async () => {
     font-weight: 700;
     margin-bottom: 0;
     font-size: 0.95rem;
-    color: #eee;
+    color: var(--booking-text);
 }
 
 .quick-selector-wrapper {
@@ -1042,15 +1102,16 @@ const handleCheckoutStep = async () => {
 }
 
 .selector-glass-panel {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--booking-surface);
+    border: 1px solid var(--booking-border-soft);
     border-radius: 24px;
     backdrop-filter: blur(20px);
+    color: var(--booking-text);
 }
 
 .label-tiny {
     font-size: 0.65rem;
-    color: #5c6b89;
+    color: var(--booking-text-muted);
     text-transform: capitalize;
     margin-bottom: 2px;
 }
@@ -1058,7 +1119,7 @@ const handleCheckoutStep = async () => {
 .val-text {
     font-size: 1.1rem;
     font-weight: 500;
-    color: #ffffff;
+    color: var(--booking-text);
     letter-spacing: 0.5px;
 }
 
@@ -1086,15 +1147,15 @@ const handleCheckoutStep = async () => {
 }
 
 .mini-date-pill.active {
-    background: #a4c5ff;
-    color: #0d0d12 !important;
+    background: var(--booking-accent);
+    color: var(--booking-ink) !important;
     opacity: 1;
     box-shadow: 0 4px 15px rgba(164, 197, 255, 0.3);
 }
 
 .mini-date-pill:hover:not(.active) {
     opacity: 0.8;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--booking-chip-bg);
 }
 
 .cursor-pointer {
@@ -1102,7 +1163,7 @@ const handleCheckoutStep = async () => {
 }
 
 .text-blue {
-    color: #448aff !important;
+    color: var(--booking-accent) !important;
 }
 
 .gap-2 {
@@ -1141,20 +1202,23 @@ const handleCheckoutStep = async () => {
 
 .checkout-sidebar {
     background: transparent;
+    color: var(--booking-text);
 }
 
 .payment-card {
-    background: #a4c5ff;
-    color: #0d0d12;
+    background: var(--booking-accent);
+    color: var(--booking-ink);
+    box-shadow: 0 18px 40px var(--booking-chip-shadow);
 }
 
 .border-top {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--booking-border);
 }
 
 .map-container {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--booking-surface);
+    border: 1px solid var(--booking-border-soft);
+    color: var(--booking-text);
 }
 
 .screen-wrapper {
@@ -1169,7 +1233,7 @@ const handleCheckoutStep = async () => {
 .curved-screen {
     width: 85%;
     height: 8px;
-    background: #a4c5ff;
+    background: var(--booking-accent);
     border-radius: 50% / 100%;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -1184,7 +1248,7 @@ const handleCheckoutStep = async () => {
 .screen-text {
     font-size: 1rem;
     letter-spacing: 0.5rem;
-    color: rgba(164, 197, 255, 0.5);
+    color: var(--screen-color);
     text-transform: uppercase;
     font-weight: 800;
     margin-top: 15px;
@@ -1193,20 +1257,20 @@ const handleCheckoutStep = async () => {
 .seat-pill {
     width: 32px;
     height: 26px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--booking-chip-bg);
+    border: 1px solid var(--booking-border-soft);
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease-in-out;
 }
 
 .seat-pill:hover:not(.taken) {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--booking-accent-soft);
     transform: translateY(-2px);
 }
 
 .seat-pill.active {
-    background: #a4c5ff;
+    background: var(--booking-accent);
     box-shadow: 0 0 12px rgba(164, 197, 255, 0.8);
 }
 
@@ -1222,7 +1286,7 @@ const handleCheckoutStep = async () => {
 }
 
 .row-label {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--booking-text-muted);
     font-size: 0.8rem;
     font-weight: bold;
     width: 20px;
@@ -1240,7 +1304,7 @@ const handleCheckoutStep = async () => {
 
 
 .dot.sold-out {
-    background: #151821;
+    background: var(--booking-ink);
     border: 1px solid rgba(255, 23, 68, 0.4);
     position: relative;
     overflow: hidden;
@@ -1256,12 +1320,12 @@ const handleCheckoutStep = async () => {
 }
 
 .dot.available {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--booking-chip-bg);
+    border: 1px solid var(--booking-border);
 }
 
 .dot.selected {
-    background: #a4c5ff;
+    background: var(--booking-accent);
 }
 
 .dot.pending-hold {
@@ -1270,7 +1334,7 @@ const handleCheckoutStep = async () => {
 }
 
 .dot.sold-out {
-    background: #161920;
+    background: var(--booking-ink);
     opacity: 0.3;
 }
 
@@ -1323,33 +1387,34 @@ const handleCheckoutStep = async () => {
 
 .car-info-pill,
 .spot-info-pill {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--booking-surface);
+    border: 1px solid var(--booking-border);
     min-width: 180px;
+    color: var(--booking-text);
 }
 
 .parking-spot {
     width: 90%;
     height: 40px;
     background: transparent;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--booking-border);
+    border-bottom: 1px solid var(--booking-border);
     cursor: pointer;
     position: relative;
     transition: 0.3s;
 }
 
 .parking-spot:hover {
-    background: rgba(68, 138, 255, 0.1);
+    background: var(--booking-accent-soft);
 }
 
 .parking-spot.selected {
-    background: #448aff;
-    border-color: #448aff;
+    background: var(--booking-accent);
+    border-color: var(--booking-accent);
 }
 
 .parking-spot.parking-paid-taken {
-    background: #151821;
+    background: var(--booking-ink);
     border-color: rgba(255, 23, 68, 0.35);
     opacity: 0.5;
     pointer-events: none;
@@ -1368,7 +1433,7 @@ const handleCheckoutStep = async () => {
     position: absolute;
     left: 10px;
     font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--booking-text-muted);
 }
 
 .parking-zone {
@@ -1385,17 +1450,18 @@ const handleCheckoutStep = async () => {
     background: repeating-linear-gradient(0deg,
             transparent,
             transparent 10px,
-            rgba(255, 255, 255, 0.1) 10px,
-            rgba(255, 255, 255, 0.1) 20px);
+            var(--booking-border) 10px,
+            var(--booking-border) 20px);
 }
 
+
 .total-card-final {
-    background: #a4c5ff;
-    color: #0d0d12;
+    background: var(--booking-accent);
+    color: var(--booking-ink);
 }
 
 .text-blue {
-    color: #a4c5ff !important;
+    color: var(--booking-accent) !important;
 }
 
 .color-pill {
@@ -1412,8 +1478,8 @@ const handleCheckoutStep = async () => {
 
 .color-pill.active {
     transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.5);
+    border-color: var(--booking-accent);
+    box-shadow: 0 10px 20px -5px var(--booking-chip-shadow);
 }
 
 .save-btn {
@@ -1423,17 +1489,17 @@ const handleCheckoutStep = async () => {
 }
 
 .save-btn:disabled {
-    background: rgba(255, 255, 255, 0.05) !important;
-    color: rgba(255, 255, 255, 0.2) !important;
+    background: var(--booking-chip-bg) !important;
+    color: var(--booking-text-muted) !important;
 }
 
 :deep(.v-field--variant-outlined) {
     --v-field-border-opacity: 0.15;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--booking-chip-bg);
 }
 
 :deep(.v-field--focused) {
-    background: rgba(68, 138, 255, 0.05);
+    background: var(--booking-accent-soft);
 }
 
 .animate-pulse-slow {
@@ -1442,12 +1508,12 @@ const handleCheckoutStep = async () => {
 
 .dot.parking-available {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--booking-border);
 }
 
 .dot.parking-selected {
-    background: #448aff;
-    border: 1px solid rgba(68, 138, 255, 0.5);
+    background: var(--booking-accent);
+    border: 1px solid var(--booking-accent);
 }
 
 .dot.parking-hold-legend {
@@ -1456,7 +1522,7 @@ const handleCheckoutStep = async () => {
 }
 
 .dot.parking-sold-legend {
-    background: #151821;
+    background: var(--booking-ink);
     border: 1px solid rgba(255, 23, 68, 0.35);
 }
 
@@ -1475,7 +1541,7 @@ const handleCheckoutStep = async () => {
 }
 
 .border-bottom {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+    border-bottom: 1px solid var(--booking-border-soft) !important;
 }
 
 .inline-block {
@@ -1483,7 +1549,7 @@ const handleCheckoutStep = async () => {
 }
 
 .live-plate-badge {
-    background: #141d17;
+    background: rgba(20, 29, 23, 0.92);
     border: 1px solid rgba(0, 230, 118, 0.25);
     border-radius: 6px;
     color: #00e676;
@@ -1516,8 +1582,8 @@ const handleCheckoutStep = async () => {
 
 .color-swatch-pill.active {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    border-color: #448aff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    border-color: var(--booking-accent) !important;
 }
 
 .max-height-saved {
@@ -1525,8 +1591,9 @@ const handleCheckoutStep = async () => {
 }
 
 .fleet-row-item {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--booking-surface);
     transition: all 0.2s ease;
+    border: 1px solid var(--booking-border-soft);
 }
 
 .selected-active-row {
@@ -1558,17 +1625,54 @@ const handleCheckoutStep = async () => {
 }
 
 .vehicle_modal {
-    background-color: #1a1a24;
+    background-color: var(--vehicle-bg);
+    border: 1px solid var(--booking-border);
+    color: var(--booking-text);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.vehicle_modal .bg-glass {
+    background: var(--booking-chip-bg) !important;
+    border: 1px solid var(--booking-border-soft);
+}
+
+.vehicle_modal :deep(.v-field) {
+    background: var(--booking-surface) !important;
+    color: var(--booking-text) !important;
+}
+
+.vehicle_modal :deep(.v-field__input),
+.vehicle_modal :deep(.v-label),
+.vehicle_modal :deep(.v-field__prepend-inner),
+.vehicle_modal :deep(.v-field__append-inner),
+.vehicle_modal :deep(.v-field__clearable),
+.vehicle_modal :deep(.v-messages) {
+    color: var(--booking-text) !important;
+}
+
+.vehicle_modal :deep(.v-field__outline) {
+    --v-field-border-opacity: 1;
+    color: var(--booking-border) !important;
+}
+
+.vehicle_modal :deep(.v-tab) {
+    color: var(--booking-text-soft) !important;
+}
+
+.vehicle_modal :deep(.v-tab--selected) {
+    color: var(--booking-accent) !important;
+    background: var(--booking-accent-soft) !important;
 }
 
 .seat-preview-dialog {
-    background: #050508 !important;
+    background: var(--booking-page-bg) !important;
+    color: var(--booking-text);
 }
 
 .seat-preview-header {
     min-height: 58px;
-    background: rgba(5, 5, 8, 0.96);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--booking-surface-strong);
+    border-bottom: 1px solid var(--booking-border);
 }
 
 .seat-preview-body {
@@ -1576,4 +1680,3 @@ const handleCheckoutStep = async () => {
     overflow: hidden;
 }
 </style>
-<!-- Add Loading -->

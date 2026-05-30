@@ -70,11 +70,9 @@ onUnmounted(() => {
 .arrow-icon {
   width: 18px;
   height: 18px;
-  /* Ensures crisp rendering of the thin chevron path */
   stroke-width: 3.5; 
 }
 
-/* Global Transition Animations */
 .fade-scale-enter-active,
 .fade-scale-leave-active {
   transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
