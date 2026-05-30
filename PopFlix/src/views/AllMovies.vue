@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue';
 import { MasonryWall } from '@yeger/vue-masonry-wall';
 import { Star, Tag, ClockFading, MessageCircle, BellRing, BadgeInfo, Info, ChevronUp, ChevronDown } from '@lucide/vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useDisplay } from 'vuetify';
 
 // Import other components, hook
 import { useMovies } from '@/hook/useMovies';
@@ -23,6 +24,7 @@ const {
     getLanguageName = getLanguageName,
     getCertificate = getCertificate,
 } = useMovies();
+const { xs, sm, md, lg } = useDisplay()
 const { items: experiences, loading, loadExperiences } = useExperience();
 const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
 const router = useRouter();
@@ -41,6 +43,20 @@ const pageSize = ref(25);
 const isPageLoading = computed(() => allMoviesLoading.value);
 const allMoviesBase = ref([]);
 const baseCaptured = ref(false);
+
+const masonryColumnWidth = computed(() => {
+    if (xs.value) return 140
+    if (sm.value) return 180
+    if (md.value) return 200
+    if (lg.value) return 220
+    return 230
+})
+
+const masonryGap = computed(() => {
+    if (xs.value) return 12
+    if (sm.value) return 16
+    return 30
+})
 
 const findSessionForMovie = (movieId) => {
     const now = new Date();
@@ -282,9 +298,9 @@ onBeforeUnmount(() => {
     <v-app v-else>
     <v-layout>
         <v-container fluid class="container-fluid">
-            <h2>Explore Big Screens</h2>
+            <h2 class="mt-2">Explore Big Screens</h2>
             <v-row class="ms-5">
-                <div class="d-flex flex-wrap gap-3 mx-auto mt-5 align-center">
+                <div class="d-flex flex-wrap gap-3 mx-auto mt-3 mb-3 align-center">
                     <v-btn rounded="pill" :variant="activeExp === 'All' ? 'flat' : 'outlined'"
                         :color="activeExp === 'All' ? 'white' : 'grey-lighten-1'" @click="activeExp = 'All'"
                         class="experience-font all-btn">
@@ -307,7 +323,7 @@ onBeforeUnmount(() => {
                     </v-btn>
                 </div>
                 </v-row>
-                <div class="d-flex justify-space-between tool my-3">
+                <div class="d-flex justify-space-between flex-row my-3 mx-5 gap-3">
                     <v-text-field
                         v-model="searchQuery"
                         placeholder="Search movies..."
@@ -359,7 +375,9 @@ onBeforeUnmount(() => {
                 <p class="text-grey-darken-1">Try adjusting your filters or checking a different experience.</p>
             </div>
             <div v-else class="masonry-wrapper">
-                <masonry-wall :items="finalFilteredMovies" :column-width="230" :gap="30" class="mt-4">
+                <masonry-wall :items="finalFilteredMovies"
+                    :column-width="masonryColumnWidth"
+                    :gap="masonryGap" class="mt-4">
                     <template #default="slotProps">
                         <v-hover v-slot="{ isHovering, props }">
                             <v-card v-if="slotProps && slotProps?.item && slotProps?.item?.id"
@@ -388,11 +406,11 @@ onBeforeUnmount(() => {
                                     <div class="card-action-overlay">
                                         <v-btn variant="flat" class="info p-0 m-2"
                                             @click="gotoMovieDetails(slotProps.item.id)">
-                                            <BadgeInfo size="28" color="white" class="mb-2" />
-                                            <span class="text-white ms-2 mb-2">More Info</span>
+                                            <BadgeInfo size="28" color="white" class="mb-2 info-icon" />
+                                            <span class="text-white info-text ms-2 mb-2">More Info</span>
                                         </v-btn>
                                         <div class="position-absolute bottom-0 overlay-container p-3">
-                                            <h3 class="text-white mb-1 fs-5">{{ slotProps.item.title }}</h3>
+                                            <h3 class="title text-white mb-1 fs-5">{{ slotProps.item.title }}</h3>
                                             <div class="d-flex align-center mb-1">
                                                 <Star size="14" fill="#f5c518" color="#f5c518" class="me-1" />
                                                 <span class="text-white text-caption">{{
@@ -427,12 +445,16 @@ onBeforeUnmount(() => {
                     </template>
                 </masonry-wall>
             </div>
-            <div v-if="allMoviesMeta.totalPages > 1" class="pagination-shell d-flex flex-column align-center mt-10 mb-6">
+            <div
+                v-if="allMoviesMeta.totalPages > 1"
+                class="pagination-shell d-flex flex-column align-center mt-10 mb-6"
+            >
                 <v-pagination
                     :model-value="currentPage"
                     :length="allMoviesMeta.totalPages"
-                    rounded="circle"
                     :total-visible="7"
+                    rounded="circle"
+                    class="movie-pagination"
                     @update:model-value="handlePageChange"
                 />
             </div>
@@ -480,7 +502,7 @@ onBeforeUnmount(() => {
 </template>
 
 
-<style>
+<style scoped>
 h2 {
     margin-top: 11vh !important;
 }
@@ -531,10 +553,49 @@ h2 {
     transition: color 0.3s ease;
 }
 
-.pagination-shell {
-    padding: 0 1rem;
+.movie-pagination :deep(.v-btn) {
+    min-width: 42px;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px !important;
+    background: var(--card-bg-color);
+    color: var(--text-color);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.25s ease;
+    margin-right: 8px;
 }
 
+.movie-pagination :deep(.v-btn:hover) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+.movie-pagination :deep(.v-btn--active) {
+    background: linear-gradient(
+        135deg,
+        rgb(var(--v-theme-red-accent-3)),
+        rgb(var(--v-theme-red-accent-4))
+    ) !important;
+
+    color: white !important;
+    border: none;
+    box-shadow: 0 8px 20px rgba(255, 82, 82, 0.35);
+}
+
+.movie-pagination :deep(.v-pagination__prev .v-btn),
+.movie-pagination :deep(.v-pagination__next .v-btn) {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+.v-theme--light .movie-pagination :deep(.v-btn) {
+    border-color: rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.movie-pagination :deep(.v-btn--disabled) {
+    opacity: 0.4;
+}
 .filter-pill {
     background-color: var(--pill-bg);
     color: var(--pill-color);
@@ -555,11 +616,6 @@ h2 {
         padding: 0 1rem;
     }
 
-    .tool {
-        flex-direction: column;
-        gap: 0.75rem;
-        padding: 0 1rem;
-    }
 
     .pills {
         margin-left: 1rem;
