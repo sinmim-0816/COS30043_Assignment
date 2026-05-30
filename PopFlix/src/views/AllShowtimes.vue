@@ -216,7 +216,7 @@ onMounted(async () => {
             </div>
         </div>
     </template>
-    <v-app v-else full-height class="mt-2 ms-5">
+    <v-app v-else full-height class="mt-2 ms-md-5">
         <h2>Movie Showtimes</h2>
         <v-container fluid width="100vw">
             <v-row class="align-center mx-auto mt-2 selection">
@@ -243,8 +243,8 @@ onMounted(async () => {
                 </v-col>
 
                 <v-col cols="6" md="8" >
-                    <p class="text-subtitle-2 text-color mb-4 mx-4">Select date:</p>
-                    <div class="date-scroll-container px-4">
+                    <p class="text-subtitle-2 text-color mb-4 mx-md-4">Select Date:</p>
+                    <div class="date-scroll-container px-md-4">
                         <v-card v-for="date in dateOptions" :key="date" @click="selectedDate = date"
                             :class="['date-pill', { 'active-date': format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd') }]"
                             elevation="0">
@@ -263,7 +263,7 @@ onMounted(async () => {
                                 :key="pill.type + pill.id"
                                 closable
                                 variant="outlined"
-                                color="white"
+                                color="white filter-pill"
                                 @click:close="removePill(pill)"
                                 class="me-3 gap-2"
                             >
@@ -277,7 +277,7 @@ onMounted(async () => {
                             variant="outlined"
                             prepend-icon="mdi-filter-variant"
                             @click="showFilterDrawer = true"
-                            class="me-3"
+                            class="me-md-3"
                             >
                             Filter-By
                         </v-btn>
@@ -315,7 +315,7 @@ onMounted(async () => {
                         <v-row no-gutters>
                             <v-col cols="12" sm="3" md="2">
                                 <v-img :src="getImageURL(movie.poster)" cover height="100%"
-                                    class="rounded-l-lg position-relative">
+                                    class="rounded-l-lg position-relative movie-poster ">
                                     <v-img :src="getCertImage(getCertificate(movie))" width="45" height="45" contain
                                         class="position-absolute bottom-0 left-0 m-2"></v-img>
                                 </v-img>
@@ -328,7 +328,7 @@ onMounted(async () => {
                                         <div class="text-caption text-color">
                                             {{ movie.runtime }} &bull; {{ getLanguageName(movie.language) }}
                                         </div>
-                                        <div class="d-flex gap-2 mt-3">
+                                        <div class="d-flex gap-2 mt-3 genres">
                                             <v-chip v-for="id in movie?.genres" :key="id" variant="tonal"
                                                 class="font-weight-bold">
                                                 {{ getGenreName(id) }}
@@ -495,6 +495,10 @@ h2 {
     max-width: 85vw;
 }
 
+.movie-poster{
+    height:100%;
+}
+
 .session-time-btn:hover {
     background-color: #ff5252 !important;
     border-color: #ff5252;
@@ -513,5 +517,38 @@ h2 {
 .list-bg{
     background-color: var(--dropdown-bg);
     color: var(--text-color);
+}
+
+.filter-pill {
+    background-color: var(--pill-bg);
+    color: var(--text-color ) !important;
+    border: 1px solid var(--text-color);
+    transition: all 0.3s ease;
+}
+
+
+
+@media (max-width: 600px) {
+    .date-scroll-container {
+        flex-wrap: wrap;
+        gap: 8px;
+        width:400px;
+        justify-content: flex-start;
+    }
+
+    .date-pill {
+        width: 60px;
+        min-width: 60px;
+        height: 90px;
+    }
+
+    .movie-poster{
+        max-height: 190px;
+    }
+
+    .genres{
+        max-width:200px;
+        flex-wrap: wrap;
+    }
 }
 </style>

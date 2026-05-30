@@ -598,7 +598,7 @@ h2 {
 }
 .filter-pill {
     background-color: var(--pill-bg);
-    color: var(--pill-color);
+    color: var(--text-color ) !important;
     border: 1px solid var(--text-color);
     transition: all 0.3s ease;
 }
