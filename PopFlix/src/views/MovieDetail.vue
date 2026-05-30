@@ -1,13 +1,16 @@
 <script setup>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { Star, Calendar, ArrowLeft, CirclePlay, Timer, ChevronLeft, ChevronRight, Bell, CheckCircle, Info } from 'lucide-vue-next';
+
+// Import other hook and components
 import { useMovieDetails } from '@/hook/useMovieDetails';
 import { useReviews } from '@/hook/useReviews';
 import { useReminders } from '@/hook/useReminder';
 import { movieRepository } from '@/services/movieRepository';
 import { getGenreName } from '@/utils/genre';
 import { getCertImage } from '@/utils/AgeRating';
-import { Star, Calendar, ArrowLeft, CirclePlay, Timer, ChevronLeft, ChevronRight, Bell, CheckCircle, Info } from 'lucide-vue-next';
+import FooterView from '@/components/FooterView.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -211,7 +214,7 @@ const getClipClass = (index) => {
         </div>
     </template>
     <v-app v-else-if="movie" full-height class="container-fluid m-0 p-0">
-        <v-btn icon variant="tonal" color="white" class="back-btn mt-3" @click="router.back()">
+        <v-btn icon variant="tonal" color="white" class="back-btn mt-md-3 mt-1" @click="router.back()">
             <ArrowLeft />
         </v-btn>
         <v-fade-transition>
@@ -228,15 +231,15 @@ const getClipClass = (index) => {
         </v-fade-transition>
         <v-main>
             <section class="hero-section">
-                <v-img :src="getImageURL(movie?.backdrop, 'original')" height="550px" cover>
+                <v-img :src="getImageURL(movie?.backdrop, 'original')" height="570px" cover>
                     <div class="overlay-gradient"></div>
                     <div class="hero-overlay-bottom"></div>
                     <div class="hero-overlay-left"></div>
 
                     <v-container class="relative-z container-fluid overlay-content" width="100vw">
-                        <v-row align="end" class="mb-5">
-                            <v-col cols="12" md="4" lg="3" class="d-none d-md-block flex-start">
-                                <div class="position-relative d-inline-block">
+                        <v-row align="end" class="mb-5 hero-row">
+                            <v-col cols="12" md="4" lg="3" class="hero-poster-col flex-start">
+                                <div class="position-relative d-inline-block hero-poster-wrap">
                                     <v-img :src="getImageURL(movie?.poster)" class="rounded-4 elevation-24 hero-poster"
                                         :aspect-ratio="2 / 3" width="250"></v-img>
                                     <v-btn icon color="transparent" size="large" class="floating-play-btn"
@@ -246,7 +249,7 @@ const getClipClass = (index) => {
                                     </v-btn>
                                 </div>
                             </v-col>
-                            <v-col cols="12" md="8" lg="9">
+                            <v-col cols="12" md="8" lg="9" class="hero-details-col">
                                 <div class="ps-md-8">
                                     <div class="d-flex align-center gap-3 mb-2">
                                         <v-img :src="getCertImage(getCertificate(movie))" width="45" height="45" contain
@@ -258,7 +261,7 @@ const getClipClass = (index) => {
                                         </v-chip>
                                     </div>
                                     <h1 class="text-h2 font-weight-black text-white mb-2">{{ movie?.title }}</h1>
-                                    <h4 class="fs-6 font-italic  text-white ps-2 italic-quote tagline">
+                                    <h4 class="fs-6 font-italic text-white ps-2 italic-quote tagline">
                                         "{{ movie?.tagline || movie?.overview.split('.')[0] + '.' }}"
                                     </h4>
                                     <div class="d-flex align-center gap-2 mb-8 text-white">
@@ -401,7 +404,7 @@ const getClipClass = (index) => {
                     </div>
                 </v-expand-transition>
             </section>
-            <section v-if="movie" class="details-section">
+            <section v-if="movie">
                 <h2>Top Billed Cast</h2>
                 <v-container>
                     <v-row justify="center">
@@ -438,7 +441,7 @@ const getClipClass = (index) => {
                     </v-row>
                 </v-container>
             </section>
-            <section v-if="movie?.backdrops?.length" class="poster-gallery-section">
+            <section v-if="movie?.backdrops?.length">
                 <div class="text-center mb-3">
                     <h2 class="section-title">Official Posters</h2>
                 </div>
@@ -446,8 +449,12 @@ const getClipClass = (index) => {
                     <div class="dynamic-poster-flex" :class="{ 'center-justify': movie.backdrops.length <= 3 }">
                         <div v-for="(url, index) in movie.backdrops" :key="index" class="poster-wrapper">
                             <div class="poster-card">
-                                <v-img :src="getImageURL(url)" cover class="rounded-lg shadow-24" width="350px">
-                                </v-img>
+                                <v-img
+                                    :src="getImageURL(url)"
+                                    cover
+                                    width="400px"
+                                    class="poster-image rounded-lg shadow-24"
+                                />
                             </div>
                         </div>
                     </div>
@@ -544,6 +551,7 @@ const getClipClass = (index) => {
                 </v-container>
             </section>
         </v-main>
+        <FooterView/>
     </v-app>
 </template>
 
@@ -594,6 +602,20 @@ const getClipClass = (index) => {
 
 .overlay-content {
     transform: translateY(145px);
+}
+
+.hero-row {
+    align-items: flex-end;
+}
+
+.hero-poster-col {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.hero-poster-wrap {
+    width: 100%;
+    max-width: 250px;
 }
 
 .tagline {
@@ -940,13 +962,16 @@ const getClipClass = (index) => {
 }
 
 .poster-wrapper {
-    flex: 1 1 240px;
+    flex: 1 300px;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    justify-content: center;
 }
 
 .poster-card {
     border-radius: 5px;
     display: flex;
+    width: 100%;
 }
 
 .poster-card:hover .poster-overlay {
@@ -954,20 +979,31 @@ const getClipClass = (index) => {
 }
 
 .poster-card .v-img {
-    max-width: 800px;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex:1;
     display: block;
     margin: 0 auto;
 }
 
 @media (max-width: 600px) {
     .poster-wrapper {
-        flex: 1 1 140px;
-        max-width: 180px;
+        flex: 1 1 100%;
+        max-width: 100%;
     }
 
     .dynamic-poster-flex {
         gap: 15px;
         justify-content: center;
+    }
+
+    .poster-card {
+        max-width: 100%;
+    }
+
+    .poster-card .v-img {
+        width: 100% !important;
+        max-width: 100% !important;
     }
 }
 
@@ -1117,6 +1153,245 @@ const getClipClass = (index) => {
 @media (max-width: 959px) {
     .ledger-table th {
         width: 40%;
+    }
+}
+
+@media (max-width: 1264px) {
+    .overlay-content {
+        transform: translateY(110px);
+    }
+
+    .hero-poster {
+        transform: translateX(40px);
+    }
+
+    .tagline {
+        width: 100%;
+    }
+
+    .frames-track,
+    .sprocket-row,
+    .player-area,
+    .production-section,
+    .news-wrap {
+        margin-left: 48px;
+        margin-right: 48px;
+    }
+}
+
+@media (max-width: 960px) {
+
+    .overlay-content {
+        transform: translateY(78px);
+    }
+
+    .hero-overlay-left,
+    .overlay-gradient {
+        background: linear-gradient(to bottom, rgba(10, 14, 23, 0.08) 0%, rgba(10, 14, 23, 0.45) 100%);
+    }
+
+    .frames-track,
+    .sprocket-row,
+    .player-area,
+    .production-section,
+    .news-wrap {
+        margin-left: 24px;
+        margin-right: 24px;
+    }
+
+    .carousel-main-row {
+        width: 100%;
+        gap: 12px;
+    }
+
+    .cast-carousel-wrapper {
+        gap: 16px;
+        padding: 16px 0;
+        mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    }
+
+    .cast-card {
+        flex: 0 0 120px;
+    }
+
+    .nav-btn-side {
+        width: 40px;
+        height: 40px;
+    }
+
+    .sticky-btn {
+        right: 16px;
+        top: 72px;
+        width: 132px;
+    }
+
+    .hero-poster-col {
+        margin-bottom: 20px;
+    }
+
+    .hero-poster-wrap {
+        max-width: 220px;
+        margin: 0 auto;
+    }
+
+    .hero-poster {
+        display: none;
+    }
+
+    .floating-play-btn{
+        display:none;
+    }
+}
+
+@media (max-width: 600px) {
+    .hero-section :deep(.v-img) {
+        height: auto !important;
+        padding:30px
+    }
+
+    .overlay-content {
+        transform: translateY(54px);
+    }
+
+    .hero-row {
+        align-items: flex-start;
+    }
+
+    .hero-poster-col {
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .hero-poster-wrap {
+        max-width: 180px;
+    }
+
+    .overlay-content h1 {
+        font-size: 2rem !important;
+        line-height: 1.08;
+    }
+
+    .tagline {
+        font-size: 0.80rem !important;
+        width: 90%;
+        padding-left: 0 !important;
+    }
+
+    .overlay-content .d-flex.align-center.gap-6 {
+        gap: 16px !important;
+        flex-wrap: wrap;
+    }
+
+    .overlay-content .d-flex.gap-4.mt-3 {
+        width: 100%;
+    }
+
+    .hero-details-col {
+        text-align: left;
+    }
+
+    .overlay-content .movie-btn {
+        width: 100%;
+    }
+
+    .frames-track {
+        margin-left: 16px;
+        margin-right: 16px;
+        padding: 10px 0;
+        justify-content: flex-start;
+    }
+
+    .sprocket-row {
+        margin-left: 16px;
+        margin-right: 16px;
+        gap: 10px;
+    }
+
+    .frame {
+        width: 180px;
+    }
+
+    .frame.active {
+        width: 240px;
+    }
+
+    .frame-inner {
+        height: 210px;
+    }
+
+    .player-area {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .player-frame iframe {
+        height: 240px;
+    }
+
+    .carousel-main-row {
+        align-items: stretch;
+        gap: 12px;
+        width: 100%;
+    }
+
+    .nav-btn-side {
+        align-self: center;
+    }
+
+    .cast-carousel-wrapper {
+        width: 100%;
+        gap: 12px;
+        padding: 10px 0;
+    }
+
+    .cast-card {
+        flex: 0 0 104px;
+    }
+
+    .cast-card .v-avatar {
+        width: 88px !important;
+        height: 88px !important;
+    }
+
+    .production-section {
+        margin-left: 16px;
+        margin-right: 16px;
+    }
+
+    .ledger-table th,
+    .ledger-table td {
+        padding: 14px 0;
+        font-size: 0.85rem;
+    }
+
+    .news-wrap {
+        margin-left: 16px;
+        margin-right: 16px;
+        padding: 24px 0;
+        gap: 18px;
+    }
+
+    .clipping {
+        width: 100%;
+        max-width: 320px;
+        min-height: auto;
+    }
+
+    .clip-headline {
+        font-size: 1.05rem;
+    }
+
+    .clip-body {
+        font-size: 0.8rem;
+    }
+
+    .sticky-btn {
+        top: 16px;
+        right: 16px;
+        width: auto;
+        min-width: 120px;
+        padding-inline: 16px;
     }
 }
 
