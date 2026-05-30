@@ -159,17 +159,18 @@ onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
 })
 
-// Watch for route param changes and refetch data when movie ID changes
 watch(
     () => route.params.id,
     async (newId) => {
         if (newId) {
             activeVideoIdx.value = null;
             isVisible.value = false;
-            window.scrollY = 0;
             await loadMovieDetails(newId);
             await fetchReviews(newId);
             await checkReminderStatus(newId);
+            setTimeout(() => {
+                initObserver();
+            }, 100);
         }
     }
 )
