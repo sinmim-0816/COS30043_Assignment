@@ -1,16 +1,17 @@
 <script setup>
-import { ref, onMounted, shallowRef, watch } from 'vue';
+import { ref, onMounted, onUnmounted, shallowRef, watch, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import * as htmlToImage from 'html-to-image';
 import VueDraggableResizable from 'vue-draggable-resizable-vue3';
 import QrcodeVue from 'qrcode.vue';
-import { ExternalLink,X } from 'lucide-vue-next';
+import { ExternalLink, X, Menu } from 'lucide-vue-next';
 
 // Import other hook and components
 import { useMovies } from '@/hook/useMovies';
 import { useTickets } from '@/hook/useTickets';
 import { getGenreName } from '@/utils/genre';
 import { useTicketDesign } from '@/hook/useTicketDesign';
+import FooterView from '@/components/FooterView.vue';
 
 // Import your SVG shapes
 import TicketShape1 from '@/components/TicketShape1.vue';
@@ -39,10 +40,12 @@ const tabs = ['Shape', 'Picture', 'Components'];
 const activeTab = ref('Shape');
 const isModalOpen = ref(false);
 const previewImageUrl = ref('');
+const isSidebarOpen = ref(true);
+const isMobileLayout = ref(false);
+const windowWidth = ref(window.innerWidth);
 
 const ticketRef = ref(null);
 const movieTitle = ref('');
-const width = ref(650);
 const accentColor = ref('#ffffff');
 const moviePosters = ref([]);
 const movieBackdrops = ref([]);
@@ -57,6 +60,29 @@ const textElements = ref([]);
 const selectedText = ref(null);
 const { save, isLoading: isSaving } = useTicketDesign();
 const ticketDescription = ref('');
+
+const syncLayoutMode = () => {
+    windowWidth.value = window.innerWidth;
+    const mobile = window.innerWidth <= 992;
+    isMobileLayout.value = mobile;
+    isSidebarOpen.value = !mobile;
+};
+
+const ticketDisplayWidth = computed(() => {
+    const maxWidth = isMobileLayout.value
+        ? Math.max(260, windowWidth.value - 24)
+        : 650;
+
+    return Math.min(650, maxWidth);
+});
+
+const toggleSidebar = () => {
+    isSidebarOpen.value = !isSidebarOpen.value;
+};
+
+const closeSidebar = () => {
+    isSidebarOpen.value = false;
+};
 
 const openPreview = async () => {
     try {
@@ -158,6 +184,9 @@ const handleResize = (el, x, y, width, height) => {
 };
 
 onMounted(async () => {
+    syncLayoutMode();
+    window.addEventListener('resize', syncLayoutMode);
+
     const movieId = route.params.movieId;
     activeTicket.value = await fetchTicketDetails(route.params.bookingId);
 
@@ -171,6 +200,10 @@ onMounted(async () => {
         }
 
     }
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', syncLayoutMode);
 });
 
 watch(currentShape, () => {
@@ -288,9 +321,37 @@ const triggerShare = async () => {
 </script>
 
 <template>
-    <v-container fluid class="customizer-layout" width="100vw">
-        <aside class="sidebar-scrollable">
-            <h4 class="mt-5">Customize Ticket</h4>
+    <v-app>
+    <v-container fluid class="customizer-layout" :class="{ 'sidebar-open': isSidebarOpen }" width="100vw">
+        <button
+            v-if="isMobileLayout"
+            class="sidebar-toggle-fab"
+            type="button"
+            :aria-label="isSidebarOpen ? 'Close ticket controls' : 'Open ticket controls'"
+            @click="toggleSidebar"
+        >
+            <component :is="isSidebarOpen ? X : Menu" size="20" />
+        </button>
+
+        <div
+            v-if="isMobileLayout && isSidebarOpen"
+            class="sidebar-backdrop"
+            @click="closeSidebar"
+        ></div>
+
+        <aside class="sidebar-scrollable" :class="{ 'is-open': isSidebarOpen, 'is-mobile': isMobileLayout }">
+            <div class="sidebar-topbar pt-md-0 pt-4">
+                <h4 class="mt-5">Customize Ticket</h4>
+                <button
+                    v-if="isMobileLayout"
+                    class="sidebar-close-btn"
+                    type="button"
+                    aria-label="Close ticket controls"
+                    @click="closeSidebar"
+                >
+                    <X size="18" />
+                </button>
+            </div>
 
             <div class="tabs">
                 <button v-for="tab in tabs" :key="tab" :class="{ active: activeTab === tab }" @click="activeTab = tab">
@@ -406,7 +467,7 @@ const triggerShare = async () => {
                 </div>
             </div>
             <div v-else ref="ticketRef" class="ticket-container" :style="{
-                width: width + 'px',
+                width: ticketDisplayWidth + 'px',
                 transform: `rotate(${rotation}deg)`,
                 transition: 'transform 0.1s ease-out'
             }">
@@ -459,20 +520,20 @@ const triggerShare = async () => {
             <v-card class="preview-modal-card">
                 
                 <div class="preview-header">
-                <div>
-                    <h5 class="preview-title">Ticket Preview</h5>
-                    <p class="preview-subtitle">
-                    Review your customized PopFlix ticket before saving or sharing.
-                    </p>
-                </div>
+                    <div>
+                        <h5 class="preview-title">Ticket Preview</h5>
+                        <p class="preview-subtitle">
+                        Review your customized PopFlix ticket before saving or sharing.
+                        </p>
+                    </div>
 
-                <v-btn
-                    icon
-                    variant="text"
-                    @click="isModalOpen = false"
-                >
-                    <X/>
-                </v-btn>
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click="isModalOpen = false"
+                    >
+                        <X/>
+                    </v-btn>
                 </div>
 
                 <div class="preview-body">
@@ -503,11 +564,7 @@ const triggerShare = async () => {
 
                     
 
-                    <div class="preview-actions-asymmetric">
-                        <v-btn variant="text" class="cancel-btn" @click="isModalOpen = false">
-                            Cancel
-                        </v-btn>
-
+                    <div class="preview-actions-asymmetric justify-end">
                         <div class="right-group">
                             <v-btn variant="outlined" class="share-btn-style" @click="triggerShare">
                                 Share
@@ -525,6 +582,8 @@ const triggerShare = async () => {
             </v-dialog>
         </main>
     </v-container>
+    <FooterView/>
+</v-app>    
 </template>
 
 
@@ -532,12 +591,33 @@ const triggerShare = async () => {
 <style scoped>
 .customizer-layout {
     display: grid;
-    grid-template-columns: 250px 1fr;
-    gap: 40px;
-    padding: 40px 40px 0 10px;
+    grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+    gap: 32px;
+    padding: 32px 32px 0 12px;
     background: var(--bg-color);
     color: #fff;
     min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+}
+
+.sidebar-toggle-fab {
+    display: none;
+}
+
+.sidebar-backdrop {
+    display: none;
+}
+
+.sidebar-topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.sidebar-close-btn {
+    display: none;
 }
 
 .shape-selector h3 {
@@ -569,15 +649,19 @@ const triggerShare = async () => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-width: 0;
 }
 
 .ticket-container {
     position: relative;
     overflow: hidden;
-    height: 60%;
+    aspect-ratio: 1280 / 854;
+    height: auto;
     border-radius: 12px;
     margin-top: 100px;
     background: var(--bg-color);
+    max-width: 100%;
+    width: 100%;
 }
 
 .backdrop-layer {
@@ -630,13 +714,6 @@ const triggerShare = async () => {
     margin-left: auto;
 }
 
-.customizer-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    height: 100vh;
-    overflow: hidden;
-}
-
 .tabs {
     display: flex;
     gap: 5px;
@@ -661,8 +738,10 @@ const triggerShare = async () => {
 
 .sidebar-scrollable {
     overflow-y: auto;
+    overflow-x: hidden;
     border-right: 1px solid #333;
     padding: 0 20px;
+    min-width: 0;
 }
 
 .sidebar-scrollable::-webkit-scrollbar {
@@ -1010,6 +1089,9 @@ const triggerShare = async () => {
     border: var(--border-card);
     border-radius: 24px;
     overflow: hidden;
+    max-height: calc(100dvh - 32px);
+    display: flex;
+    flex-direction: column;
 }
 
 .preview-header {
@@ -1080,7 +1162,6 @@ const triggerShare = async () => {
 
 .preview-actions-asymmetric {
     display: flex;
-    justify-content: space-between;
     align-items: flex-end;
 }
 
@@ -1110,20 +1191,269 @@ const triggerShare = async () => {
     grid-template-columns: minmax(0, 1fr) 340px;
     align-items: start; 
     min-height: 500px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 @media (max-width: 900px) {
+    .preview-modal-card {
+        max-height: calc(100dvh - 20px);
+    }
+
     .preview-body {
         grid-template-columns: 1fr;
+        min-height: 0;
     }
 
     .preview-sidebar {
         border-left: none;
         border-top: 1px solid var(--dropdown-divider);
+        padding: 20px;
+        min-height: 0;
     }
 
     .preview-image {
         max-width: 100%;
+    }
+
+    .preview-header {
+        padding: 18px 20px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .customizer-layout {
+        grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+        gap: 24px;
+        padding: 24px 24px 0 10px;
+    }
+
+    .ticket-container {
+        margin-top: 72px;
+        max-width: 650px;
+    }
+
+    .sidebar-scrollable {
+        padding: 0 16px;
+    }
+}
+
+@media (max-width: 992px) {
+    .customizer-layout {
+        grid-template-columns: 1fr;
+        height: 100vh;
+        overflow: hidden;
+        padding: 18px 18px 0;
+        gap: 0;
+    }
+
+    .sidebar-scrollable {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: min(86vw, 360px);
+        height: 100vh;
+        background: var(--card-bg);
+        border-right: 1px solid #333;
+        padding: 0 18px 18px;
+        max-height: 100vh;
+        overflow-y: auto;
+        z-index: 60;
+        transform: translateX(-105%);
+        transition: transform 0.28s ease;
+        box-shadow: 18px 0 40px rgba(0, 0, 0, 0.28);
+    }
+
+    .sidebar-scrollable.is-open {
+        transform: translateX(0);
+    }
+
+    .sidebar-topbar {
+        position: sticky;
+        top: 0;
+        background: var(--card-bg);
+        padding-top: 8px;
+        padding-bottom: 12px;
+        z-index: 1;
+    }
+
+    .sidebar-close-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid #333;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--text-color);
+        cursor: pointer;
+    }
+
+    .canvas-area {
+        padding-bottom: 24px;
+        width: 100%;
+    }
+
+    .ticket-container {
+        width: 100% !important;
+        max-width: 100%;
+        margin-top: 24px;
+        aspect-ratio: 1280 / 854;
+    }
+
+    .share-btn {
+        margin-top: 28px;
+        margin-left: 0;
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .sidebar-toggle-fab {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 88px;
+        left: 16px;
+        width: 48px;
+        height: 48px;
+        border-radius: 999px;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+        color: var(--text-color);
+        z-index: 70;
+        cursor: pointer;
+    }
+
+    .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 55;
+    }
+
+    .grid-options {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .preview-modal-card {
+        max-height: calc(100dvh - 12px);
+        border-radius: 18px;
+    }
+
+    .customizer-layout {
+        padding: 12px 12px 0;
+    }
+
+    .sidebar-scrollable {
+        width: min(90vw, 340px);
+        padding: 0 14px 14px;
+    }
+
+    .tabs {
+        gap: 4px;
+        margin-bottom: 14px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tabs button {
+        flex: 0 0 auto;
+        min-width: 92px;
+        padding: 10px 12px;
+    }
+
+    .grid-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .control-group {
+        margin-bottom: 22px;
+        padding-bottom: 16px;
+    }
+
+    .ticket-container {
+        margin-top: 12px;
+        border-radius: 10px;
+        height: auto;
+        aspect-ratio: 1280 / 854;
+    }
+
+    .canvas-area {
+        align-items: stretch;
+        padding-top: 50px;
+    }
+
+    .canvas-content-wrapper {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .mask-layer,
+    .draggable-overlay-surface {
+        min-width: 100%;
+    }
+
+    .share-btn {
+        width: 100%;
+        max-width: none;
+        margin-top: 20px;
+    }
+
+    .preview-header {
+        gap: 12px;
+        align-items: flex-start;
+        padding: 16px 16px;
+    }
+
+    .preview-actions-asymmetric {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .right-group {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .right-group .v-btn {
+        width: 100%;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-panel {
+        padding: 12px;
+    }
+
+    .preview-sidebar {
+        padding: 16px;
+    }
+
+    .preview-body {
+        padding-bottom: 4px;
+    }
+
+    .sidebar-toggle-fab {
+        top: 72px;
+        left: 12px;
+        width: 44px;
+        height: 44px;
     }
 }
 

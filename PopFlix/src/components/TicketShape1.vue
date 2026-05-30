@@ -10,7 +10,7 @@ defineProps({
 });
 </script>
 <template>
-	<svg viewBox="0 0 1280 854" preserveAspectRatio="none" class="ticket-svg">
+	<svg viewBox="0 0 1280 854" preserveAspectRatio="xMidYMid meet" class="ticket-svg">
 		<defs>
 			<pattern
 				v-if="imageSource"
