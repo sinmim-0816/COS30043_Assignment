@@ -20,6 +20,7 @@ import RegisterPage from '@/views/RegisterPage.vue'
 import ForgotPassword from '@/views/ForgotPassword.vue'
 import ResetPassword from '@/views/ResetPassword.vue'
 import UserActivate from '@/views/UserActivate.vue'
+import MyProfile from '@/views/MyProfile.vue'
 
 const routes = [
     {
@@ -110,7 +111,12 @@ const routes = [
         component: CustomizeList,
         meta: { requiresAuth: true }
     },
-
+    {
+        path: '/profile',
+        name: "MyProfile",
+        component: MyProfile,
+        meta: { requiresAuth: true }
+    },
 
 ]
 

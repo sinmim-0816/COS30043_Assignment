@@ -178,7 +178,7 @@ watch(
 
                 <transition name="dropdown-fade">
                     <ul v-if="isDropdownOpen" class="profile-dropdown-menu me-2">
-                        <li @click="navigateTo('Profile')" class="dropdown-item">
+                        <li @click="navigateTo('MyProfile')" class="dropdown-item">
                             <User size="16" />
                             <span>View Profile</span>
                         </li>
@@ -383,7 +383,7 @@ button {
 
 .profile-dropdown-menu {
     position: absolute;
-    top: calc(100% + 10px);
+    top: calc(100%);
     right: 0;
     background: var(--bg-color);
     backdrop-filter: blur(16px);
