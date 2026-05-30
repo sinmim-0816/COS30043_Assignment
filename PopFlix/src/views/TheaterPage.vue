@@ -543,15 +543,48 @@ const filteredFaqs = computed(() => {
     align-items: flex-start; 
     gap: 12px; 
 }
-.cc-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.cc-info { flex: 1; }
-.cc-name { font-size: 14px; font-weight: 700; color: var(--text-color); }
-.cc-status { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
-.cc-status.open { background: rgba(0,168,107,0.1); color: #00a86b; border: 1px solid rgba(0,168,107,0.2); }
-.cc-dist { font-size: 12px; color: var(--text-color); opacity: 0.7; display: flex; align-items: center; }
+.cc-icon { 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 8px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    flex-shrink: 0; 
+}
+.cc-info { 
+    flex: 1; 
+}
+.cc-name { 
+    font-size: 14px; 
+    font-weight: 700; 
+    color: var(--text-color); 
+}
+.cc-status { 
+    font-size: 10px; 
+    padding: 2px 8px; 
+    border-radius: 20px; 
+    font-weight: 700; 
+}
+.cc-status.open { 
+    background: rgba(0,168,107,0.1); 
+    color: #00a86b; 
+    border: 1px solid rgba(0,168,107,0.2); 
+}
+.cc-dist { 
+    font-size: 12px; 
+    color: var(--text-color); 
+    opacity: 0.7; 
+    display: flex; 
+    align-items: center; 
+}
 
 /* Map Panel */
-.map-panel { display: flex; flex-direction: column; gap: 16px; }
+.map-panel { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+}
 .map-box {
     background: var(--card-bg);
     border: 1px solid rgba(128,128,128,0.2);
@@ -560,7 +593,12 @@ const filteredFaqs = computed(() => {
     position: relative;
     padding: 4px;
 }
-.leaflet-wrapper { width: 100%; height: 350px; border-radius: 8px; z-index: 1; }
+.leaflet-wrapper { 
+    width: 100%; 
+    height: 350px; 
+    border-radius: 8px; 
+    z-index: 1; 
+}
 
 /* Detail Panel */
 .detail-panel {
@@ -846,5 +884,11 @@ const filteredFaqs = computed(() => {
 
 .rotate-180 {
     transform: rotate(180deg);
+}
+
+@media (max-width: 600px) {
+    .app-wrapper{
+        padding:0;
+    }
 }
 </style>
