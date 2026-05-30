@@ -578,7 +578,7 @@ const handleCheckoutStep = async () => {
             <section class="seating-area-wrapper mt-3">
                 <v-container fluid class="px-5" width="97vw">
                     <v-row class="d-flex justify-center">
-                        <v-col cols="12" md="4" lg="3">
+                        <v-col cols="12" md="4" lg="3" class="order-2 order-md-1">
                             <v-expand-transition>
                                 <div v-if="isReserved" class="mb-4">
                                     <v-chip color="orange-accent-3" size="large" block
@@ -658,7 +658,7 @@ const handleCheckoutStep = async () => {
                             </div>
                         </v-col>
 
-                        <v-col cols="12" md="8" lg="8">
+                        <v-col cols="12" md="8" lg="8" class="order-1 order-md-2">
                             <div class="map-container pa-md-10 rounded-xl ms-md-5">
                                 <div class="screen-wrapper">
                                     <div class="curved-screen"></div>
