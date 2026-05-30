@@ -77,7 +77,7 @@ onUnmounted(() => {
     position: absolute;
     inset: 0;
     margin: 20px;
-    max-width: 700px;
+    max-width: 60vw;
     background-color: var(--bg-color);
     overflow: hidden;
     border-radius:20px;

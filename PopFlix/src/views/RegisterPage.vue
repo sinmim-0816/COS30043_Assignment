@@ -134,7 +134,7 @@ const submitForm = async () => {
 
 <template>
     <AuthLayout>
-        <v-card flat class="login-card bg-transparent" width="500">
+        <v-card flat class="login-card p-3 p-md-0 bg-transparent" width="500">
             <div class="text-center text-md-left">
                 <h3 class="mt-2 fw-bold">Create Account</h3>
                 <p class="text-grey-darken-1 mt-2">
