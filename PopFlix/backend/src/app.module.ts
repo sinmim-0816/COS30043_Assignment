@@ -31,9 +31,18 @@ import { NotificationModule } from './notification/notification.module';
       useFactory: (config: ConfigService) => ({
         transport: {
           host: config.get<string>('MAIL_HOST'),
+          port: parseInt(config.get<string>('MAIL_PORT') ?? '587', 10),
+          secure: config.get<string>('MAIL_SECURE') === 'true',
+          requireTLS: config.get<string>('MAIL_REQUIRE_TLS') !== 'false',
+          family: 4,
+          connectionTimeout: 30000,
+          greetingTimeout: 30000,
           auth: {
             user: config.get<string>('MAIL_USER'),
             pass: config.get<string>('MAIL_PASS'),
+          },
+          tls: {
+            rejectUnauthorized: false,
           },
         },
         template: {
