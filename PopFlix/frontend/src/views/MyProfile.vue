@@ -1500,7 +1500,7 @@ const passStrengthText = computed(() => {
   color: #94a3b8; 
 }
 
-.milestone.active { color: #0f172a; font-weight: 700; }
+.milestone.active { color: var(--text-color); font-weight: 700; }
 
 .spend-counter { font-size: 1.15rem; font-weight: 700; color: #0f172a; }
 .total-label { font-size: 0.8rem; color: #64748b; font-weight: 400; }
