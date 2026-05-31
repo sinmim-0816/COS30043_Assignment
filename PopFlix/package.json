@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "cd backend/movie-backend && npm install && npm run build",
-    "start": "cd backend/movie-backend && node dist/main",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",
