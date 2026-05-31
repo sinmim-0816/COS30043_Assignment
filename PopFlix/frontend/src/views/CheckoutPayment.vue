@@ -16,7 +16,7 @@ const router = useRouter();
 const route = useRoute();
 const bookingStore = useBookingStore();
 const authStore = useAuthStore();
-const { movie, loadMovieDetails, getImageURL } = useMovieDetails();
+const { movie, loadMovieDetails, getImageURL, isLoading } = useMovieDetails();
 const currentStage = ref(2);
 const generatedTxnId = ref('');
 
@@ -238,7 +238,19 @@ const formattedSeats = computed(() => {
 </script>
 
 <template>
-    <v-app>
+    <template v-if="isLoading">
+        <div class="loading-wrapper">
+            <div class="loader-content">
+                <v-progress-circular indeterminate color="red-accent-3" size="70" width="4">
+                    <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
+                </v-progress-circular>
+
+                <p class="mt-6 loading-text">Loading...</p>
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </template>
+    <v-app v-else>
     <v-container
         width="100vw"
         fluid
