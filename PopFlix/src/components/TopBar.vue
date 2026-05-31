@@ -170,7 +170,7 @@ watch(
                                 class="avatar-img"
                             />
 
-                            <span v-else>
+                            <span v-else class="pb-1">
                                 {{ currentUser?.firstName?.charAt(0).toUpperCase() }}
                             </span>
                             </div>
@@ -367,6 +367,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
+    align-content:center;
     font-weight: 700;
     font-size: 13px;
     box-shadow: var(--avatar-shadow);

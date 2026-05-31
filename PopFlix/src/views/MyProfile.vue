@@ -61,6 +61,25 @@ const handleAvatarChange = (event) => {
   user.avatar = URL.createObjectURL(file);
 };
 
+const malaysiaStates = [
+  'Johor',
+  'Kedah',
+  'Kelantan',
+  'Melaka',
+  'Negeri Sembilan',
+  'Pahang',
+  'Perak',
+  'Perlis',
+  'Pulau Pinang',
+  'Sabah',
+  'Sarawak',
+  'Selangor',
+  'Terengganu',
+  'Kuala Lumpur',
+  'Labuan',
+  'Putrajaya'
+];
+
 
 const cancelEdit = () => {
   if (originalUser.value) {
@@ -500,7 +519,7 @@ const passStrengthText = computed(() => {
           <div class="name-badge-row">
             <h1 class="user-display-name">{{ user.name }}</h1>
           </div>
-          <p class="meta-subtext"><MapPin size="16" class="me-2"/>{{user.location}} &bull; <ClockFading size="16" class="me-2"/> Joined {{ formatMonthYear(user.joinedOn)}}</p>
+          <p class="meta-subtext"><MapPin size="16" class="me-2"/>{{user.location || 'Set Location'}} &bull; <ClockFading size="16" class="me-1"/> Joined {{ formatMonthYear(user.joinedOn)}}</p>
 
           <div class="user-stats-counter-row ps-2">
             <div class="stats-counter-item">
@@ -677,10 +696,18 @@ const passStrengthText = computed(() => {
               <label class="node-label"><MapPin size="16" class="me-2"/>Location</label>
               <div class="input-container">
                 <div v-if="!isEditing" class="node-display-text px-4">
-                  {{ user.location }}
+                  {{ user.location || 'Update Your Location' }}
                 </div>
-                <input v-else type="text" v-model="user.location" :disabled="!isEditing" :class="['node-field', isEditing ? 'unlocked' : 'locked']" />
-              </div>
+                <v-autocomplete
+                  v-else
+                  v-model="user.location"
+                  :items="malaysiaStates"
+                  label="Search state"
+                  variant="solo"
+                  density="comfortable"
+                  class="node-field ms-3"
+                />
+                </div>
             </div>
           </div>
 
@@ -690,7 +717,7 @@ const passStrengthText = computed(() => {
             <div class="interactive-input-node bio-node">
               <label class="node-label">Biography</label>
               <div v-if="!isEditing" class="node-display-text">
-                  {{ user.bio }}
+                  {{ user.bio || 'Update Your Bio...' }}
                 </div>
               <textarea v-else v-model="user.bio" :disabled="!isEditing" :class="['node-textarea-field px-2', isEditing ? 'unlocked' : 'locked']" rows="4"></textarea>
             </div>
