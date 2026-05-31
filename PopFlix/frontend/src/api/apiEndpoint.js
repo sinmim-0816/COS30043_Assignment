@@ -41,7 +41,7 @@ export const API_ENDPOINTS = {
         BASE: '/notifications',
         FETCH_HISTORY: (userId) => `/notifications/user/${userId}`,
         MARK_READ: (id) => `/notifications/${id}/read`,
-        MARK_ALL_READ: (userId) => `/user/${userId}/read-all`,
+        MARK_ALL_READ: (userId) => `/notifications/user/${userId}/read-all`,
         DELETE: (id) => `/notifications/${id}`,
     }
 };
