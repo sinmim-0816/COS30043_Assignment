@@ -1,5 +1,7 @@
 const backendOrigin = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
+const cleanOrigin = backendOrigin.endsWith('/') ? backendOrigin.slice(0, -1) : backendOrigin;
+
 export const resolveBackendAssetPath = (assetPath) => {
     if (!assetPath) {
         return '';
@@ -13,5 +15,6 @@ export const resolveBackendAssetPath = (assetPath) => {
         return assetPath;
     }
 
-    return `${backendOrigin}${assetPath.startsWith('/') ? '' : '/'}${assetPath}`;
+    const path = assetPath.startsWith('/') ? assetPath : `/${assetPath}`;
+    return `${cleanOrigin}${path}`;
 };
