@@ -34,5 +34,19 @@ export const useReminders = () => {
         }
     };
 
-    return { isProcessing, hasReminder, checkReminderStatus, setReminder };
+    const checkReminderExists = async (movieId) => {
+        try {
+            const response = await reminderService.checkReminder(movieId);
+            return Boolean(response.data.exists);
+        } catch (error) {
+            const status = error?.response?.status;
+            if (status === 404) {
+                return false;
+            }
+            console.error("Failed to check reminder existence", error);
+            throw error;
+        }
+    };
+
+    return { isProcessing, hasReminder, checkReminderStatus, checkReminderExists, setReminder };
 };

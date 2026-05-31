@@ -10,10 +10,12 @@ import { useReminders } from '@/hook/useReminder';
 import { movieRepository } from '@/services/movieRepository';
 import { getGenreName } from '@/utils/genre';
 import { getCertImage } from '@/utils/AgeRating';
+import { useAuthStore } from '@/stores/auth';
 import FooterView from '@/components/FooterView.vue';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const {
     movie,
@@ -104,6 +106,14 @@ const handleBuyOrRemind = async () => {
             },
         });
     } else {
+        if (!authStore.user) {
+            router.push({
+                name: 'Login',
+                query: { redirect: route.fullPath }
+            });
+            return;
+        }
+
         try {
             await setReminder(route.params.id);
             toastMessage.value = "Reminder set! We will email you 1 day before release.";

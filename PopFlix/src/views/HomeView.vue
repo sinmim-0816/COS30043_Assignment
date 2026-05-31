@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, Pagination, EffectFade, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -7,8 +7,8 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import 'swiper/css/effect-fade';
 import { addDays } from 'date-fns';
-import { Star, CirclePlay, ChevronRight, BadgeInfo, Tag, ClockFading, MessageCircle, ChevronLeft, BellRing, ChevronsDown, ChevronsRight } from '@lucide/vue';
-import { useRouter } from 'vue-router';
+import { Star, CirclePlay, ChevronRight, BadgeInfo, Tag, ClockFading, MessageCircle, ChevronLeft, BellRing, ChevronsDown, ChevronsRight, CheckCircle, Info } from '@lucide/vue';
+import { useRoute, useRouter } from 'vue-router';
 
 // Import other hooks and components
 import { useMovies } from '@/hook/useMovies';
@@ -18,6 +18,8 @@ import { getExperienceStyle } from '@/utils/experience';
 import { useShowtimes } from '@/hook/useShowtimes';
 import FooterView from '@/components/FooterView.vue';
 import { useExperience } from '@/hook/useExperience';
+import { useAuthStore } from '@/stores/auth';
+import { useReminders } from '@/hook/useReminder';
 import TicketLeft from '@/components/TicketLeft.vue';
 import TicketCenter from '@/components/TicketCenter.vue';
 import TicketRight from '@/components/TicketRight.vue';
@@ -25,7 +27,10 @@ import TicketRight from '@/components/TicketRight.vue';
 const { featuredMovies, fetchHeroMovies, getImageURL, isLoading, getLanguageName, getCertificate, comingSoonMovies, fetchComingSoonMovies } = useMovies();
 const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
 const { items: experienceData, loading: expLoading, loadExperiences, loadAllExperiences } = useExperience(); 
+const { setReminder, checkReminderExists } = useReminders();
+const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 
 const showTrailer = ref(false);
 const currentVideoKey = ref(null);
@@ -34,6 +39,10 @@ const activeTab = ref(0);
 
 const experienceCategories = ref([]);
 const activeExperienceIndex = ref(0);
+const reminderStatusMap = ref({});
+const showToast = ref(false);
+const toastMessage = ref('');
+const isSuccess = ref(true);
 
 const hasScrolledExperiences = ref(false);
 
@@ -144,6 +153,69 @@ const handleBuyNowRedirect = async (movie) => {
     });
 };
 
+const handleBuyOrRemind = async (movie) => {
+    if (!movie) return;
+
+    const isReleased = new Date(movie.release_date) <= new Date();
+
+    if (isReleased) {
+        await handleBuyNowRedirect(movie);
+        return;
+    }
+
+    if (!authStore.user) {
+        router.push({
+            name: 'Login',
+            query: { redirect: route.fullPath, reason: 'reminder' }
+        });
+        return;
+    }
+
+    if (reminderStatusMap.value[movie.id]) {
+        toastMessage.value = 'Reminder already set.';
+        isSuccess.value = true;
+        showToast.value = true;
+        return;
+    }
+
+    try {
+        await setReminder(movie.id);
+        reminderStatusMap.value = {
+            ...reminderStatusMap.value,
+            [movie.id]: true,
+        };
+        toastMessage.value = 'Reminder set! We will email you 1 day before release.';
+        isSuccess.value = true;
+        showToast.value = true;
+    } catch (error) {
+        console.error('Failed to set reminder from home view:', error);
+        toastMessage.value = 'Failed to set reminder. Please try again.';
+        isSuccess.value = false;
+        showToast.value = true;
+    }
+};
+
+const syncReminderStatuses = async () => {
+    if (!authStore.user?.id || !comingSoonMovies.value.length) {
+        reminderStatusMap.value = {};
+        return;
+    }
+
+    const entries = await Promise.all(
+        comingSoonMovies.value.map(async (movie) => {
+            try {
+                const hasReminder = await checkReminderExists(movie.id);
+                return [movie.id, hasReminder];
+            } catch (error) {
+                console.log(error);
+                return [movie.id, false];
+            }
+        })
+    );
+
+    reminderStatusMap.value = Object.fromEntries(entries);
+};
+
 const closeTrailer = () => {
     showTrailer.value = false;
     currentVideoKey.value = null;
@@ -239,6 +311,14 @@ onMounted(async () => {
 
     document.querySelectorAll('h2, .scroll-animate').forEach((el) => observer.observe(el));
 });
+
+watch(
+    [() => authStore.user?.id, () => comingSoonMovies.value.length],
+    () => {
+        syncReminderStatuses();
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
@@ -255,6 +335,23 @@ onMounted(async () => {
         </div>
     </template>
     <v-app v-else-if="featuredMovies" full-height class="container-fluid m-0 p-0">
+        <v-snackbar
+            v-model="showToast"
+            location="top"
+            :timeout="3000"
+            color="transparent"
+            elevation="0"
+            variant="flat"
+            class="mt-4"
+        >
+            <div class="d-flex justify-center w-100">
+                <div class="premium-toast-badge d-flex align-center gap-2" :class="isSuccess ? 'success' : 'not-success'">
+                    <CheckCircle v-if="isSuccess" size="20" class="text-white" />
+                    <Info v-else size="20" class="text-white" />
+                    <span class="badge-text">{{ toastMessage }}</span>
+                </div>
+            </div>
+        </v-snackbar>
         <section class="hero_section" v-show="featuredMovies.length > 0">
             <Swiper :key="featuredMovies.length" @swiper="onSwiper" :modules="[Autoplay, Pagination, EffectFade]"
                 effect="fade" :slides-per-view="1" :loop="true" :autoplay="{ delay: 3000, pauseOnMouseEnter: true }"
@@ -296,7 +393,7 @@ onMounted(async () => {
                                         <CirclePlay class="me-2" />Watch Trailer
                                     </v-btn>
                                     <v-btn variant="flat" elevation="3" class="movie-btn py-4 fs-6 rounded-2"
-                                        @click="handleBuyNowRedirect(movie)">
+                                        @click="handleBuyOrRemind(movie)">
                                         Buy Now
                                     </v-btn>
                                 </v-row>
@@ -413,16 +510,19 @@ onMounted(async () => {
                                                         </div>
                                                         <v-btn :color="activeTab === 2 ? 'white' : 'red-accent-3'"
                                                             :variant="activeTab === 2 ? 'outlined' : 'flat'"
+                                                            :disabled="activeTab === 2 && reminderStatusMap[movie?.id]"
                                                                 :class="[
                                                             'rounded-2',
                                                             {
                                                                 'movie-btn': activeTab !== 2
                                                             },
-                                                            'mb-4 d-block mx-auto mt-2'
+                                                            'mb-4 d-block mx-auto mt-2 review-btn'
                                                         ]"
-                                                            @click="activeTab === 2 ? null : handleBuyNowRedirect(movie)">
+                                                            @click="handleBuyOrRemind(movie)">
                                                             <BellRing size="16" class="me-1" v-if="activeTab === 2" />{{
-                                                                activeTab === 2 ? 'Remind Me' : 'Buy Now' }}
+                                                                activeTab === 2
+                                                                    ? (reminderStatusMap[movie?.id] ? 'Reminder Set' : 'Remind Me')
+                                                                    : 'Buy Now' }}
                                                         </v-btn>
                                                     </div>
                                                 </div>
@@ -1266,6 +1366,11 @@ onMounted(async () => {
     }
 
     .movie-btn {
+        height: 32px;
+        font-size: 0.72rem;
+    }
+
+    .review-btn{
         height: 32px;
         font-size: 0.72rem;
     }
