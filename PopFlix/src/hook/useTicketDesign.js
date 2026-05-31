@@ -35,5 +35,19 @@ export function useTicketDesign() {
         }
     };
 
-    return { save, isLoading, error, fetchByBooking };
+    const fetchAllByUser = async () => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const response = await ticketDesignService.getMyDesigns();
+            return response.data;
+        } catch (err) {
+            error.value = err;
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    return { save, isLoading, error, fetchByBooking, fetchAllByUser };
 }

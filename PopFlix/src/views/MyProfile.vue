@@ -8,8 +8,10 @@ import { authService } from '@/services/authService';
 import { formatMonthYear } from '@/utils/formatDateTime';
 import { GENRE_MAP } from '@/utils/genre';
 import { resolveBackendAssetPath } from '@/utils/FormatPicture';
+import { useTicketDesign } from '@/hook/useTicketDesign';
+import { formatTicketDate } from '@/utils/formatDateTime';
 
-const activeTab = ref('Profile');
+const activeTab = ref('Ticket Design');
 const isEditing = ref(false);
 const isPasswordModalOpen = ref(false);
 const avatarLoadError = ref(false)
@@ -23,6 +25,8 @@ const avatarInput = ref(null);
 const originalUser = ref(null);
 const selectedAvatarFile = ref(null);
 const isTypingPassword = ref(false);
+const { fetchAllByUser, isLoading: isTicketsLoading } = useTicketDesign();
+const userTicketDesigns = ref([]);
 
 const cloneUserState = () => JSON.parse(JSON.stringify(user));
 
@@ -101,6 +105,45 @@ const saveProfile = async () => {
   }
 };
 
+const handleShare = async (ticket) => {
+  try {
+    const targetImageUrl = resolveBackendAssetPath(ticket.design_image);
+    
+    const response = await fetch(targetImageUrl);
+    if (!response.ok) throw new Error('Failed to fetch ticket asset image');
+    const blob = await response.blob();
+    
+    const file = new File([blob], `ticket-${ticket.booking_id || 'design'}.png`, { 
+      type: 'image/png' 
+    });
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file]
+      });
+      console.log('Ticket image payload distributed successfully');
+    } else {
+      triggerLocalDownload(targetImageUrl, `ticket-${ticket.booking_id}.png`);
+    }
+  } catch (err) {
+    console.error('Core sharing operation failed:', err);
+    alert('Sharing directly is not fully supported on this app instance. Downloading instead.');
+    if (ticket?.design_image) {
+      triggerLocalDownload(resolveBackendAssetPath(ticket.design_image), `ticket-${ticket.booking_id}.png`);
+    }
+  }
+};
+
+const triggerLocalDownload = (url, fileName) => {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.target = '_blank'; 
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link); 
+};
+
 const genreOptions = computed(() =>
   Object.entries(GENRE_MAP).map(([id, name]) => ({
     id: Number(id),
@@ -117,8 +160,10 @@ const availableGenres = computed(() =>
 onMounted(async () => {
   try {
     await authStore.fetchProfile();
+    const ticketsData = await fetchAllByUser();
+    userTicketDesigns.value = ticketsData || [];
   } catch (e) {
-    console.error('Failed to fetch profile on mount', e);
+    console.error('Failed to fetch profile and ticket design on mount', e);
   }
 });
 
@@ -397,10 +442,6 @@ const passStrengthText = computed(() => {
         <div class="identity-meta">
           <div class="name-badge-row">
             <h1 class="user-display-name">{{ user.name }}</h1>
-            <span :class="['mini-tier-pill', currentTier.toLowerCase()]">
-              <Award size="16"/>
-              {{ currentTier }}
-            </span>
           </div>
           <p class="meta-subtext"><MapPin size="16" class="me-2"/>{{user.location}} &bull; <ClockFading size="16" class="me-2"/> Joined {{ formatMonthYear(user.joinedOn)}}</p>
 
@@ -651,16 +692,68 @@ const passStrengthText = computed(() => {
         </section>
 
         <section v-if="activeTab === 'Ticket Design'" class="gallery-panel animate-fade">
-          <div class="ticket-grid">
-            <div v-for="n in 4" :key="n" class="ticket-card-ui">
-              <div class="ticket-visual-stub">
-                <div class="stub-notch"></div>
-                <div class="ticket-preview-image-placeholder">Live Preview</div>
+          <div v-if="isTicketsLoading" class="loading-placeholder">
+            <p>Loading your creative customized ticket collections...</p>
+          </div>
+
+          <div v-else-if="!userTicketDesigns.length" class="empty-placeholder">
+            <Ticket class="icon-empty" />
+            <p>You haven't customized any movie tickets yet!</p>
+          </div>
+
+          <div v-else class="ticket-grid">
+            <div 
+              v-for="ticket in userTicketDesigns" 
+              :key="ticket.id" 
+              class="ticket-design-card"
+            >
+
+              <div class="ticket-poster-container">
+              <img 
+                :src="resolveBackendAssetPath(ticket.design_image)" 
+                :alt="ticket.booking?.showtime?.movie?.title || 'Ticket Art'"
+                class="ticket-full-image" 
+              />
+              
+              <button 
+                class="ticket-share-floating-btn" 
+                @click.stop="handleShare(ticket)"
+                title="Share Ticket Design"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              </button>
+            </div>
+
+              <div class="ticket-info">
+                <div class="ticket-grid-info">
+                  <h3 class="fs-6">{{ ticket.booking?.showtime?.movie?.title || 'Custom Masterpiece' }}</h3>
+                </div>
+
+                <div>
+                  <small>Thoughts:</small>
+                  <p class="ticket-description-text">
+                    {{ ticket.description || 'No memory notes attached to this print design.' }}
+                  </p>
+                  
+                </div>
+                
               </div>
-              <div class="ticket-meta-info">
-                <h4>Cinematic Concept Specimen #0{{ n }}</h4>
-                <p>Created via Live Ticket Customizer</p>
+
+              <div class="ticket-divider">
+                <div class="notch"></div>
+                <div class="dash"></div>
+                <div class="notch"></div>
               </div>
+
+              <div class="ticket-footer">
+
+                <div>
+                  <small>Booking ID</small>
+                  <p>#{{ ticket.booking_id }}</p>
+                </div>
+                <p >{{ formatTicketDate( ticket.created_at) }}</p>
+              </div>
+              
             </div>
           </div>
         </section>
@@ -1664,7 +1757,6 @@ const passStrengthText = computed(() => {
   background-color: #ff5252b5;
   color: #ffffff !important;
   opacity: 1;
-  box-shadow: 0 4px 12px rgba(255, 82, 82, 0.25);
 }
 
 .security-modal-container {
@@ -1704,6 +1796,262 @@ const passStrengthText = computed(() => {
   height: 36px;
   background-color: #e0e0e0;
   align-self: center;
+}
+
+/* Container Ticket Grid Layout */
+.ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 16px 0;
+  width: 100%;
+}
+
+/* Master Ticket Wrapper */
+.ticket-design-card {
+  background: var(--card-bg, #ffffff);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  max-height:400px;
+  margin: 0 auto;
+  border: 1px solid rgba(128, 128, 128, 0.15);
+}
+
+
+.ticket-poster-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px; /* Optional: ensures matching crisp container edges */
+}
+
+/* Floating Share Button Core Styling */
+.ticket-share-floating-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(144, 144, 144, 0.25);
+  background: rgba(15, 23, 42, 0.436); 
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticket-share-floating-btn:hover {
+  background: #ff5252; 
+  border-color: #ff5252;
+  color: #ffffff;
+}
+
+.ticket-full-image {
+  width: 100%;
+  object-fit: cover; 
+  overflow: hidden;
+}
+
+/* 3. Ticket Operational Info Body */
+.ticket-info {
+  padding: 20px 24px;
+  background: #ffffff;
+}
+
+.ticket-grid-info {
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.ticket-info small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #9ca3af;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.ticket-info p {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+/* Interactive Seat Chips */
+.seat-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.seat-chip {
+  background: #fff5f5;
+  color: #c53030;
+  border: 1px solid #feb2b2;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+/* Custom Crew Notes */
+.ticket-description-text {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #4b5563 !important;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* 4. Perforation Concave Notch Divider */
+.ticket-divider {
+  height: 20px;
+  background: #ffffff;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ticket-divider .dash {
+  width: 100%;
+  border-bottom: 1px dashed rgba(128, 128, 128, 0.3);
+  position: absolute;
+  left: 0;
+  z-index: 1;
+}
+
+.ticket-divider .notch {
+  width: 20px;
+  height: 20px;
+  background: var(--bg-color, #f3f4f6); /* Must match your global app background color to fake transparency */
+  border-radius: 50%;
+  position: absolute;
+  z-index: 2;
+  border: 1px solid rgba(128, 128, 128, 0.15);
+}
+
+.ticket-divider .notch:first-child {
+  left: -10px; /* Cuts out left edge */
+}
+
+.ticket-divider .notch:last-child {
+  right: -10px; /* Cuts out right edge */
+}
+
+.ticket-footer {
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-top: 1px dashed rgba(128, 128, 128, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ticket-footer small {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+  font-weight: 700;
+}
+
+.ticket-footer p {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: monospace;
+  color: #374151;
+  margin: 0;
+}
+
+/* Mini Verification QR Box */
+.mini-qr {
+  width: 44px;
+  height: 44px;
+  background: #ffffff;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #4b5563;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Share Call-To-Action Button */
+.share-btn {
+  background: transparent;
+  color: #9b2c2c;
+  border: 1px solid #feb2b2;
+  padding: 6px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.share-btn:hover {
+  background: #fff5f5;
+  border-color: #e53e3e;
+  color: #e53e3e;
+}
+
+/* Fallback/Empty States */
+.loading-placeholder, .empty-placeholder {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 16px;
+  border: 2px dashed rgba(128, 128, 128, 0.2);
+  color: #6b7280;
+}
+
+.icon-empty {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+
+  .ticket-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ticket-poster {
+    height: 200px;
+  }
+
+  .ticket-footer {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .share-btn {
+    width: 100%;
+  }
 }
 
 @media (max-width: 1024px) {

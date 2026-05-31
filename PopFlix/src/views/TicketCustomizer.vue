@@ -259,8 +259,16 @@ const captureTicket = async () => {
         if (!node) {
             throw new Error('Ticket node missing');
         }
+
+        // 1. Get the EXACT dimensions of the ticket card in pixels
+        const rect = node.getBoundingClientRect();
+        const exactWidth = rect.width;
+        const exactHeight = rect.height;
+
+        // Save original styles to restore them after the capture
         const originalBg = node.style.background;
 
+        // Apply background customizations
         if (colorMode.value === 'solid') {
             node.style.background = accentColor.value;
         } else {
@@ -273,12 +281,23 @@ const captureTicket = async () => {
             `;
         }
 
+        
         const canvas = await htmlToImage.toCanvas(node, {
             cacheBust: true,
             pixelRatio: 2,
             skipFonts: true,
             useCORS: true,
-            backgroundColor: null,
+            backgroundColor: null, 
+            
+            width: exactWidth,
+            height: exactHeight, 
+            style: {
+                transform: 'scale(1)', 
+                left: '0',
+                top: '0',
+                margin: '0',
+                padding: node.style.padding, 
+            },
 
             filter: (domNode) => {
                 return !domNode.classList?.contains('share-btn');

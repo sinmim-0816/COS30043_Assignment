@@ -8,5 +8,9 @@ export const ticketDesignService = {
 
     getDesign: async (bookingId) => {
         return await backendClient.get(API_ENDPOINTS.GET_TICKET_DESIGN(bookingId));
+    },
+
+    getMyDesigns() {
+        return backendClient.get(API_ENDPOINTS.GET_MY_DESIGN);
     }
 };

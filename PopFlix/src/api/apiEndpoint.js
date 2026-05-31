@@ -32,6 +32,7 @@ export const API_ENDPOINTS = {
     REVIEWS_BY_MOVIE: (movieId) => `/reviews/${movieId}`,
     TICKET_DESIGNS: '/ticket-design',
     GET_TICKET_DESIGN: (bookingId) => `/ticket-design/${bookingId}`,
+    GET_MY_DESIGN: '/ticket-design/user/me',
     CREATE_REMINDER: (movieId) => `/reminders/${movieId}`,
     CHECK_REMINDER: (movieId) => `/reminders/check/${movieId}`,
 };
