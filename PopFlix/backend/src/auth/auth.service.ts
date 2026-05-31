@@ -67,13 +67,13 @@ export class AuthService {
       template: './reset-password',
       context: {
         name: user.firstName,
-        url: `http://localhost:5173/reset-password?token=${resetToken}`,
+        url: `https://popflix-frontend.onrender.com/reset-password?token=${resetToken}`,
       },
     });
   }
 
   async sendResetEmail(email: string, name: string, token: string) {
-    const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
+    const resetUrl = `https://popflix-frontend.onrender.com/reset-password?token=${token}`;
 
     return await this.emailService.sendMail({
       to: email,

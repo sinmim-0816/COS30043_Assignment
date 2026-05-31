@@ -165,7 +165,7 @@ export class UsersService {
   }
 
   async sendActivationEmail(email: string, name: string, token: string) {
-    const activationUrl = `http://localhost:5173/activate?token=${token}`;
+    const activationUrl = `https://popflix-frontend.onrender.com/activate?token=${token}`;
     return await this.emailService.sendMail({
       to: email,
       subject: 'Verify your PopFlix account',

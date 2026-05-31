@@ -46,13 +46,11 @@ export class RemindersService {
     const user = await this.usersService.findOne(userId);
 
     if (!user || !user.email) {
-      this.logger.warn(
-        `Reminder email skipped: user ${userId} not found or missing email`,
-      );
+      this.logger.warn(`Reminder email skipped: user ${userId} not found or missing email`);
       return;
     }
 
-    const movieUrl = `http://localhost:5173/movie/${String(movie.id)}`;
+    const movieUrl = `https://popflix-frontend.onrender.com/movie/${String(movie.id)}`;
 
     await this.emailService.sendMail({
       to: user.email,
