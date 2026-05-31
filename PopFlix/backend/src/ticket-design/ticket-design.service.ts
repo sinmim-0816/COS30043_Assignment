@@ -4,11 +4,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TicketDesign } from './entities/ticket-design.entity';
 import { CreateTicketDesignDto } from './dto/create-ticket-design.dto';
-import { promises as fs } from 'fs';
-import * as path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class TicketDesignService {
+  private readonly supabase = (() => {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return null;
+    }
+
+    return createClient(supabaseUrl, supabaseKey);
+  })();
+
+  private readonly ticketDesignBucket = process.env.SUPABASE_TICKET_BUCKET || 'ticket-designs';
+
   constructor(
     @InjectRepository(TicketDesign)
     private readonly ticketDesignRepository: Repository<TicketDesign>,
@@ -24,9 +36,7 @@ export class TicketDesignService {
       return designImage;
     }
 
-    const match = designImage.match(
-      /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/,
-    );
+    const match = designImage.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
     if (!match) {
       throw new Error('Invalid design image data URL');
     }
@@ -34,23 +44,38 @@ export class TicketDesignService {
     const mimeType = match[1];
     const base64Data = match[2];
     const extension = mimeType.split('/')[1].replace('jpeg', 'jpg');
+    if (!this.supabase) {
+      throw new Error(
+        'Supabase is not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY).',
+      );
+    }
+
     const safeBookingId = String(bookingId).replace(/[^a-zA-Z0-9_-]/g, '_');
-    const fileName = `${safeBookingId}_${Date.now()}.${extension}`;
-    const relativePath = path.posix.join('/public', 'ticket-designs', fileName);
-    const outputDir = path.join(process.cwd(), 'public', 'ticket-designs');
-    const outputPath = path.join(outputDir, fileName);
+    const fileName = `ticket-designs/${safeBookingId}_${Date.now()}.${extension}`;
+    const fileBuffer = Buffer.from(base64Data, 'base64');
 
-    await fs.mkdir(outputDir, { recursive: true });
-    await fs.writeFile(outputPath, Buffer.from(base64Data, 'base64'));
+    const { error } = await this.supabase.storage
+      .from(this.ticketDesignBucket)
+      .upload(fileName, fileBuffer, {
+        contentType: mimeType,
+        upsert: false,
+      });
 
-    return relativePath;
+    if (error) {
+      throw new Error(`Supabase upload failed: ${error.message}`);
+    }
+
+    const { data } = this.supabase.storage.from(this.ticketDesignBucket).getPublicUrl(fileName);
+
+    if (!data?.publicUrl) {
+      throw new Error('Supabase did not return a public URL for the uploaded ticket design.');
+    }
+
+    return data.publicUrl;
   }
 
   async createNewDesign(userId: number, dto: CreateTicketDesignDto) {
-    const savedImagePath = await this.persistDesignImage(
-      dto.design_image,
-      dto.booking_id,
-    );
+    const savedImagePath = await this.persistDesignImage(dto.design_image, dto.booking_id);
     const newDesign = this.ticketDesignRepository.create({
       ...dto,
       design_image: savedImagePath,
@@ -67,10 +92,7 @@ export class TicketDesignService {
         '/profile?tab=Ticket+Design',
       );
     } catch (notifError) {
-      console.error(
-        'Failed to dispatch ticket design notification:',
-        notifError,
-      );
+      console.error('Failed to dispatch ticket design notification:', notifError);
     }
     return savedDesign;
   }

@@ -13,25 +13,17 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import { mkdirSync } from 'fs';
+import { extname } from 'path';
+import { createClient } from '@supabase/supabase-js';
 
-const avatarUploadRoot = join(process.cwd(), 'public', 'pfp');
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+const avatarBucketName = process.env.SUPABASE_AVATAR_BUCKET || 'pfp';
 
-const avatarStorage = diskStorage({
-  destination: (req, file, cb) => {
-    mkdirSync(avatarUploadRoot, { recursive: true });
-    cb(null, avatarUploadRoot);
-  },
-  filename: (req, file, cb) => {
-    const safeBaseName = file.originalname
-      .replace(/\s+/g, '-')
-      .replace(/[^a-zA-Z0-9.-]/g, '');
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${uniqueSuffix}-${safeBaseName || 'avatar'}${extname(file.originalname)}`);
-  },
-});
+const supabase = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 @Controller('users')
 export class UsersController {
@@ -52,9 +44,9 @@ export class UsersController {
     return this.usersService.findOne(+id);
   }
 
-  @UseInterceptors(FileInterceptor('avatar', { storage: avatarStorage }))
+  @UseInterceptors(FileInterceptor('avatar'))
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
     @UploadedFile() file?: any,
@@ -81,7 +73,7 @@ export class UsersController {
     }
 
     if (file) {
-      updatePayload.profileImage = `/public/pfp/${file.filename}`;
+      updatePayload.profileImage = await this.uploadAvatarToSupabase(file);
     }
 
     return this.usersService.update(+id, updatePayload);
@@ -105,5 +97,37 @@ export class UsersController {
     const dummyToken = 'test-token-123-abc-456';
 
     return await this.usersService.sendActivationEmail(email, name, dummyToken);
+  }
+
+  private async uploadAvatarToSupabase(file: any): Promise<string> {
+    if (!supabase) {
+      throw new Error(
+        'Supabase is not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY).',
+      );
+    }
+
+    const fileExtension = extname(file.originalname || '').toLowerCase() || '.png';
+    const uniqueFileName = `avatars/${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 8)}${fileExtension}`;
+
+    const { error } = await supabase.storage
+      .from(avatarBucketName)
+      .upload(uniqueFileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+
+    if (error) {
+      throw new Error(`Supabase upload failed: ${error.message}`);
+    }
+
+    const { data } = supabase.storage.from(avatarBucketName).getPublicUrl(uniqueFileName);
+
+    if (!data?.publicUrl) {
+      throw new Error('Supabase did not return a public URL for the uploaded avatar.');
+    }
+
+    return data.publicUrl;
   }
 }
