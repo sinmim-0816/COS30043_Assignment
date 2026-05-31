@@ -63,37 +63,17 @@ async function runSeed() {
     const showtimeRepo = AppDataSource.getRepository(Showtime);
 
     console.log('Cleaning up old data...');
-    await AppDataSource.query(
-      `TRUNCATE TABLE "showtimes" RESTART IDENTITY CASCADE`,
-    );
-    await AppDataSource.query(
-      `TRUNCATE TABLE "cinemas" RESTART IDENTITY CASCADE`,
-    );
-    await AppDataSource.query(
-      `TRUNCATE TABLE "movie_experience" RESTART IDENTITY CASCADE`,
-    );
-    await AppDataSource.query(
-      `TRUNCATE TABLE "movies" RESTART IDENTITY CASCADE`,
-    );
-    await AppDataSource.query(
-      `TRUNCATE TABLE "users" RESTART IDENTITY CASCADE`,
-    );
-    await AppDataSource.query(
-      `TRUNCATE TABLE "vehicles" RESTART IDENTITY CASCADE`,
-    );
-    await AppDataSource.query(
-      `TRUNCATE TABLE "tickets" RESTART IDENTITY CASCADE`,
-    );
-    await AppDataSource.query(
-      `TRUNCATE TABLE "payments" RESTART IDENTITY CASCADE`,
-    );
-    await AppDataSource.query(
-      `TRUNCATE TABLE "bookings" RESTART IDENTITY CASCADE`,
-    );
+    await AppDataSource.query(`TRUNCATE TABLE "showtimes" RESTART IDENTITY CASCADE`);
+    await AppDataSource.query(`TRUNCATE TABLE "cinemas" RESTART IDENTITY CASCADE`);
+    await AppDataSource.query(`TRUNCATE TABLE "movie_experience" RESTART IDENTITY CASCADE`);
+    await AppDataSource.query(`TRUNCATE TABLE "movies" RESTART IDENTITY CASCADE`);
+    await AppDataSource.query(`TRUNCATE TABLE "users" RESTART IDENTITY CASCADE`);
+    await AppDataSource.query(`TRUNCATE TABLE "vehicles" RESTART IDENTITY CASCADE`);
+    await AppDataSource.query(`TRUNCATE TABLE "tickets" RESTART IDENTITY CASCADE`);
+    await AppDataSource.query(`TRUNCATE TABLE "payments" RESTART IDENTITY CASCADE`);
+    await AppDataSource.query(`TRUNCATE TABLE "bookings" RESTART IDENTITY CASCADE`);
 
-    await AppDataSource.query(
-      `TRUNCATE TABLE "reviews" RESTART IDENTITY CASCADE`,
-    );
+    await AppDataSource.query(`TRUNCATE TABLE "reviews" RESTART IDENTITY CASCADE`);
 
     await AppDataSource.query(`TRUNCATE TABLE "faqs" RESTART IDENTITY CASCADE`);
 
@@ -270,8 +250,7 @@ async function runSeed() {
         exp_key: 'IMAX',
         title: 'Colossal Screen',
         subtitle: 'Expanded Aspect Ratio',
-        description:
-          'Experience 26% more picture with our massive high-resolution screens.',
+        description: 'Experience 26% more picture with our massive high-resolution screens.',
         image_url: '/img/imax-1.jpg',
         order_index: 1,
         price_premium: 12.0,
@@ -280,8 +259,7 @@ async function runSeed() {
         exp_key: 'IMAX',
         title: '4K Laser',
         subtitle: 'Dual Projection',
-        description:
-          'Sharper, brighter, and more vivid images than a standard cinema.',
+        description: 'Sharper, brighter, and more vivid images than a standard cinema.',
         image_url: '/img/imax-2.jpg',
         order_index: 2,
         price_premium: 12.0,
@@ -290,8 +268,7 @@ async function runSeed() {
         exp_key: 'IMAX',
         title: 'Precision Audio',
         subtitle: '12-Channel Sound',
-        description:
-          'Immersive audio that lets you hear everything from a whisper to a roar.',
+        description: 'Immersive audio that lets you hear everything from a whisper to a roar.',
         image_url: '/img/imax-3.jpg',
         order_index: 3,
         price_premium: 12.0,
@@ -300,8 +277,7 @@ async function runSeed() {
         exp_key: 'IMAX',
         title: 'Director Choice',
         subtitle: 'Filmmaker Intent',
-        description:
-          'The exact way the director wanted you to see their blockbuster masterpiece.',
+        description: 'The exact way the director wanted you to see their blockbuster masterpiece.',
         image_url: '/img/imax-4.jpg',
         order_index: 4,
         price_premium: 12.0,
@@ -312,8 +288,7 @@ async function runSeed() {
         exp_key: 'DOLBY',
         title: 'Vivid Vision',
         subtitle: 'HDR Excellence',
-        description:
-          'Contrast and colors that reveal details you never knew were there.',
+        description: 'Contrast and colors that reveal details you never knew were there.',
         image_url: '/img/dolby-1.jpg',
         order_index: 1,
         price_premium: 8.0,
@@ -322,8 +297,7 @@ async function runSeed() {
         exp_key: 'DOLBY',
         title: 'Moving Audio',
         subtitle: 'Dolby Atmos',
-        description:
-          'Sound that moves around you in 3D space, even from above your head.',
+        description: 'Sound that moves around you in 3D space, even from above your head.',
         image_url: '/img/dolby-2.jpg',
         order_index: 2,
         price_premium: 8.0,
@@ -332,8 +306,7 @@ async function runSeed() {
         exp_key: 'DOLBY',
         title: 'Signature Entry',
         subtitle: 'Blue Path',
-        description:
-          'A dramatic entrance that prepares you for a superior cinematic world.',
+        description: 'A dramatic entrance that prepares you for a superior cinematic world.',
         image_url: '/img/dolby-3.jpg',
         order_index: 3,
         price_premium: 8.0,
@@ -342,8 +315,7 @@ async function runSeed() {
         exp_key: 'DOLBY',
         title: 'Deepest Blacks',
         subtitle: 'OLED Contrast',
-        description:
-          'True black levels that make every color pop with cinematic realism.',
+        description: 'True black levels that make every color pop with cinematic realism.',
         image_url: '/img/dolby-4.jpg',
         order_index: 4,
         price_premium: 8.0,
@@ -354,8 +326,7 @@ async function runSeed() {
         exp_key: '4DX',
         title: 'Motion Seats',
         subtitle: 'Synchronized Movement',
-        description:
-          'Seats that heave, roll, and pitch in perfect sync with the on-screen action.',
+        description: 'Seats that heave, roll, and pitch in perfect sync with the on-screen action.',
         image_url: '/img/4dx-1.jpg',
         order_index: 1,
         price_premium: 15.0,
@@ -364,8 +335,7 @@ async function runSeed() {
         exp_key: '4DX',
         title: 'Environment',
         subtitle: 'Multi-Sensory',
-        description:
-          'Realistic wind, fog, lightning, and scents that bring the movie to life.',
+        description: 'Realistic wind, fog, lightning, and scents that bring the movie to life.',
         image_url: '/img/4dx-2.jpg',
         order_index: 2,
         price_premium: 15.0,
@@ -374,8 +344,7 @@ async function runSeed() {
         exp_key: '4DX',
         title: 'Atmosphere',
         subtitle: 'Rain & Snow',
-        description:
-          'Get closer to the elements with weather effects inside the auditorium.',
+        description: 'Get closer to the elements with weather effects inside the auditorium.',
         image_url: '/img/4dx-3.jpg',
         order_index: 3,
         price_premium: 15.0,
@@ -384,8 +353,7 @@ async function runSeed() {
         exp_key: '4DX',
         title: 'Total Immersion',
         subtitle: 'Sensory Journey',
-        description:
-          'A revolutionary way to experience movies using all five of your senses.',
+        description: 'A revolutionary way to experience movies using all five of your senses.',
         image_url: '/img/4dx-4.jpg',
         order_index: 4,
         price_premium: 15.0,
@@ -396,8 +364,7 @@ async function runSeed() {
         exp_key: 'LUXE',
         title: 'Premium Style',
         subtitle: 'Exclusive Design',
-        description:
-          'A sophisticated environment designed for the most discerning film lovers.',
+        description: 'A sophisticated environment designed for the most discerning film lovers.',
         image_url: '/img/luxe-1.jpg',
         order_index: 1,
         price_premium: 5.0,
@@ -406,8 +373,7 @@ async function runSeed() {
         exp_key: 'LUXE',
         title: 'Extra Legroom',
         subtitle: 'Spacious Seating',
-        description:
-          'Stretch out and enjoy your film with significantly more space per person.',
+        description: 'Stretch out and enjoy your film with significantly more space per person.',
         image_url: '/img/luxe-2.jpg',
         order_index: 2,
         price_premium: 5.0,
@@ -416,8 +382,7 @@ async function runSeed() {
         exp_key: 'LUXE',
         title: 'Crisp Sound',
         subtitle: 'Acoustic Clarity',
-        description:
-          'Every seat is tuned for perfect acoustics and crystal clear dialogue.',
+        description: 'Every seat is tuned for perfect acoustics and crystal clear dialogue.',
         image_url: '/img/luxe-3.jpg',
         order_index: 3,
         price_premium: 5.0,
@@ -426,8 +391,7 @@ async function runSeed() {
         exp_key: 'LUXE',
         title: 'Elegant Bar',
         subtitle: 'Pre-Show Drinks',
-        description:
-          'Enjoy a selection of fine beverages and snacks before your feature begins.',
+        description: 'Enjoy a selection of fine beverages and snacks before your feature begins.',
         image_url: '/img/luxe-4.jpg',
         order_index: 4,
         price_premium: 5.0,
@@ -438,8 +402,7 @@ async function runSeed() {
         exp_key: 'INDULGE',
         title: 'Fine Dining',
         subtitle: 'Chef-Prepared',
-        description:
-          'Gourmet meals delivered to your seat so you never miss a moment.',
+        description: 'Gourmet meals delivered to your seat so you never miss a moment.',
         image_url: '/img/indulge-1.jpg',
         order_index: 1,
         price_premium: 5.0,
@@ -448,8 +411,7 @@ async function runSeed() {
         exp_key: 'INDULGE',
         title: 'Full Recline',
         subtitle: 'Leather Luxury',
-        description:
-          'Adjust your plush leather seat to the perfect angle for total relaxation.',
+        description: 'Adjust your plush leather seat to the perfect angle for total relaxation.',
         image_url: '/img/indulge-2.jpg',
         order_index: 2,
         price_premium: 5.0,
@@ -458,8 +420,7 @@ async function runSeed() {
         exp_key: 'INDULGE',
         title: 'Personal Service',
         subtitle: 'At Your Command',
-        description:
-          'A dedicated call button for service whenever you need a refreshment.',
+        description: 'A dedicated call button for service whenever you need a refreshment.',
         image_url: '/img/indulge-3.jpg',
         order_index: 3,
         price_premium: 5.0,
@@ -468,8 +429,7 @@ async function runSeed() {
         exp_key: 'INDULGE',
         title: 'Boutique Hall',
         subtitle: 'Quiet Atmosphere',
-        description:
-          'An intimate theater setting with limited seating for a private feel.',
+        description: 'An intimate theater setting with limited seating for a private feel.',
         image_url: '/img/indulge-4.jpg',
         order_index: 4,
         price_premium: 5.0,
@@ -480,8 +440,7 @@ async function runSeed() {
         exp_key: 'BEANIE',
         title: 'Cloud Comfort',
         subtitle: 'Bean Bag Seating',
-        description:
-          'Sink into our giant, cozy bean bags for the most relaxed viewing ever.',
+        description: 'Sink into our giant, cozy bean bags for the most relaxed viewing ever.',
         image_url: '/img/beanie-1.jpg',
         order_index: 1,
         price_premium: 10.0,
@@ -490,8 +449,7 @@ async function runSeed() {
         exp_key: 'BEANIE',
         title: 'Social Cinema',
         subtitle: 'Casual Vibes',
-        description:
-          'The perfect atmosphere for hanging out with friends while you watch.',
+        description: 'The perfect atmosphere for hanging out with friends while you watch.',
         image_url: '/img/beanie-2.jpg',
         order_index: 2,
         price_premium: 10.0,
@@ -500,8 +458,7 @@ async function runSeed() {
         exp_key: 'BEANIE',
         title: 'Snack Heaven',
         subtitle: 'Popcorn & More',
-        description:
-          'Specialized snack combos designed for the ultimate comfort movie night.',
+        description: 'Specialized snack combos designed for the ultimate comfort movie night.',
         image_url: '/img/beanie-3.jpg',
         order_index: 3,
         price_premium: 10.0,
@@ -510,8 +467,7 @@ async function runSeed() {
         exp_key: 'BEANIE',
         title: 'Cozy Lighting',
         subtitle: 'Soft Ambiance',
-        description:
-          'A warm, inviting theater design that makes you feel right at home.',
+        description: 'A warm, inviting theater design that makes you feel right at home.',
         image_url: '/img/beanie-4.jpg',
         order_index: 4,
         price_premium: 10.0,
@@ -522,8 +478,7 @@ async function runSeed() {
         exp_key: 'JUNIOR',
         title: 'Play Zone',
         subtitle: 'In-Cinema Slide',
-        description:
-          'Kids can play on the slide and in the ball pit before the movie starts.',
+        description: 'Kids can play on the slide and in the ball pit before the movie starts.',
         image_url: '/img/junior-1.jpg',
         order_index: 1,
         price_premium: 5.0,
@@ -532,8 +487,7 @@ async function runSeed() {
         exp_key: 'JUNIOR',
         title: 'Family Friendly',
         subtitle: 'Soft Lighting',
-        description:
-          'Modified sound and light levels to keep the experience fun for little ones.',
+        description: 'Modified sound and light levels to keep the experience fun for little ones.',
         image_url: '/img/junior-2.jpg',
         order_index: 2,
         price_premium: 5.0,
@@ -542,8 +496,7 @@ async function runSeed() {
         exp_key: 'JUNIOR',
         title: 'Colorful Seats',
         subtitle: 'Kid-Sized Comfort',
-        description:
-          'Brightly colored, ergonomically designed seating just for children.',
+        description: 'Brightly colored, ergonomically designed seating just for children.',
         image_url: '/img/junior-3.jpg',
         order_index: 3,
         price_premium: 5.0,
@@ -552,8 +505,7 @@ async function runSeed() {
         exp_key: 'JUNIOR',
         title: 'Intermission',
         subtitle: 'Stretch Break',
-        description:
-          'Special breaks designed so kids can burn off energy halfway through.',
+        description: 'Special breaks designed so kids can burn off energy halfway through.',
         image_url: '/img/junior-4.jpg',
         order_index: 4,
         price_premium: 5.0,
@@ -565,9 +517,9 @@ async function runSeed() {
         slug: 'vivacity-mall',
         name: 'Popflix Vivacity Megamall',
         mall: 'Vivacity Megamall',
-        image_path: '/public/cinema/viva.png',
-        location_address:
-          'Lot 35, Vivacity Megamall, Jln Wan Alwi, 93350 Kuching, Sarawak',
+        image_path:
+          'https://kygmgshzafyxfvilxbxo.supabase.co/storage/v1/object/public/cinema/viva.png',
+        location_address: 'Lot 35, Vivacity Megamall, Jln Wan Alwi, 93350 Kuching, Sarawak',
         latitude: 1.5303,
         longitude: 110.3653,
         base_price: 20.0,
@@ -589,10 +541,10 @@ async function runSeed() {
         slug: 'the-spring',
         name: 'Popflix The Spring',
         mall: 'The Spring Shopping Mall',
-        image_path: '/public/cinema/spring.png',
-        location_address:
-          'Lot 1-59, The Spring Shopping Mall, Jln Simpang Tiga, 93350 Kuching',
-        latitude: 1.5358, // Note: You might want to update this to the exact coordinate from your UI snippet later
+        image_path:
+          'https://kygmgshzafyxfvilxbxo.supabase.co/storage/v1/object/public/cinema/spring.png',
+        location_address: 'Lot 1-59, The Spring Shopping Mall, Jln Simpang Tiga, 93350 Kuching',
+        latitude: 1.5358,
         longitude: 110.3582,
         base_price: 18.0,
         hall: 6,
@@ -612,9 +564,9 @@ async function runSeed() {
         slug: 'cityone',
         name: 'Popflix CityOne Megamall',
         mall: 'CityOne Megamall',
-        image_path: '/public/cinema/cityone.png',
-        location_address:
-          'Lot 5, CityOne Megamall, Jln Song Thian Cheok, 93100 Kuching',
+        image_path:
+          'https://kygmgshzafyxfvilxbxo.supabase.co/storage/v1/object/public/cinema/cityone.png',
+        location_address: 'Lot 5, CityOne Megamall, Jln Song Thian Cheok, 93100 Kuching',
         latitude: 1.5248,
         longitude: 110.3575,
         base_price: 10.0,
@@ -634,9 +586,9 @@ async function runSeed() {
         slug: 'aeon-mall',
         name: 'Popflix AEON Kuching Central',
         mall: 'AEON Mall Kuching Central',
-        image_path: '/public/cinema/aeon.png',
-        location_address:
-          'Lot G-10, AEON Mall Kuching Central, Jln Stutong, 93350 Kuching',
+        image_path:
+          'https://kygmgshzafyxfvilxbxo.supabase.co/storage/v1/object/public/cinema/aeon.png',
+        location_address: 'Lot G-10, AEON Mall Kuching Central, Jln Stutong, 93350 Kuching',
         latitude: 1.535,
         longitude: 110.334,
         base_price: 15.0,
@@ -701,10 +653,7 @@ async function runSeed() {
           for (const time of selectedTimeSlots) {
             const startTime = new Date(`${dateStr}T${time}:00`);
 
-            const exp =
-              movieExperiences[
-                Math.floor(Math.random() * movieExperiences.length)
-              ];
+            const exp = movieExperiences[Math.floor(Math.random() * movieExperiences.length)];
 
             showtimes.push(
               showtimeRepo.create({
@@ -774,8 +723,7 @@ async function runSeed() {
 
       for (let bookingIndex = 0; bookingIndex < plan.length; bookingIndex++) {
         const amount = plan[bookingIndex];
-        const targetShowtime =
-          allShowtimes[(userIndex * 3 + bookingIndex) % allShowtimes.length];
+        const targetShowtime = allShowtimes[(userIndex * 3 + bookingIndex) % allShowtimes.length];
         const targetMovie = movies.find((movie) => movie.id === targetShowtime.movie_id);
         const seatCount = Math.max(1, Math.min(4, Math.ceil(amount / 100)));
         const ticketPrice = Number((amount / seatCount).toFixed(2));
@@ -787,9 +735,7 @@ async function runSeed() {
           price: ticketPrice,
         }));
 
-        const pointsEarned = Math.floor(
-          amount * getEarnMultiplier(currentTier),
-        );
+        const pointsEarned = Math.floor(amount * getEarnMultiplier(currentTier));
         runningTotal += amount;
         loyaltyPoints += pointsEarned;
         currentTier = getTierForSpend(runningTotal);
@@ -843,8 +789,7 @@ async function runSeed() {
           await notificationRepo.save({
             userId: user.id,
             title: 'Gold Membership Unlocked',
-            message:
-              'Amazing! You have reached Gold membership and unlocked premium benefits.',
+            message: 'Amazing! You have reached Gold membership and unlocked premium benefits.',
             type: 'success',
             url: '/profile',
             isRead: false,
@@ -874,20 +819,17 @@ async function runSeed() {
           {
             rating: 5,
             title: 'A Visual Triumph!',
-            comment:
-              'An absolute masterpiece! The cinematography was breathtaking.',
+            comment: 'An absolute masterpiece! The cinematography was breathtaking.',
           },
           {
             rating: 4,
             title: 'Great Weekend Watch',
-            comment:
-              'Really enjoyed the story, highly recommended for a weekend watch.',
+            comment: 'Really enjoyed the story, highly recommended for a weekend watch.',
           },
           {
             rating: 5,
             title: 'Sensational Sound Design',
-            comment:
-              'The sound design in this cinema is incredible. Best experience ever.',
+            comment: 'The sound design in this cinema is incredible. Best experience ever.',
           },
           {
             rating: 3,
@@ -896,8 +838,7 @@ async function runSeed() {
           },
         ];
 
-        const randomReview =
-          mockReviews[Math.floor(Math.random() * mockReviews.length)];
+        const randomReview = mockReviews[Math.floor(Math.random() * mockReviews.length)];
 
         await reviewRepo.save({
           rating: randomReview.rating,
@@ -1016,8 +957,7 @@ async function runSeed() {
       },
       {
         category: 'Payments',
-        question:
-          'My payment failed but the money was deducted. What happens now?',
+        question: 'My payment failed but the money was deducted. What happens now?',
         answer:
           'Do not panic! Unsuccessful transactions due to network timeouts are automatically flagged and reversed. The funds will be credited back to your original payment method within 3 to 5 business days.',
       },
