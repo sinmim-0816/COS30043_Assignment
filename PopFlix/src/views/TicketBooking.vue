@@ -29,6 +29,13 @@ const lastSelectedSeat = computed(() => {
     }
     return 'A-1';
 });
+const selectedSeatPreviewLabel = computed(() => {
+    if (!selectedSeats.value || selectedSeats.value.length === 0) return 'A1';
+    if (selectedSeats.value.length === 1) {
+        return selectedSeats.value[0].split('-').slice(-2).join('');
+    }
+    return `${selectedSeats.value.length} seats`;
+});
 
 const { movie, loadMovieDetails, getImageURL, getCertificate, isLoading: isMovieLoading } = useMovieDetails();
 const { allSessions, fetchAllShowtimes, currentSession, fetchShowtimeById, loadInitialData, isLoading: isShowtimeLoading } = useShowtimes();
@@ -893,7 +900,7 @@ const handleCheckoutStep = async () => {
             <v-dialog v-model="is3DPreviewOpen" fullscreen transition="dialog-bottom-transition">
                 <v-card class="seat-preview-dialog" theme="dark">
                     <v-card-title class="d-flex justify-space-between align-center seat-preview-header">
-                        <span>Seat View: {{ lastSelectedSeat.split('-').slice(-2).join('') }}</span>
+                        <span>Seat View: {{ selectedSeatPreviewLabel }}</span>
                         <v-btn icon variant="text" @click="is3DPreviewOpen = false">
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
@@ -901,6 +908,7 @@ const handleCheckoutStep = async () => {
 
                     <v-card-text class="pa-0 seat-preview-body">
                         <SeatPreview3D v-if="is3DPreviewOpen" :selected-seat="lastSelectedSeat"
+                            :selected-seats="selectedSeats"
                             :experience-type="experienceType" :trailer-url="movie?.trailer" />
                     </v-card-text>
                 </v-card>

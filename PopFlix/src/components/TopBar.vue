@@ -201,7 +201,7 @@ watch(
                                 class="avatar-img"
                             />
 
-                            <span v-else class="pb-1">
+                            <span v-else>
                                 {{ currentUser?.firstName?.charAt(0).toUpperCase() }}
                             </span>
                             </div>

@@ -8,7 +8,8 @@ import { SunMedium, MoonStar } from 'lucide-vue-next';
 import { LAYOUT_CONFIG } from '@/utils/SeatLayout';
 
 const props = defineProps({
-  selectedSeat: { type: String, default: 'DOLBY-A-1' },
+  selectedSeat: { type: [String, Array], default: 'DOLBY-A-1' },
+  selectedSeats: { type: Array, default: () => [] },
   experienceType: { type: String, default: 'DOLBY' },
   trailerUrl: { type: String, default: '' },
 });
@@ -39,8 +40,10 @@ const visualProfile = computed(() => {
   return profiles[props.experienceType] || profiles.DOLBY;
 });
 
-const parsedSeat = computed(() => {
-  const parts = props.selectedSeat.split('-');
+const parseSeatId = (seatId) => {
+  if (!seatId) return null;
+
+  const parts = String(seatId).split('-');
   const row = parts.length >= 3 ? parts[parts.length - 2] : parts[0] || 'A';
   const col = Number(parts.length >= 3 ? parts[parts.length - 1] : parts[1] || 1);
 
@@ -48,7 +51,21 @@ const parsedSeat = computed(() => {
     row: row.toUpperCase(),
     col: Number.isFinite(col) ? col : 1,
   };
+};
+
+const selectedSeatList = computed(() => {
+  const source = Array.isArray(props.selectedSeats) && props.selectedSeats.length > 0
+    ? props.selectedSeats
+    : (Array.isArray(props.selectedSeat) ? props.selectedSeat : [props.selectedSeat]);
+
+  return source
+    .map(parseSeatId)
+    .filter(Boolean);
 });
+
+const selectedSeatIds = computed(() => new Set(
+  selectedSeatList.value.map((seat) => `${props.experienceType}-${seat.row}-${seat.col}`)
+));
 
 const aisleOffsetForColumn = (col) => {
   return layout.value.aisleAfter
@@ -80,10 +97,11 @@ const rows = computed(() => Array.from({ length: layout.value.rows }, (_, index)
 const seats = computed(() => rows.value.flatMap((row) =>
   Array.from({ length: layout.value.cols }, (_, index) => {
     const col = index + 1;
-    const isSelected = row.label === parsedSeat.value.row && col === parsedSeat.value.col;
+    const id = `${props.experienceType}-${row.label}-${col}`;
+    const isSelected = selectedSeatIds.value.has(id);
 
     return {
-      id: `${props.experienceType}-${row.label}-${col}`,
+      id,
       row: row.label,
       col,
       isSelected,
@@ -93,8 +111,10 @@ const seats = computed(() => rows.value.flatMap((row) =>
 ));
 
 const selectedCoords = computed(() => {
-  const selected = seats.value.find((seat) => seat.isSelected);
-  return selected?.position || seatPosition(0, 1);
+  const selected = seats.value.filter((seat) => seat.isSelected);
+  if (selected.length === 0) return seatPosition(0, 1);
+
+  return selected[0].position; 
 });
 
 const cameraTarget = computed(() => [
@@ -109,6 +129,15 @@ const cameraPosition = computed(() => {
     selectedCoords.value[1] + visualProfile.value.eyeHeight,
     selectedCoords.value[2] + visualProfile.value.depth * 0.38,
   ];
+});
+
+const selectedSeatLabel = computed(() => {
+  if (selectedSeatList.value.length === 0) return 'A1';
+  if (selectedSeatList.value.length === 1) {
+    return `${selectedSeatList.value[0].row}${selectedSeatList.value[0].col}`;
+  }
+
+  return `${selectedSeatList.value.length} seats selected`;
 });
 
 const frontRowZ = computed(() => -((layout.value.rows - 1) * visualProfile.value.rowGap) / 2);
@@ -188,7 +217,7 @@ onMounted(() => {
   <div class="seat-preview-shell" :style="shellStyle">
     <div class="scene-badge">
       <span>{{ experienceType }} layout</span>
-      <strong>{{ parsedSeat.row }}{{ parsedSeat.col }}</strong>
+      <strong>{{ selectedSeatLabel }}</strong>
     </div>
 
     <div
@@ -285,6 +314,15 @@ onMounted(() => {
       <TresMesh :position="[selectedCoords[0], selectedCoords[1] + 1.25, selectedCoords[2]]">
         <TresSphereGeometry :args="[0.18, 18, 18]" />
         <TresMeshStandardMaterial :color="visualProfile.accent" :emissive="visualProfile.accent" :emissive-intensity="1.2" />
+      </TresMesh>
+
+      <TresMesh
+        v-for="seat in seats.filter((item) => item.isSelected)"
+        :key="`${seat.id}-marker`"
+        :position="[seat.position[0], seat.position[1] + 1.05, seat.position[2]]"
+      >
+        <TresTorusGeometry :args="[0.22, 0.02, 10, 28]" />
+        <TresMeshStandardMaterial :color="visualProfile.accent" :emissive="visualProfile.accent" :emissive-intensity="0.95" />
       </TresMesh>
 
       <TresMesh :position="[selectedCoords[0], selectedCoords[1] + 0.72, selectedCoords[2]]">

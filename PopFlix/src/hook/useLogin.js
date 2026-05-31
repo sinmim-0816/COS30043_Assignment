@@ -12,12 +12,12 @@ export function useLogin() {
     const isLoading = ref(false);
     const errorMessage = ref(null);
 
-    const handleLogin = async () => {
+    const handleLogin = async (remember = false) => {
         isLoading.value = true;
         errorMessage.value = null;
 
         try {
-            await authStore.login(email.value, password.value);
+            await authStore.login(email.value, password.value, remember);
             const redirectPath = route.query.redirect || '/';
             router.push(redirectPath);
         } catch (err) {

@@ -12,7 +12,7 @@ const backendClient = axios.create({
 backendClient.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore();
-    let token = authStore.token || localStorage.getItem('token');
+    let token = authStore.token || sessionStorage.getItem('token') || localStorage.getItem('token');
 
     if (typeof FormData !== 'undefined' && config.data instanceof FormData && config.headers) {
       if (typeof config.headers.set === 'function') {

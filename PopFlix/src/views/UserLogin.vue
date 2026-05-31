@@ -9,6 +9,7 @@ import AuthLayout from '@/components/AuthLayout.vue';
 
 const { email, password, isLoading, errorMessage, handleLogin } = useLogin();
 const showPassword = ref(false);
+const rememberMe = ref(false);
 
 const route = useRoute();
 const router = useRouter();
@@ -18,6 +19,12 @@ const authMessage = ref('');
 const isSuccess = ref(false);
 
 onMounted(() => {
+    const savedEmail = localStorage.getItem('remembered_email');
+    if (savedEmail) {
+        email.value = savedEmail;
+        rememberMe.value = true;
+    }
+
     if (route.query.reason === 'auth_required') {
         authMessage.value = 'Please sign in to access this page';
         isSuccess.value = false;
@@ -37,6 +44,16 @@ onMounted(() => {
         window.history.replaceState({}, document.title);
     }
 });
+
+const onFormSubmit = async () => {
+    if (rememberMe.value) {
+        localStorage.setItem('remembered_email', email.value);
+    } else {
+        localStorage.removeItem('remembered_email');
+    }
+    
+    await handleLogin(rememberMe.value);
+};
 </script>
 
 <template>
@@ -89,11 +106,19 @@ onMounted(() => {
                     </v-text-field>
                 </div>
 
-                <div class="d-flex justify-end my-3">
+                <div class="d-flex justify-between my-3 align-center option-row">
+                    <v-checkbox
+                        v-model="rememberMe"
+                        label="Remember me"
+                        color="red-accent-3"
+                        hide-details
+                        density="compact"
+                        class="remember-me-checkbox"
+                    ></v-checkbox>
                     <router-link to="/forgot-password" class="text-caption text-grey hover-red">Forgot Password?</router-link>
                 </div>
 
-                <v-btn block color="red-accent-3" height="54" class="login-btn mb-3" @click="handleLogin"
+                <v-btn block color="red-accent-3" height="54" class="login-btn mb-3" @click="onFormSubmit"
                     :loading="isLoading" type="submit">
                     Sign In
                 </v-btn>
@@ -112,3 +137,20 @@ onMounted(() => {
         </v-card>
     </AuthLayout>
 </template>
+
+<style scoped>
+.option-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+:deep(.remember-me-checkbox .v-label) {
+    font-size: 16px !important;
+    color: var(--v-theme-text-secondary, #666) !important;
+    opacity: 1;
+    padding-top: 5px;
+    padding-inline-start: 4px !important;
+}
+</style>
