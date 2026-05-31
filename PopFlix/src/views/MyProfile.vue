@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
-import {SquarePen, MapPin, ClockFading, Ticket, Star, Mail, Phone, Users, Lock, XCircle, Plus, Camera, Eye, EyeOff, Check, CheckCircle, Info, Trash2} from '@lucide/vue';
+import {SquarePen, MapPin, ClockFading, Ticket, Star, Mail, Phone, Users, Lock, XCircle, Plus, Camera, Eye, EyeOff, Check, CheckCircle, Info, Trash2, Award} from '@lucide/vue';
 
 // Import other hook and component
 import { useAuthStore } from '@/stores/auth';
@@ -12,7 +12,7 @@ import { useTicketDesign } from '@/hook/useTicketDesign';
 import { formatTicketDate } from '@/utils/formatDateTime';
 import { useReviews } from '@/hook/useReviews';
 
-const activeTab = ref('Membership Rewards');
+const activeTab = ref('Rewards');
 const isEditing = ref(false);
 const isPasswordModalOpen = ref(false);
 const avatarLoadError = ref(false)
@@ -307,7 +307,7 @@ const tabs = [
   { name: 'Profile' },
   { name: 'Ticket Design' },
   { name: 'Reviews' },
-  { name: 'Membership Rewards' }
+  { name: 'Rewards' }
 ];
 
 // State Actions
@@ -874,6 +874,92 @@ const passStrengthText = computed(() => {
             </div>
           </div>
         </section>
+        <section v-if="activeTab === 'Rewards'" class="rewards-panel animate-fade">
+          <div class="tier-cards-grid">
+          
+            <div class="tier-card border-bronze" :class="{ 'is-active': currentTier === 'Bronze' }">
+              <div class="tier-card-header">
+                <div class="tier-icon-badge bg-bronze-light">
+                  <Award :size="22" class="color-bronze" />
+                </div>
+                <span v-if="currentTier === 'Bronze'" class="status-pill current-pill">Current</span>
+              </div>
+
+              <div class="tier-card-body">
+                <h3 class="tier-title">Bronze</h3>
+                <p class="tier-range">RM 0 – RM 499</p>
+                <div class="tier-discount color-bronze">0% off</div>
+
+                <ul class="tier-perks-list">
+                  <li><Check :size="16" class="perk-check-icon" /> Early bird access</li>
+                  <li><Check :size="16" class="perk-check-icon" /> Birthday free drink</li>
+                  <li><Check :size="16" class="perk-check-icon" /> Member newsletter</li>
+                </ul>
+              </div>
+            </div>
+
+            <div 
+              class="tier-card border-silver" 
+              :class="{ 
+                'is-active': currentTier === 'Silver', 
+                'is-locked': currentTier === 'Bronze' 
+              }"
+            >
+              <div class="tier-card-header">
+                <div class="tier-icon-badge bg-silver-light">
+                  <Award :size="22" class="color-silver" />
+                </div>
+                <span v-if="currentTier === 'Silver'" class="status-pill current-pill">Current</span>
+                <Lock v-if="currentTier === 'Bronze'" :size="16" class="status-lock-icon" />
+              </div>
+
+              <div class="tier-card-body">
+                <h3 class="tier-title">Silver</h3>
+                <p class="tier-range">RM 500 – RM 1999</p>
+                <div class="tier-discount color-silver">10% off</div>
+
+                <ul class="tier-perks-list">
+                  <li><Check :size="16" class="perk-check-icon" /> All Bronze perks</li>
+                  <li><Check :size="16" class="perk-check-icon" /> 10% ticket discount</li>
+                  <li><Check :size="16" class="perk-check-icon" /> Priority seat selection</li>
+                  <li><Check :size="16" class="perk-check-icon" /> 1 free popcorn/month</li>
+                </ul>
+              </div>
+            </div>
+
+            <div 
+              class="tier-card border-gold" 
+              :class="{ 
+                'is-active': currentTier === 'Gold', 
+                'is-locked': currentTier === 'Bronze' || currentTier === 'Silver' 
+              }"
+            >
+              <div class="tier-card-header">
+                <div class="tier-icon-badge bg-gold-light">
+                  <Award :size="22" class="color-gold" />
+                </div>
+                <span v-if="currentTier === 'Gold'" class="status-pill current-pill">Current</span>
+                <Lock v-if="currentTier !== 'Gold'" :size="16" class="status-lock-icon" />
+              </div>
+
+              <div class="tier-card-body">
+                <h3 class="tier-title">Gold</h3>
+                <p class="tier-range">RM 2000+</p>
+                <div class="tier-discount color-gold">20% off</div>
+
+                <ul class="tier-perks-list">
+                  <li><Check :size="16" class="perk-check-icon" /> All Silver perks</li>
+                  <li><Check :size="16" class="perk-check-icon" /> 20% ticket discount</li>
+                  <li><Check :size="16" class="perk-check-icon" /> LUXE lounge access</li>
+                  <li><Check :size="16" class="perk-check-icon" /> Exclusive previews</li>
+                  <li><Check :size="16" class="perk-check-icon" /> Free ticket on birthday</li>
+                  <li><Check :size="16" class="perk-check-icon" /> Gold cinema lanyard</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+        </section>
       </div>
     </main>
 
@@ -1318,9 +1404,17 @@ const passStrengthText = computed(() => {
 }
 .selected-tab { background: #ffffff; color: #0f172a; }
 
-/* Form Card Controls Column Grid Layout */
-.control-grid-3col { display: grid; grid-template-columns: 1fr 1.1fr 0.9fr; gap: 24px; }
-.glass-control-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; }
+.control-grid-3col { 
+  display: grid; 
+  grid-template-columns: 1fr 1.1fr 0.9fr; 
+  gap: 24px; 
+}
+.glass-control-card { 
+  background: #ffffff; 
+  border: 1px solid #e2e8f0; 
+  border-radius: 12px; 
+  padding: 24px; 
+}
 
 .panel-inner-title { 
   font-weight: 700; 
@@ -2312,6 +2406,177 @@ const passStrengthText = computed(() => {
   opacity: 0.5;
 }
 
+/* --- MEMBERSHIP REWARDS THEME HOUSING --- */
+
+.rewards-panel {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.tier-progress-bar {
+  background: rgba(128, 128, 128, 0.1);
+  border-radius: 4px;
+}
+
+/* Grid Layout matching the 3-column setup */
+.tier-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+/* Base Card Styles */
+.tier-card {
+  background: #fdfbf7; /* Very light warm premium background glow */
+  border: 1px solid rgba(128, 128, 128, 0.12);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+}
+
+/* Upper Header Alignment rules inside card boundaries */
+.tier-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tier-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Status Pill Indicators styling */
+.status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.current-pill {
+  background: #f3eae1;
+  color: #8c6d4f;
+}
+
+.status-lock-icon {
+  color: #c4c4c4;
+  opacity: 0.8;
+}
+
+/* Typography and Copy Layout Metrics */
+.tier-card-body {
+  text-align: left;
+}
+
+.tier-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 2px 0;
+}
+
+.tier-range {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.tier-discount {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -0.5px;
+}
+
+/* Unordered list handling the check marks */
+.tier-perks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tier-perks-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.perk-check-icon {
+  color: #7bb883; /* Green check configuration */
+  flex-shrink: 0;
+}
+
+/* --- THEME VARIANT METRICS (Bronze, Silver, Gold colors matching image) --- */
+
+.color-bronze { color: #8c6d4f; }
+.bg-bronze-light { background: #f5ede4; }
+
+.color-silver { color: #8a94a6; }
+.bg-silver-light { background: #f0f2f5; }
+
+.color-gold { color: #b59461; }
+.bg-gold-light { background: #f7f2e8; }
+
+/* --- ACTIVE STATE OVERRIDES --- */
+/* Highlighting the card corresponding to the user's current status */
+.tier-card.is-active {
+  background: #ffffff;
+  border-width: 2px;
+  box-shadow: 0 10px 25px rgba(140, 109, 79, 0.08);
+}
+
+.tier-card.is-active.border-bronze { border-color: #8c6d4f; }
+.tier-card.is-active.border-silver { border-color: #8a94a6; }
+.tier-card.is-active.border-gold { border-color: #b59461; }
+
+/* --- LOCKED STATE OVERRIDES --- */
+/* Graying out higher status options the client hasn't qualified for yet */
+.tier-card.is-locked {
+  background: #fafafa;
+  border-color: rgba(128, 128, 128, 0.08);
+}
+
+.tier-card.is-locked .tier-title,
+.tier-card.is-locked .tier-range,
+.tier-card.is-locked .tier-discount,
+.tier-card.is-locked .tier-perks-list li {
+  color: #94a3b8 !important;
+  opacity: 0.65;
+}
+
+.tier-card.is-locked .perk-check-icon {
+  color: #cbd5e1;
+}
+
+.tier-card.is-locked .tier-icon-badge {
+  background: #f1f5f9;
+}
+
+.tier-card.is-locked .tier-icon-badge svg {
+  color: #94a3b8 !important;
+}
+
 @media (max-width: 768px) {
 
   .ticket-grid {
@@ -2408,6 +2673,13 @@ const passStrengthText = computed(() => {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+  }
+  .meta-sub-row {
+    font-size:10px;
+    width:200px;
+  }
+  .genre-pill-badge{
+    font-size:10px;
   }
 }
 </style>
