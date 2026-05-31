@@ -5,15 +5,15 @@ import { Payment } from './entities/payment.entity';
 import { BookingsService } from '../bookings/bookings.service';
 import { UsersService } from '../users/users.service';
 import { BookingStatus } from '../enum/BookingStatus';
-import { MailerService } from '@nestjs-modules/mailer';
 import { NotificationService } from 'src/notification/notification.service';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private bookingsService: BookingsService,
     private usersService: UsersService,
-    private mailerService: MailerService,
+    private emailService: EmailService,
     @InjectRepository(Payment)
     private paymentRepo: Repository<Payment>,
     private notificationService: NotificationService,
@@ -69,7 +69,7 @@ export class PaymentsService {
     }
     const bookingDate = new Date(booking.showtime.start_time);
     try {
-      await this.mailerService.sendMail({
+      await this.emailService.sendMail({
         to: booking.user.email,
         subject: 'Your PopFlix Booking Confirmation',
         template: './booking-confirmation',

@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MailerService } from '@nestjs-modules/mailer';
 import { UsersService } from '../users/users.service';
 import { Reminder } from './entities/reminder.entity';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class RemindersService {
@@ -13,7 +13,7 @@ export class RemindersService {
     @InjectRepository(Reminder)
     private reminderRepo: Repository<Reminder>,
     private readonly usersService: UsersService,
-    private readonly mailerService: MailerService,
+    private readonly emailService: EmailService,
   ) {}
 
   async create(userId: number, movieId: string) {
@@ -54,7 +54,7 @@ export class RemindersService {
 
     const movieUrl = `http://localhost:5173/movie/${String(movie.id)}`;
 
-    await this.mailerService.sendMail({
+    await this.emailService.sendMail({
       to: user.email,
       subject: `PopFlix Reminder: ${movie.title} releases tomorrow!`,
       template: './reminder',
