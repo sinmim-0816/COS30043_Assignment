@@ -19,7 +19,7 @@ const accountLinks = [
 ];
 
 const supportLinks = [
-  { label: 'Help Center', to: '/theatre?category=General&faqId=1' },
+  { label: 'Help Center', to: '/theaters?category=Booking&faqId=1' },
   { label: 'support@popflix.com', href: 'mailto:support@popflix.com' },
   { label: '+60 123 456 789', href: 'tel:+60123456789' },
 ];

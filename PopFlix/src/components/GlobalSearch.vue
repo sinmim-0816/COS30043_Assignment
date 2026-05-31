@@ -75,7 +75,6 @@ const goToResult = (item) => {
         router.push({
             path: '/theaters',
             query: {
-                cinema: null,
                 faqId: item.id,
                 category: item.category
             }
