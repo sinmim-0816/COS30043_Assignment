@@ -7,6 +7,11 @@ const notifications = ref([]);
 const isConnected = ref(false);
 let socket = null;
 
+const getSocketBaseUrl = () => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+    return apiBaseUrl.replace(/\/api\/?$/, '');
+};
+
 export function useNotifications() {
     const unreadCount = computed(() => {
         return notifications.value.filter(n => !n.isRead).length;
@@ -24,7 +29,7 @@ export function useNotifications() {
 
         if (socket) socket.disconnect();
 
-        socket = io(API_ENDPOINTS.NOTIFICATIONS.BASE, {
+        socket = io(`${getSocketBaseUrl()}/notifications`, {
             query: { userId: String(userId) },
             autoConnect: true,
         });
