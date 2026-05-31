@@ -2148,9 +2148,6 @@ const passStrengthText = computed(() => {
   color: #64748b;
 }
 
-
-
-
 .font-size-option-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2468,7 +2465,7 @@ const passStrengthText = computed(() => {
 .ticket-divider .notch {
   width: 20px;
   height: 20px;
-  background: var(--bg-color, #f3f4f6); /* Must match your global app background color to fake transparency */
+  background: var(--bg-color, #f3f4f6);
   border-radius: 50%;
   position: absolute;
   z-index: 2;
@@ -2476,11 +2473,11 @@ const passStrengthText = computed(() => {
 }
 
 .ticket-divider .notch:first-child {
-  left: -10px; /* Cuts out left edge */
+  left: -10px;
 }
 
 .ticket-divider .notch:last-child {
-  right: -10px; /* Cuts out right edge */
+  right: -10px;
 }
 
 .ticket-footer {
@@ -2509,42 +2506,6 @@ const passStrengthText = computed(() => {
   margin: 0;
 }
 
-/* Mini Verification QR Box */
-.mini-qr {
-  width: 44px;
-  height: 44px;
-  background: #ffffff;
-  border: 1px solid rgba(128, 128, 128, 0.2);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 800;
-  color: #4b5563;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-}
-
-/* Share Call-To-Action Button */
-.share-btn {
-  background: transparent;
-  color: #9b2c2c;
-  border: 1px solid #feb2b2;
-  padding: 6px 18px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.share-btn:hover {
-  background: #fff5f5;
-  border-color: #e53e3e;
-  color: #e53e3e;
-}
-
-/* Fallback/Empty States */
 .loading-placeholder, .empty-placeholder {
   grid-column: 1 / -1;
   text-align: center;
@@ -2740,9 +2701,6 @@ const passStrengthText = computed(() => {
     flex-wrap: wrap;
   }
 
-  .share-btn {
-    width: 100%;
-  }
 }
 
 @media (max-width: 1024px) {
@@ -3071,7 +3029,6 @@ const passStrengthText = computed(() => {
 }
 
 .profile-page-light.theme-dark .font-size-option.active {
-  background: linear-gradient(145deg, rgba(255, 82, 82, 0.2), rgba(17, 24, 39, 0.96));
   border-color: rgba(255, 82, 82, 0.5);
 }
 </style>
