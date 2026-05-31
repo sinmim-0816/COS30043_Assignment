@@ -6,10 +6,30 @@ import { notificationService } from '../services/notificationService';
 const notifications = ref([]);
 const isConnected = ref(false);
 let socket = null;
+let activeUserId = null;
 
 const getSocketBaseUrl = () => {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
     return apiBaseUrl.replace(/\/api\/?$/, '');
+};
+
+const mergeNotificationHistory = (history = []) => {
+    const existingIds = new Set(notifications.value.map((notification) => notification.id));
+    const merged = [...notifications.value];
+
+    history.forEach((notification) => {
+        if (!existingIds.has(notification.id)) {
+            merged.push(notification);
+        }
+    });
+
+    merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    notifications.value = merged;
+};
+
+const loadNotificationHistory = async (userId) => {
+    const history = await notificationService.getNotificationHistory(userId);
+    mergeNotificationHistory(history);
 };
 
 export function useNotifications() {
@@ -19,10 +39,10 @@ export function useNotifications() {
 
     const initNotificationSystem = async (userId) => {
         if (!userId) return;
+        activeUserId = userId;
 
         try {
-            const history = await notificationService.getNotificationHistory(userId);
-            notifications.value = history;
+            await loadNotificationHistory(userId);
         } catch (err) {
             console.error('Failed to pull notification records history:', err);
         }
@@ -37,6 +57,12 @@ export function useNotifications() {
         socket.on('connect', () => {
             isConnected.value = true;
             console.log('Real-time notification socket pipeline established.');
+
+            if (activeUserId) {
+                loadNotificationHistory(activeUserId).catch((err) => {
+                    console.error('Failed to resync notifications after socket connect:', err);
+                });
+            }
         });
 
         socket.on('disconnect', () => {
@@ -55,6 +81,7 @@ export function useNotifications() {
         }
         notifications.value = [];
         isConnected.value = false;
+        activeUserId = null;
     };
 
     const readNotification = async (notificationItem) => {
