@@ -36,7 +36,21 @@
   --section-gap: 160px;
 }
 
+html {
+  font-size: 16px;
+}
 
+html[data-font-size='small'] {
+  font-size: 14px;
+}
+
+html[data-font-size='medium'] {
+  font-size: 16px;
+}
+
+html[data-font-size='large'] {
+  font-size: 20px;
+}
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -81,7 +95,7 @@ body {
     'Droid Sans',
     'Helvetica Neue',
     sans-serif;
-  font-size: 15px;
+  font-size: 1rem;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -165,8 +165,8 @@ watch(
         </nav>
         <div class="nav-right-container">
             <!-- Search -->
-            <button type="button" class="p-2 desktop-action" v-if="isLoggedIn" @click="isSearchOpen = true">
-                <Search class="icon" />
+            <button type="button" class="search desktop-action" v-if="isLoggedIn" @click="isSearchOpen = true">
+                <Search class="icon" size="22"/>
             </button>
 
             <GlobalSearch v-model="isSearchOpen" />
@@ -814,7 +814,7 @@ button {
     transition: all 0.2s ease;
 }
 
-.bell-link-wrapper:hover {
+.icon:hover {
     background-color: rgba(255, 255, 255, 0.2);
     color: #ff5252;
 }
@@ -836,6 +836,11 @@ button {
     justify-content: center;
     border: 2px solid var(--topbar-bg);
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.search{
+    width: 40px !important;
+    height:40px !important;
 }
 
 @media (max-width: 1008px) {

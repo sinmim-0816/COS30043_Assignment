@@ -11,6 +11,10 @@ import { resolveBackendAssetPath } from '@/utils/FormatPicture';
 import { useTicketDesign } from '@/hook/useTicketDesign';
 import { formatTicketDate } from '@/utils/formatDateTime';
 import { useReviews } from '@/hook/useReviews';
+import {
+  applyFontSizePreference,
+  readStoredFontSize,
+} from '@/utils/appPreferences';
 
 const activeTab = ref('Profile');
 const isEditing = ref(false);
@@ -31,6 +35,12 @@ const { reviews, isLoading, error, fetchUserReviews, removeReview } = useReviews
 const userTicketDesigns = ref([]);
 const isDarkTheme = ref(false);
 const themeObserver = ref(null);
+const selectedFontSize = ref(readStoredFontSize());
+const fontSizeOptions = [
+  { value: 'small', label: 'Small', preview: 'Aa' },
+  { value: 'medium', label: 'Medium', preview: 'Aa' },
+  { value: 'large', label: 'Large', preview: 'Aa' },
+];
 
 const cloneUserState = () => JSON.parse(JSON.stringify(user));
 
@@ -44,6 +54,10 @@ const syncThemeState = () => {
   isDarkTheme.value =
     document.documentElement.classList.contains('dark') ||
     localStorage.getItem('theme') === 'dark';
+};
+
+const setFontSize = (size) => {
+  selectedFontSize.value = size;
 };
 
 const triggerAvatarUpload = () => {
@@ -297,6 +311,9 @@ const syncLocalUserFromStore = () => {
 
 
 watch(currentUser, syncLocalUserFromStore, { immediate: true });
+watch(selectedFontSize, (newValue) => {
+  applyFontSizePreference(newValue);
+}, { immediate: true });
 watch(() => activeTab.value, (newTab) => {
   if (newTab === 'Reviews' && currentUser.value?.id) {
     fetchUserReviews(currentUser.value.id);
@@ -769,6 +786,36 @@ const passStrengthText = computed(() => {
                 :disabled="!selectedGenre"
               >
                 <Plus size="16"/>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section v-if="activeTab === 'Profile'" class="display-settings-shell">
+          <div class="glass-control-card display-settings-card">
+            <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
+              <div>
+                <h3 class="panel-inner-title fs-6 mb-1">Display Settings</h3>
+                <p class="display-settings-description mb-0">
+                  Adjust the app text size for a more comfortable reading experience.
+                </p>
+              </div>
+            </div>
+
+            <div class="font-size-option-grid">
+              <button
+                v-for="option in fontSizeOptions"
+                :key="option.value"
+                type="button"
+                class="font-size-option"
+                :class="{ active: selectedFontSize === option.value }"
+                @click="setFontSize(option.value)"
+              >
+                <div>
+                  <p class="font-size-option-label">{{ option.label }}</p>
+                  <p class="font-size-option-preview">{{ option.preview }}</p>
+                </div>
+                <Check v-if="selectedFontSize === option.value" size="18" />
               </button>
             </div>
           </div>
@@ -2087,6 +2134,67 @@ const passStrengthText = computed(() => {
   border-radius: 20px;
 }
 
+.display-settings-shell {
+  margin-top: 24px;
+}
+
+.display-settings-card {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+}
+
+.display-settings-description {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+
+
+
+.font-size-option-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.font-size-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  text-align: left;
+}
+
+.font-size-option:hover {
+  transform: translateY(-1px);
+}
+
+.font-size-option.active {
+  border-color: #ff5252;
+}
+
+.font-size-option-label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.font-size-option-preview {
+  margin: 2px 0 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
 .node-field,
 .node-textarea-field,
 .node-select-field,
@@ -2662,6 +2770,10 @@ const passStrengthText = computed(() => {
   .control-grid-3col > .glass-control-card:nth-child(3) {
     grid-column: auto;
   }
+
+  .font-size-option-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 600px) {
@@ -2714,6 +2826,15 @@ const passStrengthText = computed(() => {
     align-items: flex-start;
     gap: 4px;
   }
+
+  .display-settings-card {
+    padding: 18px;
+  }
+
+  .font-size-option {
+    padding: 14px 16px;
+  }
+
   .meta-sub-row {
     font-size:10px;
     width:200px;
@@ -2922,5 +3043,35 @@ const passStrengthText = computed(() => {
 
 .profile-page-light.theme-dark .progression-footer-messages.maxed .incentive-text {
   color: #86efac;
+}
+
+.profile-page-light.theme-dark .display-settings-card {
+  background: linear-gradient(145deg, rgba(17, 24, 39, 0.96), rgba(10, 14, 23, 0.94));
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.profile-page-light.theme-dark .display-settings-description {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+
+
+.profile-page-light.theme-dark .font-size-option {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+}
+
+.profile-page-light.theme-dark .font-size-option-label {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.profile-page-light.theme-dark .font-size-option-preview {
+  color: #f8fafc;
+}
+
+.profile-page-light.theme-dark .font-size-option.active {
+  background: linear-gradient(145deg, rgba(255, 82, 82, 0.2), rgba(17, 24, 39, 0.96));
+  border-color: rgba(255, 82, 82, 0.5);
 }
 </style>

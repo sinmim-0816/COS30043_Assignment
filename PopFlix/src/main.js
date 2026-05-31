@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import { initFontSizePreference } from './utils/appPreferences'
 
 // Vuetify
 import 'vuetify/styles'
@@ -24,5 +25,7 @@ const vuetify = createVuetify({
     },
   },
 })
+
+initFontSizePreference()
 
 createApp(App).use(vuetify).use(router).use(createPinia()).mount('#app')

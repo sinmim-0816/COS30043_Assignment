@@ -37,6 +37,18 @@ const activeVideoIdx = ref(null);
 const castTrack = ref(null);
 const isAtStart = ref(true);
 const isAtEnd = ref(false);
+const fontSizeMode = ref(localStorage.getItem('app_font_size') || document.documentElement.dataset.fontSize || 'medium');
+const fontSizeObserver = ref(null);
+
+const syncFontSizeState = () => {
+    fontSizeMode.value = localStorage.getItem('app_font_size') || document.documentElement.dataset.fontSize || 'medium';
+};
+
+const heroBackdropHeight = computed(() => {
+    if (fontSizeMode.value === 'large') return '620px';
+    if (fontSizeMode.value === 'small') return '540px';
+    return '570px';
+});
 const showStickyBuy = ref(false);
 const showToast = ref(false);
 const toastMessage = ref('');
@@ -140,10 +152,19 @@ const initObserver = () => {
 };
 
 onMounted(async () => {
-    const id = route.params.id;
-    await loadMovieDetails(id);
-    await fetchReviews(id);
-    await checkReminderStatus(id);
+      syncFontSizeState();
+      fontSizeObserver.value = new MutationObserver(() => {
+          syncFontSizeState();
+      });
+      fontSizeObserver.value.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-font-size'],
+      });
+
+      const id = route.params.id;
+      await loadMovieDetails(id);
+      await fetchReviews(id);
+      await checkReminderStatus(id);
     setTimeout(() => {
         initObserver();
         updateScrollButtons();
@@ -153,6 +174,10 @@ onMounted(async () => {
         }
     }, 500);
     window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+    fontSizeObserver.value?.disconnect();
 });
 
 onUnmounted(() => {
@@ -247,7 +272,7 @@ const getClipClass = (index) => {
         </v-fade-transition>
         <v-main>
             <section class="hero-section">
-                <v-img :src="getImageURL(movie?.backdrop, 'original')" height="570px" cover>
+                <v-img :src="getImageURL(movie?.backdrop, 'original')" :height="heroBackdropHeight" cover>
                     <div class="overlay-gradient"></div>
                     <div class="hero-overlay-bottom"></div>
                     <div class="hero-overlay-left"></div>

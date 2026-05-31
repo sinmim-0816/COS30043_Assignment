@@ -54,8 +54,9 @@ onMounted(() => {
   color:var(--topbar-link);
 }
 
-.theme-toggler:hover {
-  background: rgba(128, 128, 128, 0.1);
+.icon:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ff5252;
 }
 
 .theme-toggler:active {
