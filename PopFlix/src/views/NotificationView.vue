@@ -15,6 +15,7 @@ import { useRouter } from 'vue-router';
 // Import other hook and components
 import { useAuthStore } from '@/stores/auth';
 import { useNotifications } from '@/hook/useNotification';
+import FooterView from '@/components/FooterView.vue';
 
 const authStore = useAuthStore();
 const router=useRouter();
@@ -107,6 +108,7 @@ const clearSearch = () => {
 </script>
 
 <template>
+    <v-app>
   <div :class="['gmail-layout-container', isDarkTheme ? 'theme-dark' : 'theme-light']">
     
     <aside class="gmail-sidebar">
@@ -233,6 +235,8 @@ const clearSearch = () => {
     </main>
 
   </div>
+  <FooterView/>
+  </v-app>
 </template>
 
 <style scoped>
