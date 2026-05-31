@@ -9,6 +9,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from 'src/users/entities/user.entity';
 import { NotificationModule } from 'src/notification/notification.module';
+import { EmailModule } from 'src/email/email.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { NotificationModule } from 'src/notification/notification.module';
     TypeOrmModule.forFeature([User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     NotificationModule,
+    EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
