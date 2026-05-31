@@ -30,6 +30,8 @@ export const API_ENDPOINTS = {
     TICKET_DETAILS: (id) => `/ticket/${id}`,
     REVIEWS: '/reviews',
     REVIEWS_BY_MOVIE: (movieId) => `/reviews/${movieId}`,
+    REVIEWS_BY_USER: (userId) => `/reviews/user/${userId}`,
+    DELETE_REVIEW: (reviewId) => `/reviews/${reviewId}`,
     TICKET_DESIGNS: '/ticket-design',
     GET_TICKET_DESIGN: (bookingId) => `/ticket-design/${bookingId}`,
     GET_MY_DESIGN: '/ticket-design/user/me',

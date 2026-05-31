@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
-import {SquarePen, Award, MapPin, ClockFading, User, Ticket, Star, Mail, Phone, Users, Lock, XCircle, Plus, Camera, Eye, EyeOff, Check, CheckCircle, Info} from '@lucide/vue';
+import {SquarePen, MapPin, ClockFading, Ticket, Star, Mail, Phone, Users, Lock, XCircle, Plus, Camera, Eye, EyeOff, Check, CheckCircle, Info, Trash2} from '@lucide/vue';
 
 // Import other hook and component
 import { useAuthStore } from '@/stores/auth';
@@ -10,8 +10,9 @@ import { GENRE_MAP } from '@/utils/genre';
 import { resolveBackendAssetPath } from '@/utils/FormatPicture';
 import { useTicketDesign } from '@/hook/useTicketDesign';
 import { formatTicketDate } from '@/utils/formatDateTime';
+import { useReviews } from '@/hook/useReviews';
 
-const activeTab = ref('Ticket Design');
+const activeTab = ref('Membership Rewards');
 const isEditing = ref(false);
 const isPasswordModalOpen = ref(false);
 const avatarLoadError = ref(false)
@@ -26,6 +27,7 @@ const originalUser = ref(null);
 const selectedAvatarFile = ref(null);
 const isTypingPassword = ref(false);
 const { fetchAllByUser, isLoading: isTicketsLoading } = useTicketDesign();
+const { reviews, isLoading, error, fetchUserReviews, removeReview } = useReviews();
 const userTicketDesigns = ref([]);
 
 const cloneUserState = () => JSON.parse(JSON.stringify(user));
@@ -151,6 +153,18 @@ const genreOptions = computed(() =>
   }))
 );
 
+const renderGenreNames = (genreIds) => {
+  const idsArray = parseGenres(genreIds);
+  
+  if (!idsArray || idsArray.length === 0) return 'General';
+  return idsArray
+    .map(id => {
+      const cleanId = String(id).trim();
+      return GENRE_MAP[cleanId] || 'Movie';
+    })
+    .join(', '); 
+};
+
 const availableGenres = computed(() =>
   genreOptions.value.filter(
     genre => !user.genres.includes(genre.name)
@@ -162,10 +176,25 @@ onMounted(async () => {
     await authStore.fetchProfile();
     const ticketsData = await fetchAllByUser();
     userTicketDesigns.value = ticketsData || [];
+    if (activeTab.value === 'Reviews' && currentUser.value?.id) {
+      fetchUserReviews(currentUser.value.id);
+    }
   } catch (e) {
     console.error('Failed to fetch profile and ticket design on mount', e);
   }
 });
+
+const handleDeleteRequest = async (reviewId) => {
+  if (confirm('Are you sure you want to permanently delete this movie review?')) {
+    try {
+      await removeReview(reviewId);
+      await authStore.fetchProfile();
+    } catch (err) {
+      alert('Could not remove review record right now. Please try again later.');
+      console.log(err);
+    }
+  }
+};
 
 const showPass = reactive({
   curr: false,
@@ -173,6 +202,7 @@ const showPass = reactive({
 });
 
 const user = reactive({
+  id: null,
   name: '',
   avatar: null,
   email: '',
@@ -208,6 +238,7 @@ const parseGenres = (genres) => {
 const syncLocalUserFromStore = () => {
   const u = currentUser.value || {};
   user.name = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || '';
+  user.id = u.id || null;
   user.avatar = u.profileImage ? resolveBackendAssetPath(u.profileImage) : null;
   avatarLoadError.value = false;
   user.email = u.email || '';
@@ -226,6 +257,11 @@ const syncLocalUserFromStore = () => {
 
 
 watch(currentUser, syncLocalUserFromStore, { immediate: true });
+watch(() => activeTab.value, (newTab) => {
+  if (newTab === 'Reviews' && currentUser.value?.id) {
+    fetchUserReviews(currentUser.value.id);
+  }
+});
 
 const userInitial = computed(() => {
   const name = user.name || '';
@@ -268,10 +304,10 @@ const progressToNextTier = computed(() => {
 });
 
 const tabs = [
-  { name: 'Profile', icon: User },
-  { name: 'Ticket Design', icon: Ticket },
-  { name: 'Reviews', icon: Star },
-  { name: 'Membership Rewards', icon: Award }
+  { name: 'Profile' },
+  { name: 'Ticket Design' },
+  { name: 'Reviews' },
+  { name: 'Membership Rewards' }
 ];
 
 // State Actions
@@ -548,7 +584,7 @@ const passStrengthText = computed(() => {
         </div>
         <div class="progression-footer-messages maxed" v-else>
           <p class="incentive-text maxed-text">
-            Maximum tier status achieved. You are enjoying premium access to all luxury configurations and exclusive birthday rewards.
+            Maximum tier status achieved. You are enjoying premium access to all luxury configurations.
           </p>
         </div>
       </div>
@@ -564,7 +600,6 @@ const passStrengthText = computed(() => {
             :class="{ 'active': activeTab === tab.name }"
             @click="activeTab = tab.name"
           >
-            <component :is="tab.icon" size="16" class="me-2" />
             {{ tab.name }}
           </button>
         </div>
@@ -758,16 +793,84 @@ const passStrengthText = computed(() => {
           </div>
         </section>
 
-        <section v-if="activeTab === 'Reviews'" class="reviews-panel animate-fade">
-          <div class="review-stack">
-            <div v-for="n in 3" :key="n" class="review-card-item">
-              <div class="review-item-header">
-                <span class="reviewed-movie-title">Feature Film Presentation Module {{ n }}</span>
-                <span class="review-rating">★ ★ ★ ★ ☆</span>
+       <section v-if="activeTab === 'Reviews'" class="reviews-panel animate-fade">
+          <div v-if="isLoading" class="d-flex justify-center align-center py-10">
+            <v-progress-circular indeterminate color="#ff5252" size="40" />
+          </div>
+
+          <div v-else-if="error" class="text-center py-6 text-danger">
+            <p>{{ error }}</p>
+          </div>
+
+          <div v-else-if="!reviews || reviews.length === 0" class="text-center py-10 opacity-60">
+            <p>No cinematic reviews logged under this profile record yet.</p>
+          </div>
+
+          <div v-else class="review-stack">
+            
+            <div 
+              v-for="review in reviews" 
+              :key="review.id" 
+              class="review-card-item-premium"
+            >
+              <div class="review-poster-thumbnail">
+                <img 
+                  v-if="review.booking?.showtime?.movie?.poster_path"
+                  :src="`https://image.tmdb.org/t/p/w200${review.booking.showtime.movie.poster_path}`" 
+                  class="thumbnail-img"
+                  alt="Movie Poster Thumbnail" 
+                />
+                
+                <div v-else class="fallback-thumbnail-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                </div>
               </div>
-              <p class="review-body-text">
-                Excellent visual composition and spatial pacing. The user experience matched historical design benchmarks perfectly.
-              </p>
+
+              <div class="review-content-main-flow">
+                <div class="review-item-header-premium">
+                  <div class="movie-meta-group">
+                    <h3 class="reviewed-movie-title-premium">
+                      {{ review.booking?.showtime?.movie?.title || 'Untitled Presentation Movie' }}
+                    </h3>
+                    {{ console.log(review) }}
+                    <div class="meta-sub-row">
+                      <span class="genre-pill-badge">
+                        {{ renderGenreNames(review.booking?.showtime?.movie?.genre_ids) }}
+                      </span>
+                      <span class="meta-separator-dot">•</span>
+                      <span class="review-date-stamp">
+                        <ClockFading size="16" class="me-2"/>
+                        {{ formatTicketDate(review.createdAt || review.created_at) }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div class="rating-display-stars-wrapper">
+                    <Star 
+                      v-for="star in 5" 
+                      :key="star" 
+                      :size="14"
+                      class="star-unit"
+                      :class="{ 'filled': star <= (review.rating || 5) }"
+                      :fill="star <= (review.rating || 5) ? '#ffb100' : 'transparent'"
+                    />
+                  </div>
+                </div>
+
+                <p class="review-body-text-premium">
+                  {{ review.comment || review.body || 'No textual opinion log compiled with this evaluation entry.' }}
+                </p>
+
+                
+              </div>
+
+              <button 
+                class="review-action-delete-btn" 
+                @click="handleDeleteRequest(review.id)"
+                title="Remove Review Entry Record"
+              >
+                <Trash2/>
+              </button>
             </div>
           </div>
         </section>
@@ -1353,15 +1456,190 @@ const passStrengthText = computed(() => {
 .ticket-meta-info h4 { margin: 0 0 4px 0; font-size: 0.95rem; color: #0f172a; font-weight: 600; }
 .ticket-meta-info p { margin: 0; font-size: 0.8rem; color: #64748b; }
 
-/* COMBINED FLAT REVIEWS STACK STYLING */
-.review-stack { display: flex; flex-direction: column; gap: 12px; }
-.review-card-item { background-color: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; }
-.review-item-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 600; }
-.reviewed-movie-title { color: #0f172a; font-size: 0.95rem; }
-.review-rating { color: #f59e0b; font-size: 0.9rem; letter-spacing: 2px; }
-.review-body-text { margin: 0; color: #475569; font-size: 0.9rem; line-height: 1.5; }
 
-/* Modal Backdrop Layer Matrix CSS */
+.reviews-panel {
+  width: 100%;
+}
+
+.review-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.review-card-item-premium {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid rgba(128, 128, 128, 0.15);
+  border-radius: 14px;
+  padding: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: left;
+}
+
+.review-card-item-premium:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.review-poster-thumbnail {
+  width: 72px;
+  height: 88px;
+  flex-shrink: 0;
+  background: rgba(128, 128, 128, 0.05);
+  border: 1px solid rgba(128, 128, 128, 0.15);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(128, 128, 128, 0.4);
+}
+
+.thumbnail-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.fallback-thumbnail-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+}
+
+.review-content-main-flow {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding-right: 40px; 
+}
+
+.review-item-header-premium {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.movie-meta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reviewed-movie-title-premium {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-color, #1e293b);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.meta-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.genre-pill-badge {
+  background: rgba(255, 82, 82, 0.08);
+  color: #ff5252;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 82, 82, 0.15);
+  font-size: 11px;
+}
+
+.meta-separator-dot {
+  opacity: 0.3;
+}
+
+.review-date-stamp {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.5;
+  font-weight: 500;
+}
+
+.rating-display-stars-wrapper {
+  display: flex;
+  gap: 2px;
+  font-size: 13px;
+  color: rgba(128, 128, 128, 0.25); 
+  user-select: none;
+}
+
+.star-unit.filled {
+  color: #ffb100; 
+}
+
+.review-body-text-premium {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-color, #334155);
+  opacity: 0.85;
+  margin: 0 0 14px 0;
+}
+
+.review-card-footer-metrics {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0.5;
+  margin-top: auto; 
+}
+
+.review-action-delete-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  color: rgba(128, 128, 128, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.review-action-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: scale(1.02);
+}
+
+.review-action-delete-btn:active {
+  transform: scale(0.96);
+}
+
+.animate-fade {
+  animation: fadeIn 0.35s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .modal-backdrop-blur {
   position: fixed;
   inset: 0;

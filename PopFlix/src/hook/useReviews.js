@@ -26,11 +26,36 @@ export function useReviews() {
         return await ReviewService.postReview(reviewData);
     };
 
+    const fetchUserReviews = async (userId) => {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            const data = await ReviewService.getReviewsByUser(userId);
+            reviews.value = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        } catch (err) {
+            error.value = "Failed to load your personal reviews";
+            console.error(err);
+        } finally {
+            isLoading.value = false;
+        }
+    };
+
+    const removeReview = async (reviewId) => {
+        try {
+            await ReviewService.deleteReview(reviewId);
+            reviews.value = reviews.value.filter(review => review.id !== reviewId);
+        } catch (err) {
+            error.value = "Failed to delete review record";
+            console.error(err);
+            throw err;
+        }
+    };
+
     const latestReviews = computed(() => {
         return [...reviews.value]
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 4);
     });
 
-    return { reviews: latestReviews, isLoading, error, fetchReviews, submitReview };
+    return { reviews: latestReviews, isLoading, error, fetchReviews, submitReview, fetchUserReviews, removeReview };
 }

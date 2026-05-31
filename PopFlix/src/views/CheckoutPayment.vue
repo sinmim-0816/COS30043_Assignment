@@ -5,6 +5,7 @@ import { ArrowLeft, Sofa, CheckCircle2 } from 'lucide-vue-next';
 
 // Import other hook and components
 import { useBookingStore } from '@/stores/booking';
+import { useAuthStore } from '@/stores/auth';
 import { useMovieDetails } from '@/hook/useMovieDetails';
 import { useShowtimes } from '@/hook/useShowtimes';
 import FooterView from '@/components/FooterView.vue';
@@ -14,6 +15,7 @@ const { fetchShowtimeById } = useShowtimes();
 const router = useRouter();
 const route = useRoute();
 const bookingStore = useBookingStore();
+const authStore = useAuthStore();
 const { movie, loadMovieDetails, getImageURL } = useMovieDetails();
 const currentStage = ref(2);
 const generatedTxnId = ref('');
@@ -41,6 +43,22 @@ const currentBooking = computed(() => bookingStore.currentBooking);
 const countdownText = computed(() => bookingStore.countdownText);
 const apiError = computed(() => bookingStore.errorMessages);
 const isStoreLoading = computed(() => bookingStore.isLoading);
+
+// Compute membership discount based on user tier
+const membershipTier = computed(() => authStore.user?.tier || 'Bronze');
+const discountPercentage = computed(() => {
+  if (membershipTier.value === 'Gold') return 20;
+  if (membershipTier.value === 'Silver') return 10;
+  return 0;
+});
+const originalPrice = computed(() => {
+  const finalPrice = Number(currentBooking.value?.totalPrice || 0);
+  if (discountPercentage.value === 0) return finalPrice;
+  return finalPrice / (1 - discountPercentage.value / 100);
+});
+const discountAmount = computed(() => {
+  return originalPrice.value - subtotalPrice.value;
+});
 
 const navigateHome=()=>{
     bookingStore.stopGlobalTimer();
@@ -305,7 +323,11 @@ const formattedSeats = computed(() => {
                     <div class="pricing-rows px-2">
                         <div class="d-flex justify-space-between text-body-2 text-grey-lighten-2 mb-2">
                             <span>Subtotal Cost</span>
-                            <span class="font-weight-bold text-white">RM {{ subtotalPrice.toFixed(2) }}</span>
+                            <span class="font-weight-bold text-white">RM {{ originalPrice.toFixed(2) }}</span>
+                        </div>
+                        <div v-if="discountPercentage > 0" class="d-flex justify-space-between text-body-2 text-green-accent-2 mb-2">
+                            <span>{{ membershipTier }} Member Discount (-{{ discountPercentage }}%)</span>
+                            <span class="font-weight-bold text-green-accent-2">-RM {{ discountAmount.toFixed(2) }}</span>
                         </div>
                         <div class="d-flex justify-space-between text-body-2 text-grey-lighten-2 mb-2">
                             <span>Booking Service Fee</span>
