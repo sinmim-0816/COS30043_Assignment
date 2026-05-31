@@ -530,7 +530,7 @@ const formattedSeats = computed(() => {
                                 </div>
                                 <div class="confirmation-item">
                                     <span class="item-label">Total Paid</span>
-                                    <span class="item-value">RM {{ finalTotalPrice }}</span>
+                                    <span class="item-value">RM {{ originalPrice }}</span>
                                 </div>
                                 <div v-if="currentBooking?.parkingSpot"
                                     class="confirmation-item confirmation-item-full">
