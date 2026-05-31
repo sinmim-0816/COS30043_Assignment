@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';
 import {SquarePen, MapPin, ClockFading, Ticket, Star, Mail, Phone, Users, Lock, XCircle, Plus, Camera, Eye, EyeOff, Check, CheckCircle, Info, Trash2, Award} from '@lucide/vue';
 
 // Import other hook and component
@@ -12,7 +12,7 @@ import { useTicketDesign } from '@/hook/useTicketDesign';
 import { formatTicketDate } from '@/utils/formatDateTime';
 import { useReviews } from '@/hook/useReviews';
 
-const activeTab = ref('Rewards');
+const activeTab = ref('Profile');
 const isEditing = ref(false);
 const isPasswordModalOpen = ref(false);
 const avatarLoadError = ref(false)
@@ -29,6 +29,8 @@ const isTypingPassword = ref(false);
 const { fetchAllByUser, isLoading: isTicketsLoading } = useTicketDesign();
 const { reviews, isLoading, error, fetchUserReviews, removeReview } = useReviews();
 const userTicketDesigns = ref([]);
+const isDarkTheme = ref(false);
+const themeObserver = ref(null);
 
 const cloneUserState = () => JSON.parse(JSON.stringify(user));
 
@@ -36,6 +38,12 @@ const revokeBlobAvatar = (avatar) => {
   if (typeof avatar === 'string' && avatar.startsWith('blob:')) {
     URL.revokeObjectURL(avatar);
   }
+};
+
+const syncThemeState = () => {
+  isDarkTheme.value =
+    document.documentElement.classList.contains('dark') ||
+    localStorage.getItem('theme') === 'dark';
 };
 
 const triggerAvatarUpload = () => {
@@ -172,6 +180,15 @@ const availableGenres = computed(() =>
 );
 
 onMounted(async () => {
+  syncThemeState();
+  themeObserver.value = new MutationObserver(() => {
+    syncThemeState();
+  });
+  themeObserver.value.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+
   try {
     await authStore.fetchProfile();
     const ticketsData = await fetchAllByUser();
@@ -182,6 +199,10 @@ onMounted(async () => {
   } catch (e) {
     console.error('Failed to fetch profile and ticket design on mount', e);
   }
+});
+
+onUnmounted(() => {
+  themeObserver.value?.disconnect();
 });
 
 const handleDeleteRequest = async (reviewId) => {
@@ -443,7 +464,7 @@ const passStrengthText = computed(() => {
             </div>
         </div>
     </v-snackbar>
-  <div class="profile-page-light">
+  <div :class="['profile-page-light', isDarkTheme ? 'theme-dark' : 'theme-light']">
     <header class="profile-hero-card">
       <div class="hero-left-cluster">
         <div class="avatar-container">
@@ -761,7 +782,7 @@ const passStrengthText = computed(() => {
 
               <div class="ticket-info">
                 <div class="ticket-grid-info">
-                  <h3 class="fs-6">{{ ticket.booking?.showtime?.movie?.title || 'Custom Masterpiece' }}</h3>
+                  <h3 class="fs-6 text-black">{{ ticket.booking?.showtime?.movie?.title || 'Custom Masterpiece' }}</h3>
                 </div>
 
                 <div>
@@ -2477,7 +2498,6 @@ const passStrengthText = computed(() => {
   opacity: 0.8;
 }
 
-/* Typography and Copy Layout Metrics */
 .tier-card-body {
   text-align: left;
 }
@@ -2485,7 +2505,7 @@ const passStrengthText = computed(() => {
 .tier-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-color);
   margin: 0 0 2px 0;
 }
 
@@ -2503,7 +2523,6 @@ const passStrengthText = computed(() => {
   letter-spacing: -0.5px;
 }
 
-/* Unordered list handling the check marks */
 .tier-perks-list {
   list-style: none;
   padding: 0;
@@ -2523,11 +2542,9 @@ const passStrengthText = computed(() => {
 }
 
 .perk-check-icon {
-  color: #7bb883; /* Green check configuration */
+  color: #7bb883;
   flex-shrink: 0;
 }
-
-/* --- THEME VARIANT METRICS (Bronze, Silver, Gold colors matching image) --- */
 
 .color-bronze { color: #8c6d4f; }
 .bg-bronze-light { background: #f5ede4; }
@@ -2538,8 +2555,6 @@ const passStrengthText = computed(() => {
 .color-gold { color: #b59461; }
 .bg-gold-light { background: #f7f2e8; }
 
-/* --- ACTIVE STATE OVERRIDES --- */
-/* Highlighting the card corresponding to the user's current status */
 .tier-card.is-active {
   background: #ffffff;
   border-width: 2px;
@@ -2550,8 +2565,6 @@ const passStrengthText = computed(() => {
 .tier-card.is-active.border-silver { border-color: #8a94a6; }
 .tier-card.is-active.border-gold { border-color: #b59461; }
 
-/* --- LOCKED STATE OVERRIDES --- */
-/* Graying out higher status options the client hasn't qualified for yet */
 .tier-card.is-locked {
   background: #fafafa;
   border-color: rgba(128, 128, 128, 0.08);
@@ -2561,7 +2574,7 @@ const passStrengthText = computed(() => {
 .tier-card.is-locked .tier-range,
 .tier-card.is-locked .tier-discount,
 .tier-card.is-locked .tier-perks-list li {
-  color: #94a3b8 !important;
+  color: #5176ae !important;
   opacity: 0.65;
 }
 
@@ -2681,5 +2694,206 @@ const passStrengthText = computed(() => {
   .genre-pill-badge{
     font-size:10px;
   }
+}
+
+.profile-page-light.theme-dark {
+  color: #e5e7eb;
+}
+
+.profile-page-light.theme-dark .profile-hero-card {
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(8, 13, 24, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+}
+
+.profile-page-light.theme-dark .profile-hero-card::after {
+  background: radial-gradient(circle, rgba(255, 82, 82, 0.12), transparent 68%);
+}
+
+.profile-page-light.theme-dark .user-display-name,
+.profile-page-light.theme-dark .holder-title,
+.profile-page-light.theme-dark .brand-logo,
+.profile-page-light.theme-dark .metric-val,
+.profile-page-light.theme-dark .panel-inner-title,
+.profile-page-light.theme-dark .vault-sub-title,
+.profile-page-light.theme-dark .modal-main-title,
+.profile-page-light.theme-dark .tier-card-title,
+.profile-page-light.theme-dark .tier-card-price {
+  color: #f8fafc;
+}
+
+.profile-page-light.theme-dark .meta-subtext,
+.profile-page-light.theme-dark .stats-count-label,
+.profile-page-light.theme-dark .vault-description,
+.profile-page-light.theme-dark .node-label,
+.profile-page-light.theme-dark .incentive-text,
+.profile-page-light.theme-dark .review-body-text-premium,
+.profile-page-light.theme-dark .review-date-stamp,
+.profile-page-light.theme-dark .ticket-meta-info p,
+.profile-page-light.theme-dark .modal-subtitle {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.profile-page-light.theme-dark .stats-count-number,
+.profile-page-light.theme-dark .spend-counter,
+.profile-page-light.theme-dark .highlight {
+  color: #ffffff;
+}
+
+.profile-page-light.theme-dark .stats-vertical-divider,
+.profile-page-light.theme-dark .security-nested-vault,
+.profile-page-light.theme-dark .modal-action-dock,
+.profile-page-light.theme-dark .contact-card {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.profile-page-light.theme-dark .gsc-luxury-card,
+.profile-page-light.theme-dark .progression-glass-panel,
+.profile-page-light.theme-dark .glass-control-card,
+.profile-page-light.theme-dark .review-card-item-premium,
+.profile-page-light.theme-dark .review-card-item,
+.profile-page-light.theme-dark .ticket-card-ui,
+.profile-page-light.theme-dark .security-modal-container {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(10, 14, 23, 0.94));
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.profile-page-light.theme-dark .progression-glass-panel,
+.profile-page-light.theme-dark .glass-control-card,
+.profile-page-light.theme-dark .review-card-item-premium,
+.profile-page-light.theme-dark .review-card-item,
+.profile-page-light.theme-dark .ticket-card-ui {
+  background: rgba(17, 24, 39, 0.92);
+}
+
+.profile-page-light.theme-dark .node-field,
+.profile-page-light.theme-dark .node-textarea-field,
+.profile-page-light.theme-dark .node-select-field,
+.profile-page-light.theme-dark .dock-input {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+.profile-page-light.theme-dark .node-field::placeholder,
+.profile-page-light.theme-dark .node-textarea-field::placeholder,
+.profile-page-light.theme-dark .dock-input::placeholder {
+  color: rgba(226, 232, 240, 0.45);
+}
+
+.profile-page-light.theme-dark .locked {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.profile-page-light.theme-dark .unlocked:focus,
+.profile-page-light.theme-dark .dock-input:focus {
+  border-color: #ff5252;
+  box-shadow: 0 0 0 3px rgba(255, 82, 82, 0.12);
+}
+
+.profile-page-light.theme-dark .open-modal-trigger-btn,
+.profile-page-light.theme-dark .dock-action-btn,
+.profile-page-light.theme-dark .modal-btn.cancel-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+}
+
+.profile-page-light.theme-dark .open-modal-trigger-btn:hover:not(:disabled),
+.profile-page-light.theme-dark .dock-action-btn:hover,
+.profile-page-light.theme-dark .modal-btn.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.profile-page-light.theme-dark .btn-edit {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.profile-page-light.theme-dark .btn-cancel {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e7eb;
+}
+
+.profile-page-light.theme-dark .btn-save,
+.profile-page-light.theme-dark .dynamic-save-btn,
+.profile-page-light.theme-dark .movie-btn {
+  background: linear-gradient(135deg, #ff4d4d, #b30000);
+  color: #ffffff;
+}
+
+.profile-page-light.theme-dark .faq-toggle-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.profile-page-light.theme-dark .faq-toggle-btn {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.profile-page-light.theme-dark .faq-toggle-btn:hover {
+  color: #ffffff;
+}
+
+.profile-page-light.theme-dark .faq-toggle-btn.active {
+  background: rgba(242, 39, 39, 0.57);
+  color: #ffffff !important;
+}
+
+.profile-page-light.theme-dark .vector-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+}
+
+.profile-page-light.theme-dark .review-rating {
+  color: #f5c518;
+}
+
+.profile-page-light.theme-dark .review-poster-thumbnail {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.profile-page-light.theme-dark .tier-card {
+  background: rgba(17, 24, 39, 0.94);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+}
+
+.profile-page-light.theme-dark .tier-card.is-active {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.profile-page-light.theme-dark .tier-card.is-locked {
+  opacity: 0.75;
+}
+
+.profile-page-light.theme-dark .bg-bronze-light,
+.profile-page-light.theme-dark .bg-silver-light,
+.profile-page-light.theme-dark .bg-gold-light {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.profile-page-light.theme-dark .color-bronze,
+.profile-page-light.theme-dark .color-silver,
+.profile-page-light.theme-dark .color-gold {
+  color: #f8fafc;
+}
+
+.profile-page-light.theme-dark .status-pill.current-pill {
+  background: rgba(255, 82, 82, 0.15);
+  color: #ffffff;
+}
+
+.profile-page-light.theme-dark .status-lock-icon {
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.profile-page-light.theme-dark .progression-footer-messages.maxed .incentive-text {
+  color: #86efac;
 }
 </style>
