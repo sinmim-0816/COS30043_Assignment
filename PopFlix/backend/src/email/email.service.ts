@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import { Resend, CreateEmailOptions } from 'resend';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import * as handlebars from 'handlebars';
@@ -61,19 +61,32 @@ export class EmailService {
       throw new Error('Either html, text, or template must be provided.');
     }
 
-    const { data, error } = await this.resend.emails.send({
+    const emailPayload: CreateEmailOptions = {
       from: `${this.fromName} <${this.fromEmail}>`,
       to: options.to,
       subject: options.subject,
-      html,
+      html: html,
       text: options.text,
-    });
+    };
 
-    if (error) {
-      this.logger.error(`Resend email failed: ${error.message}`);
-      throw error;
+    Object.keys(emailPayload).forEach(
+      (key) =>
+        emailPayload[key as keyof CreateEmailOptions] === undefined &&
+        delete emailPayload[key as keyof CreateEmailOptions],
+    );
+
+    try {
+      const { data, error } = await this.resend.emails.send(emailPayload);
+
+      if (error) {
+        this.logger.error(`Resend email failed: ${error.message}`);
+        throw error;
+      }
+
+      return data;
+    } catch (err) {
+      this.logger.error(`Failed to send confirmation email: ${err.message}`);
+      throw err;
     }
-
-    return data;
   }
 }
