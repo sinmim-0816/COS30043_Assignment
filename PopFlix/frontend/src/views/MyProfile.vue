@@ -1,5 +1,6 @@
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { useRoute } from 'vue-router';
 import {SquarePen, MapPin, ClockFading, Ticket, Star, Mail, Phone, Users, Lock, XCircle, Plus, Camera, Eye, EyeOff, Check, CheckCircle, Info, Trash2, Award} from '@lucide/vue';
 
 // Import other hook and component
@@ -17,6 +18,7 @@ import {
 } from '../utils/appPreferences';
 
 const activeTab = ref('Profile');
+const route = useRoute();
 const isEditing = ref(false);
 const isPasswordModalOpen = ref(false);
 const avatarLoadError = ref(false)
@@ -33,6 +35,10 @@ const isTypingPassword = ref(false);
 const { fetchAllByUser, isLoading: isTicketsLoading } = useTicketDesign();
 const { reviews, isLoading, error, fetchUserReviews, removeReview } = useReviews();
 const userTicketDesigns = ref([]);
+const tabViewportRef = ref(null);
+const ticketDesignSectionRef = ref(null);
+const reviewsSectionRef = ref(null);
+const rewardsSectionRef = ref(null);
 const isDarkTheme = ref(false);
 const themeObserver = ref(null);
 const selectedFontSize = ref(readStoredFontSize());
@@ -314,6 +320,20 @@ watch(currentUser, syncLocalUserFromStore, { immediate: true });
 watch(selectedFontSize, (newValue) => {
   applyFontSizePreference(newValue);
 }, { immediate: true });
+watch(
+  () => route.query.tab,
+  async (tabValue) => {
+    const targetTab = normalizeTabQuery(tabValue) || 'Profile';
+    activeTab.value = targetTab;
+
+    if (targetTab === 'Reviews' && currentUser.value?.id) {
+      fetchUserReviews(currentUser.value.id);
+    }
+
+    await scrollTabSectionIntoView(targetTab);
+  },
+  { immediate: true },
+);
 watch(() => activeTab.value, (newTab) => {
   if (newTab === 'Reviews' && currentUser.value?.id) {
     fetchUserReviews(currentUser.value.id);
@@ -366,6 +386,34 @@ const tabs = [
   { name: 'Reviews' },
   { name: 'Rewards' }
 ];
+
+const normalizeTabQuery = (tabValue) => {
+  if (!tabValue) return null;
+
+  const normalized = String(tabValue).replace(/\+/g, ' ').trim().toLowerCase();
+  if (normalized === 'profile') return 'Profile';
+  if (normalized === 'ticket design') return 'Ticket Design';
+  if (normalized === 'reviews') return 'Reviews';
+  if (normalized === 'rewards') return 'Rewards';
+
+  return null;
+};
+
+const scrollTabSectionIntoView = async (tabName) => {
+  await nextTick();
+
+  const targetMap = {
+    Profile: tabViewportRef,
+    'Ticket Design': ticketDesignSectionRef,
+    Reviews: reviewsSectionRef,
+    Rewards: rewardsSectionRef,
+  };
+
+  const target = targetMap[tabName]?.value;
+  if (target?.scrollIntoView) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+};
 
 // State Actions
 const toggleEditMode = () => {
@@ -662,7 +710,7 @@ const passStrengthText = computed(() => {
         </div>
       </div>
 
-      <div class="tab-view-viewport">
+      <div class="tab-view-viewport" ref="tabViewportRef">
         <section v-if="activeTab === 'Profile'" class="control-grid-3col">
           
           <div class="glass-control-card">
@@ -821,7 +869,7 @@ const passStrengthText = computed(() => {
           </div>
         </section>
 
-        <section v-if="activeTab === 'Ticket Design'" class="gallery-panel animate-fade">
+        <section v-if="activeTab === 'Ticket Design'" class="gallery-panel animate-fade" ref="ticketDesignSectionRef">
           <div v-if="isTicketsLoading" class="loading-placeholder">
             <p>Loading your creative customized ticket collections...</p>
           </div>
@@ -888,7 +936,7 @@ const passStrengthText = computed(() => {
           </div>
         </section>
 
-       <section v-if="activeTab === 'Reviews'" class="reviews-panel animate-fade">
+       <section v-if="activeTab === 'Reviews'" class="reviews-panel animate-fade" ref="reviewsSectionRef">
           <div v-if="isLoading" class="d-flex justify-center align-center py-10">
             <v-progress-circular indeterminate color="#ff5252" size="40" />
           </div>
@@ -969,7 +1017,7 @@ const passStrengthText = computed(() => {
             </div>
           </div>
         </section>
-        <section v-if="activeTab === 'Rewards'" class="rewards-panel animate-fade">
+        <section v-if="activeTab === 'Rewards'" class="rewards-panel animate-fade" ref="rewardsSectionRef">
           <div class="tier-cards-grid">
           
             <div class="tier-card border-bronze" :class="{ 'is-active': currentTier === 'Bronze' }">
