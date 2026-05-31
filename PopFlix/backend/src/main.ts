@@ -27,8 +27,8 @@ async function bootstrap() {
     },
   });
   app.enableCors({
-    origin: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: ['http://localhost:5173', 'https://popflix-frontend.onrender.com'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 
