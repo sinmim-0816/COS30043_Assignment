@@ -21,11 +21,16 @@ backendClient.interceptors.request.use(
         delete config.headers['Content-Type'];
       }
     }
+    const isPublicRoute = config.url.includes('/auth/login') || config.url.includes('/auth/register');
+
+    if (isPublicRoute) {
+      return config;
+    }
 
     if (token && token !== 'undefined' && token !== 'null') {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
-      console.error("Security Block: Outgoing request blocked because no token string was found!");
+      console.warn(`Request to secure endpoint [${config.url}] made without an auth token string.`);
     }
 
     return config;
