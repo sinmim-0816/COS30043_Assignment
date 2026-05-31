@@ -20,6 +20,7 @@ import { useAuthStore } from '@/stores/auth'
 import ThemeToggle from './ThemeToggle.vue'
 import GlobalSearch from './GlobalSearch.vue'
 import { resolveBackendAssetPath } from '@/utils/FormatPicture.js'
+import { useNotifications } from '@/hook/useNotification.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -31,6 +32,28 @@ const isMobileScreen = ref(false)
 
 const isLoggedIn = computed(() => !!authStore.user)
 const currentUser = computed(() => authStore.user)
+
+const { unreadCount, initNotificationSystem, disconnectNotifications } = useNotifications()
+
+onMounted(() => {
+    document.addEventListener('click', closeDropdown)
+    window.addEventListener('resize', handleResize)
+    
+    if (currentUser.value?.id) {
+        initNotificationSystem(currentUser.value.id)
+    }
+})
+
+watch(
+    () => currentUser.value?.id,
+    (newId) => {
+        if (newId) {
+            initNotificationSystem(newId)
+        } else {
+            disconnectNotifications()
+        }
+    }
+)
 
 const isAuthPage = computed(() => {
     const path = route.path;
@@ -148,9 +171,17 @@ watch(
 
             <GlobalSearch v-model="isSearchOpen" />
             <!-- Notification -->
-            <button type="button" class="p-2 desktop-action" v-if="isLoggedIn">
+            <router-link 
+                v-if="isLoggedIn" 
+                to="/notification" 
+                class="p-2 desktop-action bell-link-wrapper"
+                aria-label="View notifications"
+            >
                 <Bell class="icon" />
-            </button>
+                <span v-if="unreadCount > 0" class="badge-counter-indicator">
+                    {{ unreadCount }}
+                </span>
+            </router-link>
             <div class="theme-toggle-wrapper desktop-action">
                 <ThemeToggle/>
             </div>
@@ -763,6 +794,48 @@ button {
 .mobile-dropdown-leave-from {
     opacity: 1;
     transform: translateY(0);
+}
+
+.bell-link-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background-color: var(--glass-btn);
+    backdrop-filter: blur(15px);
+    border: none;
+    cursor: pointer;
+    margin-right: 1rem;
+    color: var(--topbar-link);
+    border-radius: 50px;
+    width: 40px;
+    height: 40px;
+    transition: all 0.2s ease;
+}
+
+.bell-link-wrapper:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ff5252;
+}
+
+.badge-counter-indicator {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: #ff5252;
+    color: white;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 10px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--topbar-bg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 @media (max-width: 1008px) {

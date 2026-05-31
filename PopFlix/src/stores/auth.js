@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { authService } from '../services/authService';
+import { useNotifications } from '@/hook/useNotification';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -50,6 +51,13 @@ export const useAuthStore = defineStore('auth', {
     },
 
     logout() {
+      try {
+        const { disconnectNotifications } = useNotifications();
+        disconnectNotifications();
+        console.log('Notification socket session cleanly terminated on logout.');
+      } catch (socketError) {
+        console.error('Error disconnecting websocket during logout:', socketError);
+      }
       this.user = null;
       this.token = null;
       localStorage.removeItem('token');

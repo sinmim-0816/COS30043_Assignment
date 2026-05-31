@@ -37,4 +37,11 @@ export const API_ENDPOINTS = {
     GET_MY_DESIGN: '/ticket-design/user/me',
     CREATE_REMINDER: (movieId) => `/reminders/${movieId}`,
     CHECK_REMINDER: (movieId) => `/reminders/check/${movieId}`,
+    NOTIFICATIONS: {
+        BASE: '/notifications',
+        FETCH_HISTORY: (userId) => `/notifications/user/${userId}`,
+        MARK_READ: (id) => `/notifications/${id}/read`,
+        MARK_ALL_READ: (userId) => `/user/${userId}/read-all`,
+        DELETE: (id) => `/notifications/${id}`,
+    }
 };

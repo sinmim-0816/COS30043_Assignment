@@ -21,6 +21,7 @@ import ForgotPassword from '@/views/ForgotPassword.vue'
 import ResetPassword from '@/views/ResetPassword.vue'
 import UserActivate from '@/views/UserActivate.vue'
 import MyProfile from '@/views/MyProfile.vue'
+import NotificationView from '@/views/NotificationView.vue'
 
 const routes = [
     {
@@ -85,6 +86,12 @@ const routes = [
         path: '/my-tickets',
         name: "MyTickets",
         component: MyTickets,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/notification',
+        name: "MyNotification",
+        component: NotificationView,
         meta: { requiresAuth: true }
     },
     {
