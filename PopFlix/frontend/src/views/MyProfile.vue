@@ -16,6 +16,7 @@ import {
   applyFontSizePreference,
   readStoredFontSize,
 } from '../utils/appPreferences';
+import FooterView from '@/components/FooterView.vue';
 
 const activeTab = ref('Profile');
 const route = useRoute();
@@ -232,9 +233,7 @@ onMounted(async () => {
     await authStore.fetchProfile();
     const ticketsData = await fetchAllByUser();
     userTicketDesigns.value = ticketsData || [];
-    if (activeTab.value === 'Reviews' && currentUser.value?.id) {
-      fetchUserReviews(currentUser.value.id);
-    }
+    await applyRouteTab(route.query.tab);
   } catch (e) {
     console.error('Failed to fetch profile and ticket design on mount', e);
   }
@@ -321,16 +320,9 @@ watch(selectedFontSize, (newValue) => {
   applyFontSizePreference(newValue);
 }, { immediate: true });
 watch(
-  () => route.query.tab,
-  async (tabValue) => {
-    const targetTab = normalizeTabQuery(tabValue) || 'Profile';
-    activeTab.value = targetTab;
-
-    if (targetTab === 'Reviews' && currentUser.value?.id) {
-      fetchUserReviews(currentUser.value.id);
-    }
-
-    await scrollTabSectionIntoView(targetTab);
+  () => route.fullPath,
+  async () => {
+    await applyRouteTab(route.query.tab);
   },
   { immediate: true },
 );
@@ -413,6 +405,17 @@ const scrollTabSectionIntoView = async (tabName) => {
   if (target?.scrollIntoView) {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+};
+
+const applyRouteTab = async (tabValue) => {
+  const targetTab = normalizeTabQuery(tabValue) || 'Profile';
+  activeTab.value = targetTab;
+
+  if (targetTab === 'Reviews' && currentUser.value?.id) {
+    fetchUserReviews(currentUser.value.id);
+  }
+
+  await scrollTabSectionIntoView(targetTab);
 };
 
 // State Actions
@@ -548,6 +551,7 @@ const passStrengthText = computed(() => {
             </div>
         </div>
     </v-snackbar>
+    <v-app>
   <div :class="['profile-page-light', isDarkTheme ? 'theme-dark' : 'theme-light']">
     <header class="profile-hero-card">
       <div class="hero-left-cluster">
@@ -1215,6 +1219,8 @@ const passStrengthText = computed(() => {
       </div>
     </div>
   </div>
+  <FooterView/>
+</v-app>
 </template>
 
 <style scoped>
