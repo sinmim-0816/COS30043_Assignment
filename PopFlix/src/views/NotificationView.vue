@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { 
   Inbox, 
   CircleAlert, 
@@ -7,6 +7,8 @@ import {
   Check, 
   Clock, 
   Trash2,
+  Search,
+  X,
 } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 
@@ -17,6 +19,8 @@ import { useNotifications } from '@/hook/useNotification';
 const authStore = useAuthStore();
 const router=useRouter();
 const userId = computed(() => authStore.user?.id);
+const isDarkTheme = ref(false);
+const themeObserver = ref(null);
 
 const { 
   notifications, 
@@ -27,16 +31,56 @@ const {
 } = useNotifications();
 
 const activeFilter = ref('all');
+const searchQuery = ref('');
+
+const syncThemeState = () => {
+  isDarkTheme.value =
+    document.documentElement.classList.contains('dark') ||
+    localStorage.getItem('theme') === 'dark';
+};
+
+onMounted(() => {
+  syncThemeState();
+  themeObserver.value = new MutationObserver(() => syncThemeState());
+  themeObserver.value.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+});
+
+onUnmounted(() => {
+  themeObserver.value?.disconnect();
+});
 
 const filteredNotifications = computed(() => {
+  let result = notifications.value;
+
   if (activeFilter.value === 'unread') {
-    return notifications.value.filter(n => !n.isRead);
+    result = result.filter(n => !n.isRead);
+  } else if (activeFilter.value === 'success' || activeFilter.value === 'info') {
+    result = result.filter(n => n.type === activeFilter.value);
   }
-  if (activeFilter.value === 'success' || activeFilter.value === 'info') {
-    return notifications.value.filter(n => n.type === activeFilter.value);
+
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim();
+    result = result.filter(n => 
+      n.title.toLowerCase().includes(query) || 
+      n.message.toLowerCase().includes(query)
+    );
   }
-  return notifications.value;
+
+  return result;
 });
+
+const highlightText = (text, search) => {
+  if (!search || !search.trim() || !text) return text;
+  
+  const query = search.trim();
+  const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
+  
+  return text.replace(regex, '<span class="highlight-match">$1</span>');
+};
 
 const handleRowClick = async (item) => {
   if (!item.isRead) {
@@ -56,16 +100,20 @@ const handleInlineDelete = async (event, item) => {
   event.stopPropagation();
   await deleteNotification(item.id);
 };
+
+const clearSearch = () => {
+  searchQuery.value = '';
+};
 </script>
 
 <template>
-  <div class="gmail-layout-container">
+  <div :class="['gmail-layout-container', isDarkTheme ? 'theme-dark' : 'theme-light']">
     
     <aside class="gmail-sidebar">
       <div class="compose-space">
-        <div class="sidebar-brand">
-          <span class="fw-bold">Inbox</span>
-        </div>
+          <div class="sidebar-brand">
+            <span class="fw-bold">Inbox</span>
+          </div>
       </div>
 
       <nav class="sidebar-nav">
@@ -96,7 +144,7 @@ const handleInlineDelete = async (event, item) => {
     <main class="gmail-main-pane">
       
       <div class="toolbar-ribbon">
-        <div class="toolbar-left">
+        <div class="d-flex flex-row w-100 gap-2">
           <button 
             v-if="unreadCount > 0"
             @click="readAllNotifications(userId)" 
@@ -106,9 +154,21 @@ const handleInlineDelete = async (event, item) => {
             <MailOpen :size="18" />
             <span>Mark all read</span>
           </button>
+          <div class="search-wrapper">
+            <Search :size="16" class="search-icon" />
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              placeholder="Search notifications..." 
+              class="search-input"
+            />
+            <button v-if="searchQuery" @click="clearSearch" class="clear-search-btn">
+              <X :size="14" />
+            </button>
+          </div>
         </div>
 
-        <div class="toolbar-right">
+        <div class="d-flex justify-end w-100">
           <span class="pagination-meta">
             Showing <b>{{ filteredNotifications.length }}</b> entries
           </span>
@@ -118,7 +178,8 @@ const handleInlineDelete = async (event, item) => {
       <div class="mailbox-list-frame">
         <div v-if="filteredNotifications.length === 0" class="gmail-empty-state">
           <Inbox :size="40" class="empty-vector" />
-          <p>Nothing in this category. Enjoy your empty inbox!</p>
+          <p v-if="searchQuery">No matching notifications found for "{{ searchQuery }}".</p>
+          <p v-else>Nothing in this category. Enjoy your empty inbox!</p>
         </div>
 
         <div 
@@ -135,13 +196,11 @@ const handleInlineDelete = async (event, item) => {
           </div>
 
           <div class="sender-domain-box">
-            <span class="sender-title-text">{{ item.title }}</span>
+            <span class="sender-title-text" v-html="highlightText(item.title, searchQuery)"></span>
           </div>
 
           <div class="snippet-content-cell">
-            <p class="message-paragraph">
-              {{ item.message }}
-            </p>
+            <p class="message-paragraph" v-html="highlightText(item.message, searchQuery)"></p>
           </div>
 
           <div class="inline-hover-actions">
@@ -179,7 +238,8 @@ const handleInlineDelete = async (event, item) => {
 <style scoped>
 .gmail-layout-container {
   display: flex;
-  background-color: #f6f8fc; 
+  background: var(--notification-bg);
+  color: var(--notification-text);
   min-height: 100vh;
   padding-top: 65px;
   box-sizing: border-box;
@@ -203,9 +263,11 @@ const handleInlineDelete = async (event, item) => {
   gap: 12px;
   font-size: 15px;
   font-weight: 700;
-  color: #1f1f1f;
+  color: var(--notification-text);
   padding: 12px 16px;
   border-radius: 16px;
+  background: var(--notification-surface);
+  border: 1px solid var(--notification-border);
 }
 
 .brand-accent {
@@ -227,7 +289,7 @@ const handleInlineDelete = async (event, item) => {
   padding: 0 24px 0 12px;
   height: 32px;
   border-radius: 16px;
-  color: #444746;
+  color: var(--notification-text-soft);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -236,12 +298,12 @@ const handleInlineDelete = async (event, item) => {
 }
 
 .nav-tab:hover {
-  background-color: #eaebef;
+  background-color: var(--notification-hover);
 }
 
 .tab-active {
-  background-color: #d3e3fd !important;
-  color: #041e49 !important;
+  background-color: var(--notification-accent-soft) !important;
+  color: var(--notification-accent) !important;
   font-weight: 700;
 }
 
@@ -255,12 +317,12 @@ const handleInlineDelete = async (event, item) => {
 
 .total-badge {
   font-size: 12px;
-  color: #5e6266;
+  color: var(--notification-text-muted);
 }
 
 .unread-count-pill {
-  background-color: #b3261e;
-  color: #ffffff;
+  background-color: var(--notification-unread);
+  color: var(--card-bg) !important;
   font-size: 11px;
   font-weight: 700;
   padding: 1px 6px;
@@ -269,7 +331,7 @@ const handleInlineDelete = async (event, item) => {
 
 .sidebar-divider {
   height: 1px;
-  background-color: #e3e3e3;
+  background-color: var(--notification-divider);
   margin: 8px 12px;
 }
 
@@ -285,12 +347,12 @@ const handleInlineDelete = async (event, item) => {
 .gmail-main-pane {
   flex-grow: 1;
   margin: 8px 16px 16px 0;
-  background-color: #ffffff;
-  border-radius: 16px;
+  background: var(--notification-surface);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: var(--notification-shadow);
   overflow: hidden;
+  border: 1px solid var(--notification-border);
 }
 
 .toolbar-ribbon {
@@ -299,13 +361,14 @@ const handleInlineDelete = async (event, item) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #f1f3f4;
+  border-bottom: 1px solid var(--notification-divider);
+  background: var(--notification-toolbar-bg);
 }
 
 .icon-action-btn {
   background: transparent;
-  border: 1px solid #cbd5e1;
-  color: #444746;
+  border: 1px solid var(--notification-border);
+  color: var(--notification-text-soft);
   cursor: pointer;
   border-radius: 6px;
   padding: 6px 12px;
@@ -318,14 +381,63 @@ const handleInlineDelete = async (event, item) => {
 }
 
 .icon-action-btn:hover {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
-  color: #1e293b;
+  background-color: var(--notification-hover);
+  border-color: var(--notification-divider);
+  color: var(--notification-text);
 }
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: #5e6266;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 36px;
+  background-color: #f1f3f4;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0 36px;
+  font-size: 14px;
+  color: #1f1f1f;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.search-input:focus {
+  background-color: #ffffff;
+  border-color: #0b57d0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: #5e6266;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+}
+.clear-search-btn:hover { background-color: #e8eaed; color: #1f1f1f; }
 
 .pagination-meta {
   font-size: 12px;
-  color: #5e6266;
+  color: var(--notification-text-muted);
 }
 
 .mailbox-list-frame {
@@ -338,28 +450,28 @@ const handleInlineDelete = async (event, item) => {
   align-items: center;
   padding: 0 16px;
   height: 40px;
-  border-bottom: 1px solid #f2f6fc;
+  border-bottom: 1px solid var(--notification-divider);
   cursor: pointer;
   position: relative;
   gap: 16px;
-  background-color: #ffffff;
+  background-color: var(--notification-surface);
   transition: box-shadow 0.15s, background-color 0.15s;
 }
 
 .gmail-row:hover {
-  box-shadow: inset 1px 0 0 #ffb100, inset -1px 0 0 #f2f6fc, 0 1px 3px 1px rgba(60,64,67,.15);
-  background-color: #f7f9fc;
+  box-shadow: inset 1px 0 0 var(--notification-accent), inset -1px 0 0 var(--notification-divider), 0 1px 3px 1px rgba(60,64,67,.15);
+  background-color: var(--notification-hover-strong);
   z-index: 1;
 }
 
 .unread-gmail-row {
-  background-color: #f2f6fc;
+  background-color: var(--notification-accent-soft);
 }
 
 .unread-gmail-row .sender-title-text,
 .unread-gmail-row .message-paragraph {
   font-weight: 700;
-  color: #1f1f1f;
+  color: var(--notification-text);
 }
 
 .meta-markers {
@@ -374,16 +486,16 @@ const handleInlineDelete = async (event, item) => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #cbd5e1;
+  background-color: var(--notification-divider);
 }
-.status-marker-dot.success { background-color: #10b981; }
-.status-marker-dot.info { background-color: #3b82f6; }
+.status-marker-dot.success { background-color: var(--notification-success); }
+.status-marker-dot.info { background-color: var(--notification-info); }
 
 .unread-indicator-bullet {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #0b57d0; 
+  background-color: var(--notification-unread); 
 }
 
 .sender-domain-box {
@@ -396,7 +508,7 @@ const handleInlineDelete = async (event, item) => {
 
 .sender-title-text {
   font-size: 14px;
-  color: #444746;
+  color: var(--notification-text-soft);
 }
 
 .snippet-content-cell {
@@ -410,7 +522,7 @@ const handleInlineDelete = async (event, item) => {
 .message-paragraph {
   margin: 0;
   font-size: 14px;
-  color: #5e6266;
+  color: var(--notification-text-soft);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -418,7 +530,7 @@ const handleInlineDelete = async (event, item) => {
 
 .timestamp-cell {
   font-size: 12px;
-  color: #5e6266;
+  color: var(--notification-text-muted);
   width: 70px;
   text-align: right;
   flex-shrink: 0;
@@ -429,7 +541,7 @@ const handleInlineDelete = async (event, item) => {
 }
 
 .time-clock-icon {
-  color: #94a3b8;
+  color: var(--notification-text-muted);
 }
 
 .inline-hover-actions {
@@ -438,7 +550,7 @@ const handleInlineDelete = async (event, item) => {
   right: 86px;
   top: 50%;
   transform: translateY(-50%);
-  background: linear-gradient(90deg, rgba(247,249,252,0) 0%, #f7f9fc 25%, #f7f9fc 100__);
+  background: linear-gradient(90deg, rgba(247,249,252,0) 0%, var(--notification-surface) 25%, var(--notification-surface) 100%);
   padding-left: 32px;
   height: 100%;
   align-items: center;
@@ -455,7 +567,7 @@ const handleInlineDelete = async (event, item) => {
   border-radius: 50%;
   border: none;
   background: transparent;
-  color: #444746;
+  color: var(--notification-text-soft);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -464,12 +576,12 @@ const handleInlineDelete = async (event, item) => {
 }
 
 .inline-action-circle:hover {
-  background-color: #e1e3e6;
-  color: #1f1f1f;
+  background-color: var(--notification-hover);
+  color: var(--notification-text);
 }
 
 .delete-btn:hover {
-  background-color: #fde8e8; 
+  background-color: rgba(225, 29, 72, 0.1); 
   color: #e11d48;
 }
 .gmail-empty-state {
@@ -478,16 +590,37 @@ const handleInlineDelete = async (event, item) => {
   align-items: center;
   justify-content: center;
   padding: 80px 24px;
-  color: #747775;
+  color: var(--notification-text-muted);
 }
 
 .empty-vector {
-  color: #c4c7c5;
+  color: var(--notification-text-muted);
   margin-bottom: 12px;
 }
 
 .gmail-empty-state p {
   font-size: 14px;
   margin: 0;
+}
+
+.gmail-layout-container.theme-dark .sidebar-brand,
+.gmail-layout-container.theme-dark .gmail-main-pane,
+.gmail-layout-container.theme-dark .nav-tab,
+.gmail-layout-container.theme-dark .icon-action-btn,
+.gmail-layout-container.theme-dark .gmail-row,
+.gmail-layout-container.theme-dark .inline-action-circle {
+  backdrop-filter: blur(14px);
+}
+:deep(.highlight-match) {
+  background-color: rgba(255, 177, 0, 0.3); 
+  color: #b45309;
+  font-weight: 700;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.theme-dark :deep(.highlight-match) {
+  background-color: rgba(254, 240, 138, 0.25); 
+  color: #fef08a;
 }
 </style>
