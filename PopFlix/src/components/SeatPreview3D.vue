@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { TresCanvas } from '@tresjs/core';
 import { Html, OrbitControls } from '@tresjs/cientos';
 import { SunMedium, MoonStar } from 'lucide-vue-next';
@@ -67,6 +67,8 @@ const selectedSeatIds = computed(() => new Set(
   selectedSeatList.value.map((seat) => `${props.experienceType}-${seat.row}-${seat.col}`)
 ));
 
+const activeSeatId = ref('');
+
 const aisleOffsetForColumn = (col) => {
   return layout.value.aisleAfter
     .filter((aisleCol) => col > aisleCol)
@@ -110,11 +112,41 @@ const seats = computed(() => rows.value.flatMap((row) =>
   })
 ));
 
-const selectedCoords = computed(() => {
-  const selected = seats.value.filter((seat) => seat.isSelected);
-  if (selected.length === 0) return seatPosition(0, 1);
+watch(
+  selectedSeatList,
+  (seatList) => {
+    const firstSelectedSeat = seatList[0];
+    if (!firstSelectedSeat) {
+      activeSeatId.value = '';
+      return;
+    }
 
-  return selected[0].position; 
+    const firstSelectedId = `${props.experienceType}-${firstSelectedSeat.row}-${firstSelectedSeat.col}`;
+    if (!activeSeatId.value || !selectedSeatIds.value.has(activeSeatId.value)) {
+      activeSeatId.value = firstSelectedId;
+    }
+  },
+  { immediate: true }
+);
+
+const activeSeat = computed(() => {
+  if (activeSeatId.value) {
+    const focusedSeat = seats.value.find((seat) => seat.id === activeSeatId.value && seat.isSelected);
+    if (focusedSeat) return focusedSeat;
+  }
+
+  return seats.value.find((seat) => seat.isSelected) || seats.value[0] || null;
+});
+
+const focusSeat = (seatId) => {
+  if (selectedSeatIds.value.has(seatId)) {
+    activeSeatId.value = seatId;
+  }
+};
+
+const selectedCoords = computed(() => {
+  if (!activeSeat.value) return seatPosition(0, 1);
+  return activeSeat.value.position;
 });
 
 const cameraTarget = computed(() => [
@@ -135,6 +167,10 @@ const selectedSeatLabel = computed(() => {
   if (selectedSeatList.value.length === 0) return 'A1';
   if (selectedSeatList.value.length === 1) {
     return `${selectedSeatList.value[0].row}${selectedSeatList.value[0].col}`;
+  }
+
+  if (activeSeat.value) {
+    return `Viewing ${activeSeat.value.row}${activeSeat.value.col}`;
   }
 
   return `${selectedSeatList.value.length} seats selected`;
@@ -287,12 +323,15 @@ onMounted(() => {
         v-for="seat in seats"
         :key="seat.id"
         :position="seat.position"
+        :class="['seat-mesh', { 'seat-mesh--selected': seat.isSelected, 'seat-mesh--active': seat.id === activeSeatId }]"
+        :cursor="seat.isSelected ? 'pointer' : 'default'"
+        @click="seat.isSelected && focusSeat(seat.id)"
       >
         <TresBoxGeometry :args="[visualProfile.width * 0.72, visualProfile.height, visualProfile.depth * 0.72]" />
         <TresMeshStandardMaterial
           :color="seat.isSelected ? visualProfile.accent : (isDarkTheme ? visualProfile.seatColor : '#dde6f5')"
           :emissive="seat.isSelected ? visualProfile.accent : '#000000'"
-          :emissive-intensity="seat.isSelected ? 0.32 : (isDarkTheme ? 0 : 0.04)"
+          :emissive-intensity="seat.id === activeSeatId ? 0.6 : (seat.isSelected ? 0.32 : (isDarkTheme ? 0 : 0.04))"
           :roughness="isDarkTheme ? 0.55 : 0.68"
         />
       </TresMesh>
@@ -306,14 +345,9 @@ onMounted(() => {
         <TresMeshStandardMaterial
           :color="seat.isSelected ? visualProfile.accent : (isDarkTheme ? scenePalette.seatBack : '#c6d2e4')"
           :emissive="seat.isSelected ? visualProfile.accent : '#000000'"
-          :emissive-intensity="seat.isSelected ? 0.45 : (isDarkTheme ? 0 : 0.04)"
+          :emissive-intensity="seat.id === activeSeatId ? 0.75 : (seat.isSelected ? 0.45 : (isDarkTheme ? 0 : 0.04))"
           :roughness="isDarkTheme ? 0.5 : 0.72"
         />
-      </TresMesh>
-
-      <TresMesh :position="[selectedCoords[0], selectedCoords[1] + 1.25, selectedCoords[2]]">
-        <TresSphereGeometry :args="[0.18, 18, 18]" />
-        <TresMeshStandardMaterial :color="visualProfile.accent" :emissive="visualProfile.accent" :emissive-intensity="1.2" />
       </TresMesh>
 
       <TresMesh
