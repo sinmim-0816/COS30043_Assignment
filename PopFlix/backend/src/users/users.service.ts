@@ -6,15 +6,15 @@ import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { MembershipTier } from '../enum/MembershipTier';
 import { CreateUserDto } from './dto/create-user.dto';
-import { MailerService } from '@nestjs-modules/mailer';
 import * as crypto from 'node:crypto';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-    private readonly mailerService: MailerService,
+    private readonly emailService: EmailService,
     private readonly notificationService: NotificationService,
   ) {}
 
@@ -156,7 +156,7 @@ export class UsersService {
   }
 
   async sendWelcomeEmail(email: string, name: string) {
-    return await this.mailerService.sendMail({
+    return await this.emailService.sendMail({
       to: email,
       subject: 'Welcome to PopFlix! 🍿',
       template: './welcome',
@@ -166,7 +166,7 @@ export class UsersService {
 
   async sendActivationEmail(email: string, name: string, token: string) {
     const activationUrl = `http://localhost:5173/activate?token=${token}`;
-    return await this.mailerService.sendMail({
+    return await this.emailService.sendMail({
       to: email,
       subject: 'Verify your PopFlix account',
       template: './activation',

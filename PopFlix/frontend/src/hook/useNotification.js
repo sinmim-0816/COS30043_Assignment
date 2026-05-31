@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue';
 import { io } from 'socket.io-client';
-import { API_ENDPOINTS } from '../api/apiEndpoint';
 import { notificationService } from '../services/notificationService';
 
 const notifications = ref([]);

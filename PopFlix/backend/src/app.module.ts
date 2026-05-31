@@ -13,45 +13,17 @@ import { BookingsModule } from './bookings/bookings.module';
 import { PaymentsModule } from './payments/payments.module';
 import { TicketModule } from './ticket/ticket.module';
 import { ReviewModule } from './review/review.module';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { FaqsModule } from './faqs/faqs.module';
 import { TicketDesignModule } from './ticket-design/ticket-design.module';
 import { SearchModule } from './search/search.module';
 import { ReminderModule } from './reminder/reminder.module';
 import { NotificationModule } from './notification/notification.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
-    MailerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        transport: {
-          host: config.get<string>('MAIL_HOST'),
-          port: parseInt(config.get<string>('MAIL_PORT') ?? '587', 10),
-          secure: config.get<string>('MAIL_SECURE') === 'true',
-          requireTLS: config.get<string>('MAIL_REQUIRE_TLS') !== 'false',
-          family: 4,
-          connectionTimeout: 30000,
-          greetingTimeout: 30000,
-          auth: {
-            user: config.get<string>('MAIL_USER'),
-            pass: config.get<string>('MAIL_PASS'),
-          },
-          tls: {
-            rejectUnauthorized: false,
-          },
-        },
-        template: {
-          dir: process.cwd() + '/templates',
-          adapter: new HandlebarsAdapter(),
-          options: { strict: true },
-        },
-      }),
-    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -98,6 +70,7 @@ import { NotificationModule } from './notification/notification.module';
     SearchModule,
     ReminderModule,
     NotificationModule,
+    EmailModule,
   ],
 })
 export class AppModule {}

@@ -298,16 +298,6 @@ watch(
                     Logout
                 </button>
             </template>
-
-            <template v-else>
-                <router-link to="/login" @click="closeMobileMenu">
-                    Login
-                </router-link>
-
-                <router-link to="/register" @click="closeMobileMenu">
-                    Register
-                </router-link>
-            </template>
         </nav>
     </div>
 </transition>

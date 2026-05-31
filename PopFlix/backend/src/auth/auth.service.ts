@@ -1,5 +1,4 @@
 import { NotificationService } from './../notification/notification.service';
-import { MailerService } from '@nestjs-modules/mailer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -13,6 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
     @InjectRepository(User) private userRepository: Repository<User>,
     private usersService: UsersService,
     private jwtService: JwtService,
-    private mailerService: MailerService,
+    private emailService: EmailService,
     private notificationService: NotificationService,
   ) {}
 
@@ -61,7 +61,7 @@ export class AuthService {
     user.resetTokenExpiry = expiry;
     await this.userRepository.save(user);
 
-    await this.mailerService.sendMail({
+    await this.emailService.sendMail({
       to: email,
       subject: 'Reset your PopFlix password',
       template: './reset-password',
@@ -75,7 +75,7 @@ export class AuthService {
   async sendResetEmail(email: string, name: string, token: string) {
     const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
 
-    return await this.mailerService.sendMail({
+    return await this.emailService.sendMail({
       to: email,
       subject: 'Reset your PopFlix password',
       template: './reset-password',
