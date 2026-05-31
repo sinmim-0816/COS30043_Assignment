@@ -9,7 +9,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useCinemas } from '../hook/useCinemas';
 import FooterView from '@/components/FooterView.vue';
 import { useFaqs } from '../hook/useFaqs';
-import { resolveCinemaImage } from '../utils/FormatPicture';
+import { resolveBackendAssetPath } from '../utils/FormatPicture';
 
 const { cinemas, isLoading } = useCinemas();
 const router = useRouter();
@@ -117,7 +117,7 @@ const initMap = () => {
 
         const popupContent = `
             <div class="custom-leaflet-popup">
-                <img src="${resolveCinemaImage(cinema.image_path)}" alt="${cinema.name}" class="popup-img" />
+                <img src="${resolveBackendAssetPath(cinema.image_path)}" alt="${cinema.name}" class="popup-img" />
                 <div class="popup-info">
                     <h4 class="popup-title">${cinema.name}</h4>
                     <p class="popup-subtitle">${cinema.location_address?.split(',')[0] ?? ''}</p>

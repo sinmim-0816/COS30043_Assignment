@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { Search, Film, X, Loader2 } from 'lucide-vue-next';
 import backendClient from '../api/backendClient'; 
 import { getGenreName } from '../utils/genre';
-import { resolveCinemaImage } from '../utils/FormatPicture';
+import { resolveBackendAssetPath } from '../utils/FormatPicture';
 
 const props = defineProps({
     modelValue: Boolean
@@ -192,7 +192,7 @@ const goToResult = (item) => {
                         >
                             <template v-slot:prepend>
                                 <v-img 
-                                    :src="resolveCinemaImage(cinema.image_path)" 
+                                    :src="resolveBackendAssetPath(cinema.image_path)" 
                                     cover 
                                     class="cinema-img me-4"
                                 ></v-img>
