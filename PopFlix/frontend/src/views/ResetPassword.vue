@@ -9,31 +9,7 @@ import { useAppI18n } from '../utils/i18n';
 const route = useRoute();
 const router = useRouter();
 const { handleReset, isLoading, errorMessage, verifyToken } = useResetPassword();
-const { t, locale } = useAppI18n();
-const localeCopy = {
-    en: {
-        weak: 'Weak',
-        fair: 'Fair',
-        good: 'Good',
-        strong: 'Strong',
-        resetSuccess: 'Password successfully reset! Please login.',
-    },
-    zh: {
-        weak: '弱',
-        fair: '中等',
-        good: '良好',
-        strong: '强',
-        resetSuccess: '密码已成功重置！请登录。',
-    },
-    ms: {
-        weak: 'Lemah',
-        fair: 'Sederhana',
-        good: 'Baik',
-        strong: 'Kuat',
-        resetSuccess: 'Kata laluan berjaya ditetapkan semula! Sila log masuk.',
-    },
-};
-const authLocale = computed(() => localeCopy[locale.value] || localeCopy.en);
+const { t } = useAppI18n();
 
 const password = ref('');
 const confirmPassword = ref('');
@@ -74,10 +50,10 @@ const strengthColor = computed(() => {
 const strengthText = computed(() => {
     const count = Object.values(reqs.value).filter(Boolean).length;
     if (count === 0) return '';
-    if (count === 1) return authLocale.value.weak;
-    if (count === 2) return authLocale.value.fair;
-    if (count === 3) return authLocale.value.good;
-    return authLocale.value.strong;
+    if (count === 1) return t('auth.passwordWeak');
+    if (count === 2) return t('auth.passwordFair');
+    if (count === 3) return t('auth.passwordGood');
+    return t('auth.passwordStrong');
 });
 
 const passwordError = computed(() => {
@@ -132,7 +108,7 @@ const submit = async () => {
         await handleReset(token, password.value);
         router.push({
             path: '/login',
-            state: { successMessage: authLocale.value.resetSuccess }
+            state: { successMessage: t('auth.passwordResetSuccess') }
         });
     } catch (e) {
         console.log("Error reset Password:", e)

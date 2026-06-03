@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Info, CheckCircle, AlertCircle, Loader2 } from 'lucide-vue-next';
 import { useActivate } from '../hook/useActivate';
@@ -9,14 +9,7 @@ import { useAppI18n } from '../utils/i18n';
 const route = useRoute();
 const router = useRouter();
 const { isLoading, isSuccess, message, activate } = useActivate();
-const { t, locale } = useAppI18n();
-const localeCopy = {
-    en: { activationSuccess: 'You can now log in to your account.' },
-    zh: { activationSuccess: '您现在可以登录您的账户。' },
-    ms: { activationSuccess: 'Anda kini boleh log masuk ke akaun anda.' },
-};
-const authLocale = computed(() => localeCopy[locale.value] || localeCopy.en);
-
+const { t} = useAppI18n();
 const showAuthBadge = ref(false);
 
 onMounted(async () => {
@@ -77,7 +70,7 @@ onMounted(async () => {
                     {{ isSuccess ? t('auth.setupSuccess') : t('auth.verificationFailed') }}
                 </h3>
                 <p class="text-grey-darken-1 mb-6">
-                    {{ isSuccess ? authLocale.value.activationSuccess : message }}
+                    {{ isSuccess ? t('auth.activationSuccess') : message }}
                 </p>
 
                 <v-btn 
