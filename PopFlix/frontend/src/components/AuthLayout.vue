@@ -53,7 +53,7 @@ onUnmounted(() => {
     <div class="auth-language-switcher">
       <v-menu location="bottom end" offset="8">
         <template #activator="{ props }">
-          <v-btn v-bind="props" variant="tonal" color="red-accent-3" class="language-toggle-btn" size="small">
+          <v-btn v-bind="props" variant="tonal" class="language-toggle-btn">
             <Globe size="16" />
             <span>{{ currentLanguageLabel }}</span>
           </v-btn>
@@ -190,9 +190,9 @@ onUnmounted(() => {
 
 .auth-language-switcher {
     position: fixed;
-    top: 20px;
-    left: 170px;
-    z-index: 2000 !important;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
 }
 
 .language-toggle-btn {
@@ -213,10 +213,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 600px) {
-  .auth-language-switcher {
-    top: 10px;
-    left: 50px !important;
-  }
 
   .language-toggle-btn {
     padding-inline: 12px;
