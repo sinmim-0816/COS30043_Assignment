@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { MapPin, ArrowRight,X, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { MapPin, ArrowRight, X, Clock, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { useAppI18n } from '@/utils/i18n';
 
 // Import other hook and components
 import FooterView from '@/components/FooterView.vue';
@@ -12,6 +13,7 @@ import { resolveBackendAssetPath } from '../utils/FormatPicture';
 const router = useRouter();
 const { ticketsList: tickets, isTicketsLoading, fetchTickets } = useTickets();
 const { fetchByBooking } = useTicketDesign();
+const { t: tt } = useAppI18n();
 
 onMounted(fetchTickets);
 
@@ -46,14 +48,14 @@ const openDesignDialog = async (ticket) => {
                     <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
                 </v-progress-circular>
 
-                <p class="mt-6 loading-text">Loading...</p>
+                <p class="mt-6 loading-text">{{ tt('common.loading') }}</p>
                 <div class="loading-bar"></div>
             </div>
         </div>
     </template>
     <v-app v-else>
         <v-container fluid class="customization-dashboard" width="100vw">
-            <h2>Customize Tickets</h2>
+            <h2>{{ tt('customizeList.header') }}</h2>
             <v-row v-if="!isTicketsLoading" class="mt-4 justify-start">
                 <v-col v-for="t in tickets" :key="t.id" cols="12" sm="6" md="4" lg="3" class="d-flex justify-center">
                     <div class="movie-card">
@@ -64,7 +66,7 @@ const openDesignDialog = async (ticket) => {
 
 
                                 <button class="design-pill fs-6" @click="openDesignDialog(t)">
-                                    <span class="icon">🎨</span> View Designs
+                                    <span class="icon">🎨</span> {{ tt('customizeList.viewDesigns') }}
                                 </button>
                             </div>
                         </div>
@@ -73,7 +75,7 @@ const openDesignDialog = async (ticket) => {
                             <v-card flat class="design-card">
                                 
                                 <v-card-title class="d-flex justify-space-between align-center px-4 pt-4">
-                                    <span class="fw-bold">Saved Designs</span>
+                                    <span class="fw-bold">{{ tt('customizeList.savedDesigns') }}</span>
                                     <v-btn icon variant="text" size="small" @click="t.showDialog = false">
                                         <X size="25" />
                                     </v-btn>
@@ -84,7 +86,7 @@ const openDesignDialog = async (ticket) => {
                                     </div>
 
                                     <div v-else-if="!t.designs || t.designs.length === 0" class="text-center py-5">
-                                        <p>No designs saved for this ticket.</p>
+                                        <p>{{ tt('customizeList.noDesignsSaved') }}</p>
                                     </div>
                                     
                                     <v-carousel 
@@ -130,10 +132,10 @@ const openDesignDialog = async (ticket) => {
 
                                                 <v-card-text>
                                                     <p class="text-body-2 text-grey-darken-1 mb-2">
-                                                        {{ design.description || 'No description provided.' }}
+                                                        {{ design.description || tt('customizeList.noDescriptionProvided') }}
                                                     </p>
                                                     <div class="text-caption text-grey">
-                                                        Created on: {{ new Date(design.created_at).toLocaleDateString() }}
+                                                        {{ tt('customizeList.createdOn') }} {{ new Date(design.created_at).toLocaleDateString() }}
                                                     </div>
                                                 </v-card-text>
                                             </v-card>
@@ -157,10 +159,10 @@ const openDesignDialog = async (ticket) => {
                                     }) }}
                                 </div>
                             </div>
-                            <div class="seats-pill">Seats: {{ t.seats.join(', ') }}</div>
+                            <div class="seats-pill">{{ tt('customizeList.seatsLabel') }} {{ t.seats.join(', ') }}</div>
 
                             <button class="custom-btn" @click="goToCustomize(t)">
-                                Customize Now
+                                {{ tt('customizeList.customizeNow') }}
                                 <ArrowRight size="16" />
                             </button>
                         </div>

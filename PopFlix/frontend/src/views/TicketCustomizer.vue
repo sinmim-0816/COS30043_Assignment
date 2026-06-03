@@ -5,6 +5,7 @@ import * as htmlToImage from 'html-to-image';
 import VueDraggableResizable from 'vue-draggable-resizable-vue3';
 import QrcodeVue from 'qrcode.vue';
 import { ExternalLink, X, Menu } from 'lucide-vue-next';
+import { useAppI18n } from '@/utils/i18n';
 
 // Import other hook and components
 import { useMovies } from '../hook/useMovies';
@@ -32,12 +33,13 @@ import TicketShape14 from '@/components/TicketShape14.vue';
 const route = useRoute();
 const { fetchMovieDetails, isLoading } = useMovies();
 const { fetchTicketDetails, isTicketsLoading } = useTickets();
+const { t } = useAppI18n();
 const activeTicket = ref(null);
 
 const shapes = [TicketShape1, TicketShape2, TicketShape3, TicketShape4, TicketShape5, TicketShape6,TicketShape7,TicketShape8,TicketShape9,TicketShape10,TicketShape11,TicketShape12,TicketShape13,TicketShape14];
 const currentShape = shallowRef(TicketShape1);
-const tabs = ['Shape', 'Picture', 'Components'];
-const activeTab = ref('Shape');
+const tabs = ['shape', 'picture', 'components'];
+const activeTab = ref('shape');
 const isModalOpen = ref(false);
 const previewImageUrl = ref('');
 const isSidebarOpen = ref(true);
@@ -90,7 +92,7 @@ const openPreview = async () => {
         previewImageUrl.value = dataUrl;
         isModalOpen.value = true;
     } catch (err) {
-        alert("Failed to generate preview. Please try again.");
+        alert(t('ticketCustomizer.previewFailed'));
         console.error(err);
     }
 };
@@ -101,16 +103,12 @@ const confirmSave = async () => {
         const imageToSave = previewImageUrl.value || await captureTicket();
         previewImageUrl.value = imageToSave;
         await save(activeTicket.value.bookingId, imageToSave, ticketDescription.value);
-        alert('Design saved successfully!');
+        alert(t('ticketCustomizer.saveSuccess'));
         isModalOpen.value = false;
     } catch (err) {
         console.error(err);
-        alert('Failed to save design');
+        alert(t('ticketCustomizer.saveFailed'));
     }
-};
-
-const selectText = (el) => {
-    selectedText.value = el;
 };
 
 const addInfo = (infoKey) => {
@@ -322,8 +320,8 @@ const triggerShare = async () => {
         if (navigator.share && navigator.canShare({ files: [file] })) {
             await navigator.share({
                 files: [file],
-                title: 'My Ticket',
-                text: ticketDescription.value || 'Check out my cinema ticket design!'
+                title: t('ticketCustomizer.shareTitle'),
+                text: ticketDescription.value || t('ticketCustomizer.shareText')
             });
         } else {
             const link = document.createElement('a');
@@ -333,7 +331,7 @@ const triggerShare = async () => {
         }
     } catch (err) {
         console.error(err);
-        alert('Sharing not supported on this browser.');
+        alert(t('ticketCustomizer.shareUnsupported'));
     }
 };
 
@@ -346,7 +344,7 @@ const triggerShare = async () => {
             v-if="isMobileLayout"
             class="sidebar-toggle-fab"
             type="button"
-            :aria-label="isSidebarOpen ? 'Close ticket controls' : 'Open ticket controls'"
+            :aria-label="isSidebarOpen ? t('ticketCustomizer.closeControls') : t('ticketCustomizer.openControls')"
             @click="toggleSidebar"
         >
             <component :is="isSidebarOpen ? X : Menu" size="20" />
@@ -360,12 +358,12 @@ const triggerShare = async () => {
 
         <aside class="sidebar-scrollable" :class="{ 'is-open': isSidebarOpen, 'is-mobile': isMobileLayout }">
             <div class="sidebar-topbar pt-md-0 pt-4">
-                <h4 class="mt-5">Customize Ticket</h4>
+                <h4 class="mt-5">{{ t('ticketCustomizer.header') }}</h4>
                 <button
                     v-if="isMobileLayout"
                     class="sidebar-close-btn"
                     type="button"
-                    aria-label="Close ticket controls"
+                    :aria-label="t('ticketCustomizer.closeControls')"
                     @click="closeSidebar"
                 >
                     <X size="18" />
@@ -374,11 +372,11 @@ const triggerShare = async () => {
 
             <div class="tabs">
                 <button v-for="tab in tabs" :key="tab" :class="{ active: activeTab === tab }" @click="activeTab = tab">
-                    {{ tab }}
+                    {{ t(`ticketCustomizer.${tab}Tab`) }}
                 </button>
             </div>
 
-            <section v-if="activeTab === 'Shape'" class="control-group">
+            <section v-if="activeTab === 'shape'" class="control-group">
                 <div class="grid-options">
                     <div v-for="(s, i) in shapes" :key="i" class="option-card" @click="currentShape = s" :class="{ 'active-bg': currentShape === s }">
                         <img :src="`/shapes/shape-${i + 1}.png`" />
@@ -387,42 +385,41 @@ const triggerShare = async () => {
 
             </section>
 
-            <section v-if="activeTab === 'Picture'" class="control-group">
-                <h5 class="mt-4">Select Background</h5>
+            <section v-if="activeTab === 'picture'" class="control-group">
+                <h5 class="mt-4">{{ t('ticketCustomizer.selectBackground') }}</h5>
                 <div class="grid-options">
                     <div class="option-card" :class="{ 'active-bg': selectedBgIndex === -1 }"
                         @click="selectBackground('', -1)">
-                        <div class="none-placeholder">None</div>
+                        <div class="none-placeholder">{{ t('ticketCustomizer.none') }}</div>
                     </div>
-
                     <div v-for="(p, i) in movieBackdrops" :key="i" class="option-card"
                         :class="{ 'active-bg': selectedBgIndex === i }" @click="selectBackground(p, i)">
                         <img :src="p" />
                     </div>
                 </div>
                 <label class="d-flex mt-5 justify-between">
-                    <span class="me-2 text-color">Opacity</span>
+                    <span class="me-2 text-color">{{ t('ticketCustomizer.opacity') }}</span>
                     <span class="text-accent">{{ (backdropOpacity * 100).toFixed(0) }}%</span>
                 </label>
                 <div class="rotation-control">
                     <input type="range" v-model="backdropOpacity" min="0" max="1" step="0.1" class="rotate-slider" />
-                    <button class="reset-btn" @click="backdropOpacity = 1">Reset</button>
+                    <button class="reset-btn" @click="backdropOpacity = 1">{{ t('ticketCustomizer.reset') }}</button>
                 </div>
                 <label class="d-flex my-3 justify-between">
-                    <span class="me-3 text-color">Color</span>
+                    <span class="me-3 text-color">{{ t('ticketCustomizer.color') }}</span>
                     <div class="mode-toggle">
-                        <button @click="colorMode = 'solid'" :class="{ active: colorMode === 'solid' }">Solid</button>
+                        <button @click="colorMode = 'solid'" :class="{ active: colorMode === 'solid' }">{{ t('ticketCustomizer.solid') }}</button>
                         <button @click="colorMode = 'gradient'"
-                            :class="{ active: colorMode === 'gradient' }">Gradient</button>
+                            :class="{ active: colorMode === 'gradient' }">{{ t('ticketCustomizer.gradient') }}</button>
                     </div>
                 </label>
                 <div class="control-row">
                     <input type="color" v-model="accentColor" class="color-picker" />
                     <input v-if="colorMode === 'gradient'" type="color" v-model="accentColor2"
                         class="color-picker ms-2" />
-                    <span class="text-accent ms-3">{{ colorMode === 'solid' ? accentColor : 'Gradient' }}</span>
+                    <span class="text-accent ms-3">{{ colorMode === 'solid' ? accentColor : t('ticketCustomizer.gradient') }}</span>
                     <label v-if="colorMode === 'gradient'" class="d-flex mt-3 justify-between">
-                        <span class="me-2 text-color">Gradient Angle</span>
+                        <span class="me-2 text-color">{{ t('ticketCustomizer.gradientAngle') }}</span>
                         <span class="text-accent">{{ gradientAngle }}°</span>
                     </label>
                     <div v-if="colorMode === 'gradient'" class="rotation-control">
@@ -432,31 +429,31 @@ const triggerShare = async () => {
 
             </section>
 
-            <section v-if="activeTab === 'Components'" class="control-group">
-                <h5 class="mb-3">Add Info</h5>
+            <section v-if="activeTab === 'components'" class="control-group">
+                <h5 class="mb-3">{{ t('ticketCustomizer.addInfo') }}</h5>
                 <div class="grid-options">
-                    <button class="info-btn" @click="addInfo('title')">Title</button>
-                    <button class="info-btn" @click="addInfo('runtime')">Runtime</button>
-                    <button class="info-btn" @click="addInfo('genres')">Genres</button>
-                    <button class="info-btn" @click="addInfo('cinema')">Cinema</button>
-                    <button class="info-btn" @click="addInfo('hall')">Hall</button>
-                    <button class="info-btn" @click="addInfo('startTime')">Date/Time</button>
-                    <button class="info-btn" @click="addInfo('seats')">Seats</button>
-                    <button class="info-btn" @click="addInfo('qr')">QR Code</button>
-                    <button class="info-btn" @click="addInfo('barcode')">Barcode</button>
+                    <button class="info-btn" @click="addInfo('title')">{{ t('ticketCustomizer.infoTitle') }}</button>
+                    <button class="info-btn" @click="addInfo('runtime')">{{ t('ticketCustomizer.infoRuntime') }}</button>
+                    <button class="info-btn" @click="addInfo('genres')">{{ t('ticketCustomizer.infoGenres') }}</button>
+                    <button class="info-btn" @click="addInfo('cinema')">{{ t('ticketCustomizer.infoCinema') }}</button>
+                    <button class="info-btn" @click="addInfo('hall')">{{ t('ticketCustomizer.infoHall') }}</button>
+                    <button class="info-btn" @click="addInfo('startTime')">{{ t('ticketCustomizer.infoDateTime') }}</button>
+                    <button class="info-btn" @click="addInfo('seats')">{{ t('ticketCustomizer.infoSeats') }}</button>
+                    <button class="info-btn" @click="addInfo('qr')">{{ t('ticketCustomizer.infoQr') }}</button>
+                    <button class="info-btn" @click="addInfo('barcode')">{{ t('ticketCustomizer.infoBarcode') }}</button>
                 </div>
 
                 <div v-if="selectedText" class="settings-panel">
-                    <label>Rotation: {{ selectedText.rotation }}°</label>
+                    <label>{{ t('ticketCustomizer.rotationLabel') }} {{ selectedText.rotation }}°</label>
                     <input type="range" v-model.number="selectedText.rotation" min="0" max="360" />
 
-                    <label>Font Size</label>
+                    <label>{{ t('ticketCustomizer.fontSizeLabel') }}</label>
                     <input type="number" v-model.number="selectedText.fontSize" min="12" max="100" />
 
-                    <label>Color</label>
+                    <label>{{ t('ticketCustomizer.colorLabel') }}</label>
                     <input type="color" v-model="selectedText.color" />
 
-                    <label>Font Family</label>
+                    <label>{{ t('ticketCustomizer.fontFamilyLabel') }}</label>
                     <select v-model="selectedText.fontFamily" class="font-select">
                         <option value="'Inter', sans-serif">Inter (Modern UI)</option>
                         <option value="'Playfair Display', serif">Playfair (Elegant Serif)</option>
@@ -469,7 +466,7 @@ const triggerShare = async () => {
                         <option value="'Pacifico', cursive">Pacifico (Casual Script)</option>
                     </select>
                     <button class="delete-btn" @click="deleteSelectedText">
-                        Delete Selected Element
+                        {{ t('ticketCustomizer.deleteSelected') }}
                     </button>
                 </div>
             </section>
@@ -481,7 +478,7 @@ const triggerShare = async () => {
                     <v-progress-circular indeterminate color="red-accent-3" size="70" width="4">
                         <v-icon size="24">mdi-movie-roll</v-icon>
                     </v-progress-circular>
-                    <p class="mt-6 loading-text">Loading Ticket...</p>
+                    <p class="mt-6 loading-text">{{ t('ticketCustomizer.loadingTicket') }}</p>
                     <div class="loading-bar"></div>
                 </div>
             </div>
@@ -514,7 +511,7 @@ const triggerShare = async () => {
                                     </div>
                                 </div>
 
-                                <div v-else-if="el.text === 'N/A'" class="error-node">Data Unavailable</div>
+                                            <div v-else-if="el.text === 'N/A'" class="error-node">{{ t('ticketCustomizer.dataUnavailable') }}</div>
 
                                 <input v-else v-model="el.text" class="transparent-drag-input" :style="{
                                     fontSize: el.fontSize + 'px',
@@ -528,7 +525,7 @@ const triggerShare = async () => {
             </div>
 
             <button @click="openPreview" class="share-btn">
-                <ExternalLink size="18" class="me-2 mb-1" />Preview & Save
+                <ExternalLink size="18" class="me-2 mb-1" />{{ t('ticketCustomizer.previewSave') }}
             </button>
 
             <v-dialog
@@ -540,9 +537,9 @@ const triggerShare = async () => {
                 
                 <div class="preview-header">
                     <div>
-                        <h5 class="preview-title">Ticket Preview</h5>
+                        <h5 class="preview-title">{{ t('ticketCustomizer.previewTitle') }}</h5>
                         <p class="preview-subtitle">
-                        Review your customized PopFlix ticket before saving or sharing.
+                        {{ t('ticketCustomizer.previewSubtitle') }}
                         </p>
                     </div>
 
@@ -568,12 +565,12 @@ const triggerShare = async () => {
 
                     <div class="preview-section">
                     <label class="preview-label">
-                        Description
+                        {{ t('ticketCustomizer.descriptionLabel') }}
                     </label>
 
                     <v-textarea
                         v-model="ticketDescription"
-                        placeholder="Describe your movie night..."
+                        :placeholder="t('ticketCustomizer.descriptionPlaceholder')"
                         variant="outlined"
                         rows="10"
                         auto-grow
@@ -586,10 +583,10 @@ const triggerShare = async () => {
                     <div class="preview-actions-asymmetric justify-end">
                         <div class="right-group">
                             <v-btn variant="outlined" class="share-btn-style" @click="triggerShare">
-                                Share
+                                {{ t('ticketCustomizer.share') }}
                             </v-btn>
                             <v-btn class="save-btn-style" :loading="isSaving" @click="confirmSave">
-                                Save Design
+                                {{ t('ticketCustomizer.saveDesign') }}
                             </v-btn>
                         </div>
                     </div>
