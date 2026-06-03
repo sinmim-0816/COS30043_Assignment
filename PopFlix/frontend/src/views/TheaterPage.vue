@@ -906,5 +906,63 @@ const filteredFaqs = computed(() => {
     .app-wrapper{
         padding:0;
     }
+    .dp-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .dp-info {
+        width: 100%;
+    }
+
+    .dp-name {
+        font-size: 16px;
+        margin-bottom: 0;
+    }
+
+    .dp-actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .dp-btn {
+        flex: 1 1 100%;
+        justify-content: center;
+        height: 38px;
+        font-size: 11px;
+        padding: 0 10px;
+    }
+
+    .faq-toggle-pill {
+        width: 100%;
+        overflow-x: auto;
+        padding: 4px;
+        border-radius: 18px;
+        justify-content: flex-start;
+        scrollbar-width: none;
+    }
+
+    .faq-toggle-pill::-webkit-scrollbar {
+        display: none;
+    }
+
+    .faq-toggle-btn {
+        flex: 0 0 auto;
+        padding: 8px 16px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .faq-title {
+        font-size: 30px;
+    }
+
+    .faq-desc {
+        font-size: 13px;
+        padding: 0 12px;
+    }
 }
 </style>
