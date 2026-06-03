@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useDisplay } from 'vuetify';
 import { GENRE_MAP } from '../utils/genre';
 import { useMovies } from '../hook/useMovies';
@@ -7,6 +7,17 @@ import { useMovies } from '../hook/useMovies';
 const {getLanguageName}=useMovies();
 const { smAndDown } = useDisplay();
 const isMobile = computed(() => smAndDown.value);
+const isDarkTheme = ref(false);
+let themeObserver = null;
+
+const syncThemeState = () => {
+    if (typeof document === 'undefined') return;
+    isDarkTheme.value =
+        document.documentElement.classList.contains('dark') ||
+        localStorage.getItem('theme') === 'dark';
+};
+
+const themeClass = computed(() => (isDarkTheme.value ? 'theme-dark' : 'theme-light'));
 
 const props = defineProps({
     modelValue:Boolean,
@@ -54,9 +65,9 @@ const openedPanel = ref(0);
 const openedAge=ref(0);
 
 const availableRatings=[
-    {value:'U', img: '../../public/img/universal_logo.png'},
-    {value:'P13', img: '../../public/img/p13_logo.png'},
-    {value:'P18', img: '../../public/img/p18_logo.png'}
+    {value:'U', img: 'img/universal_logo.png'},
+    {value:'P13', img: 'img/p13_logo.png'},
+    {value:'P18', img: 'img/p18_logo.png'}
 ]
 
 const toggleRating = (val) => {
@@ -93,6 +104,23 @@ watch(()=>props.filters, (newFilters)=>{
     }
 },{deep:true});
 
+onMounted(() => {
+    syncThemeState();
+
+    themeObserver = new MutationObserver(() => {
+        syncThemeState();
+    });
+
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class'],
+    });
+});
+
+onBeforeUnmount(() => {
+    themeObserver?.disconnect();
+});
+
 </script>
 
 <template>
@@ -103,9 +131,10 @@ watch(()=>props.filters, (newFilters)=>{
             scrollable
             transition="dialog-bottom-transition"
             scrim="#00000099"
+            :theme="isDarkTheme ? 'dark' : 'light'"
             @update:model-value="val => $emit('update:modelValue', val)"
         >
-            <v-card class="filter-sheet-shell">
+            <v-card :class="['filter-shell', 'filter-sheet-shell', themeClass]">
                 <div class="d-flex flex-column drawer-inner">
                     <div class="d-flex justify-space-between align-center mb-3">
                         <h3 class="text-color">
@@ -287,7 +316,8 @@ watch(()=>props.filters, (newFilters)=>{
         location="right"
         temporary
         width="400"
-        class="bg-grey-darken-4 filter-drawer-shell"
+        :theme="isDarkTheme ? 'dark' : 'light'"
+        :class="['filter-shell', 'filter-drawer-shell', themeClass]"
         :model-value="modelValue"
         @update:model-value="val => $emit('update:modelValue', val)"
     >
@@ -489,10 +519,16 @@ watch(()=>props.filters, (newFilters)=>{
     height: 100%;
     overflow: hidden;
 }
+
+.filter-shell{
+    color: var(--text-color);
+    background: var(--bg-color);
+}
+
 .filter-drawer-shell{
     padding-top:3rem;
     padding-bottom:2rem;
-    background: var(--bg-color);
+    border-left: 1px solid var(--border-color);
 }
 
 @media (max-width: 600px) {
@@ -502,7 +538,6 @@ watch(()=>props.filters, (newFilters)=>{
         height: 100vh;
         max-height: 100vh;
         border-radius: 0;
-        background: var(--bg-color);
         overflow: hidden;
     }
 
