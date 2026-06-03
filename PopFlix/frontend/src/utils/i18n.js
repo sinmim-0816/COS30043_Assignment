@@ -556,8 +556,6 @@ const messages = {
       dataUnavailable: 'Data Unavailable',
     },
     theaterPage: {
-      heroTitle: 'Discover cinemas near you',
-      heroSubtitle: 'Find the closest cinema, view operating hours, and open the location in Google Maps.',
       halls: 'Halls',
       open: 'Open',
       closed: 'Closed',
@@ -905,8 +903,6 @@ const messages = {
       customizeNow: '立即自定义',
     },
     theaterPage: {
-      heroTitle: '发现附近影院',
-      heroSubtitle: '查找最近的影院，查看营业时间，并在 Google 地图中打开位置。',
       halls: '影厅',
       open: '营业中',
       closed: '已打烊',
@@ -1253,8 +1249,6 @@ const messages = {
       customizeNow: 'Sesuaikan Sekarang',
     },
     theaterPage: {
-      heroTitle: 'Temui pawagam berhampiran anda',
-      heroSubtitle: 'Cari pawagam terdekat, lihat waktu operasi, dan buka lokasi dalam Google Maps.',
       halls: 'Dewan',
       open: 'Buka',
       closed: 'Tutup',
