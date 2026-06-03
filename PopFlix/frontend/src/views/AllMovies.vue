@@ -604,6 +604,10 @@ h2 {
     transition: all 0.3s ease;
 }
 
+.v-card-title{
+    background-color: var(--bg-color);
+}
+
 
 @media (max-width: 768px) {
     h2 {
