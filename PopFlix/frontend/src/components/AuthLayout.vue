@@ -101,9 +101,9 @@ onUnmounted(() => {
       </v-col>
 
       <v-col cols="12" md="6" class="d-flex align-center justify-center bg-form-dark">
-        <div class="auth-slot-shell" :key="authContentKey">
+        <!-- <div class="auth-slot-shell" :key="authContentKey"> -->
           <slot />
-        </div>
+        <!-- </div> -->
       </v-col>
     </v-row>
   </v-container>
