@@ -1077,14 +1077,14 @@ const passStrengthText = computed(() => {
               </div>
 
               <div class="tier-card-body">
-                <h3 class="tier-title">Bronze</h3>
+                <h3 class="tier-title">{{ t('profile.bronze') }}</h3>
                 <p class="tier-range">RM 0 – RM 499</p>
                 <div class="tier-discount color-bronze">0% off</div>
 
                 <ul class="tier-perks-list">
-                  <li><Check :size="16" class="perk-check-icon" /> Early bird access</li>
-                  <li><Check :size="16" class="perk-check-icon" /> Birthday free drink</li>
-                  <li><Check :size="16" class="perk-check-icon" /> Member newsletter</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.earlyBirdAccess') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.birthdayFreeDrink') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.memberNewsletter') }}</li>
                 </ul>
               </div>
             </div>
@@ -1105,15 +1105,15 @@ const passStrengthText = computed(() => {
               </div>
 
               <div class="tier-card-body">
-                <h3 class="tier-title">Silver</h3>
+                <h3 class="tier-title">{{ t('profile.silver') }}</h3>
                 <p class="tier-range">RM 500 – RM 1999</p>
                 <div class="tier-discount color-silver">10% off</div>
 
                 <ul class="tier-perks-list">
-                  <li><Check :size="16" class="perk-check-icon" /> All Bronze perks</li>
-                  <li><Check :size="16" class="perk-check-icon" /> 10% ticket discount</li>
-                  <li><Check :size="16" class="perk-check-icon" /> Priority seat selection</li>
-                  <li><Check :size="16" class="perk-check-icon" /> 1 free popcorn/month</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.allBronzePerks') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.tenPercentDiscount') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.prioritySeatSelection') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.freePopcorn') }}</li>
                 </ul>
               </div>
             </div>
@@ -1134,17 +1134,17 @@ const passStrengthText = computed(() => {
               </div>
 
               <div class="tier-card-body">
-                <h3 class="tier-title">Gold</h3>
+                <h3 class="tier-title">{{ t('profile.gold') }}</h3>
                 <p class="tier-range">RM 2000+</p>
                 <div class="tier-discount color-gold">20% off</div>
 
                 <ul class="tier-perks-list">
-                  <li><Check :size="16" class="perk-check-icon" /> All Silver perks</li>
-                  <li><Check :size="16" class="perk-check-icon" /> 20% ticket discount</li>
-                  <li><Check :size="16" class="perk-check-icon" /> LUXE lounge access</li>
-                  <li><Check :size="16" class="perk-check-icon" /> Exclusive previews</li>
-                  <li><Check :size="16" class="perk-check-icon" /> Free ticket on birthday</li>
-                  <li><Check :size="16" class="perk-check-icon" /> Gold cinema lanyard</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.allSilverPerks') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.twentyPercentDiscount') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.luxeLoungeAccess') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.exclusivePreviews') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.freeBirthdayTicket') }}</li>
+                  <li><Check :size="16" class="perk-check-icon" /> {{ t('profile.goldCinemaLanyard') }}</li>
                 </ul>
               </div>
             </div>
