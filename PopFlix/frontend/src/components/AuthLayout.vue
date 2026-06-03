@@ -188,11 +188,11 @@ onUnmounted(() => {
   transition: none !important;
 }
 
-    .auth-language-switcher {
+.auth-language-switcher {
     position: fixed;
-    top: 14px;
-    left: 14px;
-    z-index: 20;
+    top: 20px;
+    left: 170px;
+    z-index: 2000 !important;
 }
 
 .language-toggle-btn {
@@ -215,7 +215,7 @@ onUnmounted(() => {
 @media (max-width: 600px) {
   .auth-language-switcher {
     top: 10px;
-    left: 10px;
+    left: 50px !important;
   }
 
   .language-toggle-btn {

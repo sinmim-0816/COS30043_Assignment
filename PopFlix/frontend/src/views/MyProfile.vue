@@ -2203,15 +2203,27 @@ const passStrengthText = computed(() => {
   background: rgba(226, 232, 240, 0.85);
   border: 1px solid rgba(148, 163, 184, 0.15);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  display: inline-flex;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
   padding: 4px;
   border-radius: 10px;
   gap: 2px;
   margin-bottom: 24px;
+  max-width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.neon-segmented-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .navigation-tab-item {
-  min-width: 110px;
+  min-width: max-content;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .selected-tab {
@@ -2873,13 +2885,14 @@ const passStrengthText = computed(() => {
 
   .neon-segmented-tabs {
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
 
   .navigation-tab-item {
-    min-width: 0;
-    padding-inline: 8px;
+    min-width: max-content;
+    padding-inline: 12px;
   }
 
   .ticket-grid {
