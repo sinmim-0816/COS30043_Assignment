@@ -384,12 +384,12 @@ const progressToNextTier = computed(() => {
   return Math.min(100, (Number(user.annualSpend) / nextTierThreshold.value) * 100);
 });
 
-const tabs = [
-  { name: 'Profile' },
-  { name: 'Ticket Design' },
-  { name: 'Reviews' },
-  { name: 'Rewards' }
-];
+const tabs = computed(() => [
+  { name: t('profile.tabs.profile') },
+  { name: t('profile.tabs.ticketDesign') },
+  { name: t('profile.tabs.reviews') },
+  { name: t('profile.tabs.rewards') }
+]);
 
 const normalizeTabQuery = (tabValue) => {
   if (!tabValue) return null;
@@ -605,21 +605,21 @@ const passStrengthText = computed(() => {
           <div class="user-stats-counter-row ps-2">
             <div class="stats-counter-item">
               <span class="stats-count-number">{{ user.ticketCount }}</span>
-              <span class="stats-count-label">Tickets</span>
+              <span class="stats-count-label">{{ t('profile.tickets') }}</span>
             </div>
             
             <div class="stats-vertical-divider"></div>
             
             <div class="stats-counter-item">
               <span class="stats-count-number">{{ user.reviewCount }}</span>
-              <span class="stats-count-label">Reviews</span>
+              <span class="stats-count-label">{{ t('profile.reviews') }}</span>
             </div>
 
             <div class="stats-vertical-divider"></div>
 
             <div class="stats-counter-item">
               <span class="stats-count-number">{{ user.points }}</span>
-              <span class="stats-count-label">Points</span>
+              <span class="stats-count-label">{{ t('profile.points') }}</span>
             </div>
           </div>
         </div>
@@ -632,22 +632,16 @@ const passStrengthText = computed(() => {
           class="premium-cta-btn btn-edit"
         >
           <SquarePen size="16" class="me-2" />
-          Edit Profile
-        </button>
-
-        <template v-else>
-          <button
-            @click="cancelEdit"
-            class="premium-cta-btn btn-cancel me-2"
+            {{ t('profile.editProfile') }}
           >
-            Cancel
+            {{ t('profile.cancel') }}
           </button>
 
           <button
             @click="saveProfile"
             class="premium-cta-btn btn-save"
           >
-            Save Changes
+            {{ t('profile.saveChanges') }}
           </button>
         </template>
       </div>
@@ -658,23 +652,23 @@ const passStrengthText = computed(() => {
         <div class="card-glow-overlay"></div>
         <div class="card-internal-layout">
           <div class="card-brand-row">
-            <span class="brand-logo">Membership Card<span class="accent-dot">.</span></span>
+            <span class="brand-logo">{{ t('profile.membershipCard') }}<span class="accent-dot">.</span></span>
             <div class="chip-icon"></div>
           </div>
           
           <div class="card-holder-center">
-            <p class="holder-label">Member Account:</p>
+            <p class="holder-label">{{ t('profile.memberAccount') }}:</p>
             <h2 class="holder-title">{{ user.name }}</h2>
           </div>
 
           <div class="card-footer-metrics">
             <div>
-              <p class="metric-lbl">Tier Status</p>
-              <p class="metric-val VIP">{{ currentTier.toUpperCase() }} Member</p>
+              <p class="metric-lbl">{{ t('profile.tierStatus') }}</p>
+              <p class="metric-val VIP">{{ currentTier.toUpperCase() }} {{ t('profile.member') }}</p>
             </div>
             <div class="text-right">
-              <p class="metric-lbl">Status Period</p>
-              <p class="metric-val code">Lifetime</p>
+              <p class="metric-lbl">{{ t('profile.statusPeriod') }}</p>
+              <p class="metric-val code">{{ t('profile.lifetime') }}</p>
             </div>
           </div>
         </div>
@@ -730,10 +724,10 @@ const passStrengthText = computed(() => {
         <section v-if="activeTab === 'Profile'" class="control-grid-3col">
           
           <div class="glass-control-card">
-            <h3 class="panel-inner-title fs-6"> Personal Details</h3>
+            <h3 class="panel-inner-title fs-6">{{ t('profile.personalDetails') }}</h3>
             
             <div class="interactive-input-node">
-              <label class="node-label"><Mail size="16" class="me-2"/>Email Address</label>
+              <label class="node-label"><Mail size="16" class="me-2"/>{{ t('profile.emailAddress') }}</label>
               <div class="input-container">
                 <div v-if="!isEditing" class="node-display-text px-4">
                   {{ user.email }}
@@ -750,7 +744,7 @@ const passStrengthText = computed(() => {
             </div>
 
             <div class="interactive-input-node">
-              <label class="node-label"><Phone size="16" class="me-2"/>Mobile Phone</label>
+              <label class="node-label"><Phone size="16" class="me-2"/>{{ t('profile.mobilePhone') }}</label>
               <div class="input-container">
                 <div v-if="!isEditing" class="node-display-text px-4">
                   {{ user.mobile }}
@@ -760,30 +754,30 @@ const passStrengthText = computed(() => {
             </div>
 
             <div class="interactive-input-node">
-              <label class="node-label"><Users size="16" class="me-2"/>Gender</label>
+              <label class="node-label"><Users size="16" class="me-2"/>{{ t('profile.gender') }}</label>
               <div class="input-container">
                 <div v-if="!isEditing" class="node-display-text px-4">
                   {{ user.gender }}
                 </div>
                 <select v-else v-model="user.gender" :disabled="!isEditing" :class="['node-select-field', isEditing ? 'unlocked' : 'locked']">
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Undisclosed">Prefer not to say</option>
+                  <option value="Male">{{ t('profile.genderMale') }}</option>
+                  <option value="Female">{{ t('profile.genderFemale') }}</option>
+                  <option value="Undisclosed">{{ t('profile.genderUndisclosed') }}</option>
                 </select>
               </div>
             </div>
 
             <div class="interactive-input-node">
-              <label class="node-label"><MapPin size="16" class="me-2"/>Location</label>
+              <label class="node-label"><MapPin size="16" class="me-2"/>{{ t('profile.location') }}</label>
               <div class="input-container">
                 <div v-if="!isEditing" class="node-display-text px-4">
-                  {{ user.location || 'Update Your Location' }}
+                  {{ user.location || t('profile.updateYourLocation') }}
                 </div>
                 <v-autocomplete
                   v-else
                   v-model="user.location"
                   :items="malaysiaStates"
-                  label="Search state"
+                  :label="t('profile.searchState')"
                   variant="solo"
                   density="comfortable"
                   class="node-field ms-3"
@@ -793,19 +787,19 @@ const passStrengthText = computed(() => {
           </div>
 
           <div class="glass-control-card">
-            <h3 class="panel-inner-title fs-6">Bio</h3>
+            <h3 class="panel-inner-title fs-6">{{ t('profile.bio') }}</h3>
             
             <div class="interactive-input-node bio-node">
-              <label class="node-label">Biography</label>
+              <label class="node-label">{{ t('profile.biography') }}</label>
               <div v-if="!isEditing" class="node-display-text">
-                  {{ user.bio || 'Update Your Bio...' }}
+                  {{ user.bio || t('profile.updateYourBio') }}
                 </div>
               <textarea v-else v-model="user.bio" :disabled="!isEditing" :class="['node-textarea-field px-2', isEditing ? 'unlocked' : 'locked']" rows="4"></textarea>
             </div>
 
             <div class="security-nested-vault">
-              <h4 class="vault-sub-title">Security Management</h4>
-              <p class="vault-description">Update account passwords and local credential security keys.</p>
+              <h4 class="vault-sub-title">{{ t('profile.securityManagement') }}</h4>
+              <p class="vault-description">{{ t('profile.securityDescription') }}</p>
               
               <button 
                 type="button" 
@@ -813,13 +807,13 @@ const passStrengthText = computed(() => {
                 :disabled="!isEditing"
                 @click="openPasswordModal"
               >
-                <Lock size="16" class="me-2"/>Change Password
+                <Lock size="16" class="me-2"/>{{ t('profile.changePassword') }}
               </button>
             </div>
           </div>
 
           <div class="glass-control-card">
-            <h3 class="panel-inner-title fs-6">Favourite Genres</h3>
+            <h3 class="panel-inner-title fs-6">{{ t('profile.favouriteGenres') }}</h3>
             
             <div class="neon-pill-cloud">
               <span v-for="(genre, index) in user.genres" :key="genre" class="vector-pill">
@@ -833,7 +827,7 @@ const passStrengthText = computed(() => {
                 v-model="selectedGenre"
                 class="dock-input"
               >
-                <option value="">Select Genre</option>
+                <option value="">{{ t('profile.selectGenre') }}</option>
 
                 <option
                   v-for="genre in availableGenres"
@@ -915,12 +909,12 @@ const passStrengthText = computed(() => {
 
         <section v-if="activeTab === 'Ticket Design'" class="gallery-panel animate-fade" ref="ticketDesignSectionRef">
           <div v-if="isTicketsLoading" class="loading-placeholder">
-            <p>Loading your creative customized ticket collections...</p>
+            <p>{{ t('profile.loadingTicketDesigns') }}</p>
           </div>
 
           <div v-else-if="!userTicketDesigns.length" class="empty-placeholder">
             <Ticket class="icon-empty" />
-            <p>You haven't customized any movie tickets yet!</p>
+            <p>{{ t('profile.noTicketDesigns') }}</p>
           </div>
 
           <div v-else class="ticket-grid">
@@ -933,9 +927,7 @@ const passStrengthText = computed(() => {
               <div class="ticket-poster-container">
               <img 
                 :src="resolveBackendAssetPath(ticket.design_image)" 
-                :alt="ticket.booking?.showtime?.movie?.title || 'Ticket Art'"
-                class="ticket-full-image" 
-              />
+                    :alt="ticket.booking?.showtime?.movie?.title || t('profile.ticketArt')"
               
               <button 
                 class="ticket-share-floating-btn" 
@@ -948,13 +940,13 @@ const passStrengthText = computed(() => {
 
               <div class="ticket-info">
                 <div class="ticket-grid-info">
-                  <h3 class="fs-6 text-black">{{ ticket.booking?.showtime?.movie?.title || 'Custom Masterpiece' }}</h3>
+                  <h3 class="fs-6 text-black">{{ ticket.booking?.showtime?.movie?.title || t('profile.customMasterpiece') }}</h3>
                 </div>
 
                 <div>
-                  <small>Thoughts:</small>
+                  <small>{{ t('profile.thoughts') }}</small>
                   <p class="ticket-description-text">
-                    {{ ticket.description || 'No memory notes attached to this print design.' }}
+                    {{ ticket.description || t('profile.noTicketNotes') }}
                   </p>
                   
                 </div>
@@ -990,7 +982,7 @@ const passStrengthText = computed(() => {
           </div>
 
           <div v-else-if="!reviews || reviews.length === 0" class="text-center py-10 opacity-60">
-            <p>No cinematic reviews logged under this profile record yet.</p>
+            <p>{{ t('profile.noReviewsYet') }}</p>
           </div>
 
           <div v-else class="review-stack">
@@ -1005,11 +997,7 @@ const passStrengthText = computed(() => {
                   v-if="review.booking?.showtime?.movie?.poster_path"
                   :src="`https://image.tmdb.org/t/p/w200${review.booking.showtime.movie.poster_path}`" 
                   class="thumbnail-img"
-                  alt="Movie Poster Thumbnail" 
-                />
-                
-                <div v-else class="fallback-thumbnail-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                      :alt="t('profile.reviewMovieAlt')" 
                 </div>
               </div>
 
@@ -1017,7 +1005,7 @@ const passStrengthText = computed(() => {
                 <div class="review-item-header-premium">
                   <div class="movie-meta-group">
                     <h3 class="reviewed-movie-title-premium">
-                      {{ review.booking?.showtime?.movie?.title || 'Untitled Presentation Movie' }}
+                      {{ review.booking?.showtime?.movie?.title || t('profile.untitledReviewMovie') }}
                     </h3>
                     {{ console.log(review) }}
                     <div class="meta-sub-row">
@@ -1045,7 +1033,7 @@ const passStrengthText = computed(() => {
                 </div>
 
                 <p class="review-body-text-premium">
-                  {{ review.comment || review.body || 'No textual opinion log compiled with this evaluation entry.' }}
+                  {{ review.comment || review.body || t('profile.noReviewComment') }}
                 </p>
 
                 
@@ -1054,7 +1042,7 @@ const passStrengthText = computed(() => {
               <button 
                 class="review-action-delete-btn" 
                 @click="handleDeleteRequest(review.id)"
-                title="Remove Review Entry Record"
+                :title="t('profile.removeReviewTitle')"
               >
                 <Trash2/>
               </button>
@@ -1154,15 +1142,15 @@ const passStrengthText = computed(() => {
       <div class="security-modal-container">
         <div class="modal-header">
           <div>
-            <h3 class="modal-main-title">Change Account Password</h3>
-            <p class="modal-subtitle">Update security credentials</p>
+            <h3 class="modal-main-title">{{ t('profile.changeAccountPassword') }}</h3>
+            <p class="modal-subtitle">{{ t('profile.updateSecurityCredentials') }}</p>
           </div>
           <button class="modal-close-cross" @click="closePasswordModal">⨉</button>
         </div>
 
         <form @submit.prevent="submitPasswordMutation" class="modal-form-body">
           <div class="interactive-input-node">
-            <label class="node-label">Current Password</label>
+            <label class="node-label">{{ t('profile.currentPassword') }}</label>
             <div class="input-container">
               <input 
                 :type="showPass.curr ? 'text' : 'password'" 
@@ -1187,13 +1175,13 @@ const passStrengthText = computed(() => {
           </div>
 
           <div class="interactive-input-node">
-            <label class="node-label">New Password</label>
+            <label class="node-label">{{ t('profile.newPassword') }}</label>
             
             <div class="input-container">
               <input 
                 :type="showPass.new ? 'text' : 'password'" 
                 v-model="security.newPassword" 
-                placeholder="Enter new password" 
+                :placeholder="t('profile.enterNewPassword')" 
                 required
                 @focus="isTypingPassword=true"
                 @blur="isTypingPassword=false"
@@ -1234,16 +1222,16 @@ const passStrengthText = computed(() => {
                 <!-- Requirements -->
                 <ul class="requirements-list mt-2">
                   <li :class="{ valid: passwordReqs.length }">
-                    <Check size="14" /> At least 8 characters
+                    <Check size="14" /> {{ t('profile.atLeast8Chars') }}
                   </li>
                   <li :class="{ valid: passwordReqs.case }">
-                    <Check size="14" /> Upper & lowercase letters
+                    <Check size="14" /> {{ t('profile.upperLowercase') }}
                   </li>
                   <li :class="{ valid: passwordReqs.number }">
-                    <Check size="14" /> At least one number
+                    <Check size="14" /> {{ t('profile.atLeastOneNumber') }}
                   </li>
                   <li :class="{ valid: passwordReqs.symbol }">
-                    <Check size="14" /> At least one symbol
+                    <Check size="14" /> {{ t('profile.atLeastOneSymbol') }}
                   </li>
                 </ul>
               </div>
