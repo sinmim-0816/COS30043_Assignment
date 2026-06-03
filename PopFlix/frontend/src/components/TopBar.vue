@@ -864,6 +864,23 @@ button {
         padding: 6px;
     }
 
+    .auth-buttons-group {
+        gap: 0.35rem;
+    }
+
+    .register-btn,
+    .login-btn {
+        padding: 6px 10px !important;
+        font-size: 0.78rem;
+        border-radius: 24px;
+    }
+
+    .login-btn .icon {
+        width: 16px !important;
+        height: 16px !important;
+        margin-right: 0.25rem !important;
+    }
+
     .desktop-nav, .desktop-profile {
         display: none;
     }

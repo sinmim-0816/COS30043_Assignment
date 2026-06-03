@@ -650,9 +650,13 @@ watch(locale, async () => {
                                     <div v-if="experienceData[0]" class="feature-card rounded-xl overflow-hidden position-relative">
                                         <v-img :src="experienceData[0].image_url" cover class="h-100 w-100 feature-img">
                                             <div class=" bottom-gradient"></div>
-                                            <div class="position-absolute bottom-0 pa-4 text-white z-index-2">
-                                                <h3 class="font-weight-bold mb-1 text-h6">{{ experienceData[0].title }}</h3>
-                                                <p class="text-caption text-grey-lighten-1 mb-0 text-truncate">{{ experienceData[0].subtitle || experienceData[0].description }}</p>
+                                            <div class="experience-overlay">
+                                                <h3 class="font-weight-bold mb-1 text-h6">
+                                                    {{ experienceData[0].title }}
+                                                </h3>
+                                                <p class="text-caption text-grey-lighten-1 mb-0">
+                                                    {{ experienceData[0].subtitle || experienceData[0].description }}
+                                                </p>
                                             </div>
                                         </v-img>
                                     </div>
@@ -673,9 +677,13 @@ watch(locale, async () => {
                                     <div class="feature-card rounded-xl overflow-hidden position-relative h-100">
                                         <v-img :src="experienceData[1].image_url" cover class="h-100 w-100 feature-img">
                                             <div class="fill-height bottom-gradient"></div>
-                                            <div class="position-absolute bottom-0 pa-6 text-white w-100 z-index-2">
-                                                <h3 class="font-weight-bold mb-2 text-h4" style="letter-spacing: -0.5px;">{{ experienceData[1].title }}</h3>
-                                                <p class="text-body-1 text-grey-lighten-1 mb-0" style="line-height: 1.4;">{{ experienceData[1].description }}</p>
+                                            <div class="experience-overlay large">
+                                                <h3 class="font-weight-bold mb-2 text-h4">
+                                                    {{ experienceData[1].title }}
+                                                </h3>
+                                                <p class="text-body-1 text-grey-lighten-1 mb-0">
+                                                    {{ experienceData[1].description }}
+                                                </p>
                                             </div>
                                         </v-img>
                                     </div>
@@ -1112,17 +1120,42 @@ watch(locale, async () => {
 }
 
 .feature-card {
-    border: 1px solid rgba(255,255,255,0.1);
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .feature-img {
-    transition: transform 0.7s ease;
+  position: relative;
 }
+
 .bottom-gradient {
-    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
-    width: 100% !important;
-    bottom: 0;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.9) 0%,
+    rgba(0,0,0,0.45) 45%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.experience-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 24px;
+  color: white;
+  z-index: 2;
+  max-width: 100%;
+}
+
+.experience-overlay p,
+.experience-overlay h3 {
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 

@@ -55,7 +55,7 @@ const syncFontSizeState = () => {
 
 const heroBackdropHeight = computed(() => {
     if (fontSizeMode.value === 'large') return '620px';
-    if (fontSizeMode.value === 'small') return '540px';
+    if (fontSizeMode.value === 'small') return '580px';
     return '570px';
 });
 const formattedReleaseDate = computed(() => {
