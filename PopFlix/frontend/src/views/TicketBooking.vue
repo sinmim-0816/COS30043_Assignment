@@ -17,11 +17,13 @@ import { PARKING_CONFIG } from '../utils/ParkingLayout';
 import { useBookingStore } from '../stores/booking';
 import SeatPreview3D from '@/components/SeatPreview3D.vue';
 import { useVehicles } from '../hook/useVehicles';
+import { useAppI18n } from '../utils/i18n';
 import FooterView from '@/components/FooterView.vue';
 
 const route = useRoute();
 const router = useRouter();
 const bookingStore = useBookingStore();
+const { t } = useAppI18n();
 const is3DPreviewOpen = ref(false);
 const lastSelectedSeat = computed(() => {
     if (selectedSeats.value && selectedSeats.value.length > 0) {
@@ -34,7 +36,7 @@ const selectedSeatPreviewLabel = computed(() => {
     if (selectedSeats.value.length === 1) {
         return selectedSeats.value[0].split('-').slice(-2).join('');
     }
-    return `${selectedSeats.value.length} seats`;
+    return `${selectedSeats.value.length} ${t('ticketBooking.seats')}`;
 });
 
 const { movie, loadMovieDetails, getImageURL, getCertificate, isLoading: isMovieLoading } = useMovieDetails();
@@ -412,7 +414,7 @@ const handleCheckoutStep = async () => {
                     <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
                 </v-progress-circular>
 
-                <p class="mt-6 loading-text">Loading...</p>
+                <p class="mt-6 loading-text">{{ t('common.loading') }}</p>
                 <div class="loading-bar"></div>
             </div>
         </div>
@@ -422,7 +424,7 @@ const handleCheckoutStep = async () => {
             <v-btn icon variant="tonal" color="white" class="back-btn" @click="router.back()">
                 <ChevronLeft />
             </v-btn>
-            <h2 class="mb-2 mt-5">Reserve Booking</h2>
+            <h2 class="mb-2 mt-5">{{ t('ticketBooking.reserveBooking') }}</h2>
 
             <v-transition-slide-y>
                 <v-alert v-if="apiError" type="error" variant="tonal" closable class="mb-4 rounded-xl mx-auto"
@@ -442,7 +444,7 @@ const handleCheckoutStep = async () => {
                         </v-col>
                         <v-col cols="12" md="10" class="ps-md-4 text-center text-md-start">
                             <h3>{{ movie?.title }}</h3>
-                            <p class="text-h6 text-red-accent-3">{{ experienceType }} EXPERIENCE</p>
+                            <p class="text-h6 text-red-accent-3">{{ experienceType }} {{ t('ticketBooking.experience') }}</p>
                             <v-chip v-for="id in movie?.genres" :key="id" variant="tonal" class="font-weight-bold me-2">
                                 {{ getGenreName(id) }}
                             </v-chip>
@@ -463,14 +465,14 @@ const handleCheckoutStep = async () => {
                             <h4 class="fs-6 font-italic text-grey-lighten-2 italic-quote mt-3">
                                 "{{ movie?.tagline || movie?.overview.split('.')[0] + '.' }}"
                             </h4>
-                            <p class="mt-4 fw-bold">Check your Details:</p>
+                            <p class="mt-4 fw-bold">{{ t('ticketBooking.checkDetails') }}</p>
                             <div v-if="selectedSession"
                                 class="session-info-bar pa-4 rounded-xl d-flex align-center flex-wrap gap-6 justify-center justify-md-start">
 
                                 <div class="d-flex align-center">
                                     <v-icon color="red-accent-3" class="me-2">mdi-map-marker</v-icon>
                                     <div>
-                                        <p class="info-label">Cinema</p>
+                                        <p class="info-label">{{ t('ticketBooking.cinema') }}</p>
                                         <p class="info-value">{{ selectedSession.cinema?.name }}</p>
                                     </div>
                                 </div>
@@ -480,7 +482,7 @@ const handleCheckoutStep = async () => {
                                 <div class="d-flex align-center">
                                     <v-icon color="blue-lighten-1" class="me-2">mdi-door-open</v-icon>
                                     <div>
-                                        <p class="info-label">Hall</p>
+                                        <p class="info-label">{{ t('ticketBooking.hall') }}</p>
                                         <p class="info-value">{{ selectedSession.hall_name }}</p>
                                     </div>
                                 </div>
@@ -490,7 +492,7 @@ const handleCheckoutStep = async () => {
                                 <div class="d-flex align-center">
                                     <v-icon color="green-accent-3" class="me-2">mdi-calendar-clock</v-icon>
                                     <div>
-                                        <p class="info-label">Schedule</p>
+                                        <p class="info-label">{{ t('ticketBooking.schedule') }}</p>
                                         <p class="info-value">
                                             {{ format(new Date(selectedSession.start_time), 'EEE, dd MMM') }} •
                                             <span>{{ format(new Date(selectedSession.start_time), 'HH:mm') }}</span>
@@ -508,7 +510,7 @@ const handleCheckoutStep = async () => {
                     <div class="selector-glass-panel d-flex align-center justify-space-between px-md-8 py-md-3">
 
                         <div class="selector-item date-group d-flex align-center">
-                            <span class="label-tiny me-md-4 fw-bold">Date</span>
+                            <span class="label-tiny me-md-4 fw-bold">{{ t('ticketBooking.date') }}</span>
                             <v-icon size="14" color="blue" class="me-2">mdi-chevron-left</v-icon>
                             <div class="mini-date-track d-flex gap-2">
                                 <div v-for="date in dateOptions" :key="date.toString()" class="mini-date-pill"
@@ -523,7 +525,7 @@ const handleCheckoutStep = async () => {
                         <v-divider vertical class="mx-6 opacity-10" height="40"></v-divider>
 
                         <div class="selector-item">
-                            <p class="label-tiny fw-bold">Experience</p>
+                            <p class="label-tiny fw-bold">{{ t('ticketBooking.experience') }}</p>
                             <v-menu>
                                 <template v-slot:activator="{ props }">
                                     <div v-bind="props" class="d-flex align-center cursor-pointer">
@@ -543,11 +545,11 @@ const handleCheckoutStep = async () => {
                         <v-divider vertical class="mx-6 opacity-10" height="40"></v-divider>
 
                         <div class="selector-item">
-                            <p class="label-tiny fw-bold">Time</p>
+                            <p class="label-tiny fw-bold">{{ t('ticketBooking.time') }}</p>
                             <v-menu>
                                 <template v-slot:activator="{ props }">
                                     <div v-bind="props" class="d-flex align-center cursor-pointer">
-                                        <span class="val-text">{{ selectedTime || 'Select Time' }}</span>
+                                        <span class="val-text">{{ selectedTime || t('ticketBooking.selectTime') }}</span>
                                         <v-icon size="16" class="ms-2" color="blue-lighten-1">mdi-chevron-down</v-icon>
                                     </div>
                                 </template>
@@ -562,11 +564,11 @@ const handleCheckoutStep = async () => {
                         <v-divider vertical class="mx-6 opacity-10" height="40"></v-divider>
 
                         <div class="selector-item">
-                            <p class="label-tiny text-blue fw-bold">Cinema</p>
+                            <p class="label-tiny text-blue fw-bold">{{ t('ticketBooking.cinema') }}</p>
                             <v-menu>
                                 <template v-slot:activator="{ props }">
                                     <div v-bind="props" class="d-flex align-center cursor-pointer">
-                                        <span class="val-text">{{ selectedCinema || 'Select Cinema' }}</span>
+                                        <span class="val-text">{{ selectedCinema || t('ticketBooking.selectCinema') }}</span>
                                         <v-icon size="16" class="ms-2" color="blue-lighten-1">mdi-chevron-down</v-icon>
                                     </div>
                                 </template>
@@ -592,16 +594,16 @@ const handleCheckoutStep = async () => {
                                         class="font-weight-black tracking-wide w-100 justify-center text-white"
                                         elevation="2">
                                         <v-icon start class="me-2 animate-pulse-slow">mdi-clock-outline</v-icon>
-                                        Seats Held: {{ bookingStore.countdownText }}
+                                        {{ t('ticketBooking.seatsHeld', { timer: bookingStore.countdownText }) }}
                                     </v-chip>
                                     <p class="text-caption text-center text-orange-lighten-3 mt-1">
-                                        Complete your order before this timer runs out!
+                                        {{ t('ticketBooking.reservationNotice') }}
                                     </p>
                                 </div>
                             </v-expand-transition>
                             <div class="checkout-sidebar pa-6 rounded-xl">
-                                <h3 class="font-weight-bold mb-2">Select Your Seats</h3>
-                                <div>{{ selectedSeats.length }} Seats</div>
+                                <h3 class="font-weight-bold mb-2">{{ t('ticketBooking.selectYourSeats') }}</h3>
+                                <div>{{ selectedSeats.length }} {{ t('ticketBooking.seats') }}</div>
                                 <div class=" gap-2 mb-8 text-grey seats">
 
                                     <span v-for="(seat, index) in selectedSeats" :key="seat">
@@ -612,10 +614,10 @@ const handleCheckoutStep = async () => {
 
                             <div class="ticket-details mb-10">
                                 <div class="d-flex justify-space-between align-center mb-4">
-                                    <span class="text-overline letter-spacing-1">Movie Tickets Details:</span>
+                                    <span class="text-overline letter-spacing-1">{{ t('ticketBooking.movieTicketDetails') }}</span>
                                 </div>
                                 <div class="summary-row d-flex justify-space-between mb-2">
-                                    <span class="text-grey">Date & Time</span>
+                                    <span class="text-grey">{{ t('ticketBooking.dateTime') }}</span>
                                     <span> {{ new Date(selectedDate).toLocaleDateString('en-US', {
                                         weekday: 'short',
                                         month: 'short',
@@ -624,27 +626,27 @@ const handleCheckoutStep = async () => {
                                     }) }}, {{ selectedTime }}</span>
                                 </div>
                                 <div class="summary-row d-flex justify-space-between mb-2">
-                                    <span class="text-grey">Ticket ({{ capitalizeFirst(selectedType) }})</span>
+                                    <span class="text-grey">{{ t('ticketBooking.ticketType', { type: capitalizeFirst(selectedType) }) }}</span>
                                     <span>{{ selectedSeats.length }} x {{ seatPrice }}</span>
                                 </div>
                                 <div class="summary-row d-flex justify-space-between font-weight-bold border-top pt-2">
-                                    <span>Total</span>
+                                    <span>{{ t('ticketBooking.total') }}</span>
                                     <span>RM {{ subtotal }}</span>
                                 </div>
                             </div>
 
                             <div class="payment-card p-3 rounded-xl mt-3">
                                 <div class="d-flex justify-space-between mb-2">
-                                    <span>Tickets</span>
+                                    <span>{{ t('ticketBooking.ticketsLabel') }}</span>
                                     <span class="font-weight-bold">{{ selectedSeats.length }}</span>
                                 </div>
                                 <div class="d-flex justify-space-between mb-4">
-                                    <span >Type</span>
+                                    <span >{{ t('ticketBooking.typeLabel') }}</span>
                                     <span class="font-weight-bold">{{ capitalizeFirst(selectedType) }}</span>
                                 </div>
 
                                 <div class="d-flex justify-space-between align-center ">
-                                    <span class="text-h6 fw-bold">Total Price</span>
+                                    <span class="text-h6 fw-bold">{{ t('ticketBooking.totalPrice') }}</span>
                                     <span class="text-h5 font-weight-black">RM {{ subtotal }}</span>
                                 </div>
 
@@ -654,13 +656,13 @@ const handleCheckoutStep = async () => {
                                     <span v-if="!isParkingSelected">
                                         <Plus size="18" class="me-2" />
                                     </span>
-                                    {{ isParkingSelected ? 'Parking Added' : 'Add Parking' }}
+                                    {{ isParkingSelected ? t('ticketBooking.parkingAdded') : t('ticketBooking.addParking') }}
                                 </v-btn>
 
                                 <v-btn v-if="!isParkingSelected" block color="grey-darken-4" rounded="pill" height="50"
                                     class="font-weight-bold" :disabled="selectedSeats.length === 0"
                                     :loading="isStoreLoading" @click="handleCheckoutStep">
-                                    BUY
+                                    {{ t('ticketBooking.buy') }}
                                 </v-btn>
                             </div>
                         </v-col>
@@ -669,12 +671,12 @@ const handleCheckoutStep = async () => {
                             <div class="map-container pa-md-10 rounded-xl ms-md-5">
                                 <div class="screen-wrapper">
                                     <div class="curved-screen"></div>
-                                    <p class="screen-text">SCREEN</p>
+                                    <p class="screen-text">{{ t('ticketBooking.screen') }}</p>
                                 </div>
                                 <div class="d-flex justify-end mb-4">
                                     <v-btn variant="tonal" prepend-icon="mdi-cube-outline"
                                     @click="is3DPreviewOpen = true" :disabled="selectedSeats.length === 0">
-                                        View from Seat
+                                        {{ t('ticketBooking.viewFromSeat') }}
                                     </v-btn>
                                 </div>
                                 
@@ -703,20 +705,17 @@ const handleCheckoutStep = async () => {
                                 <div class="d-flex justify-center gap-4 mt-12 flex-wrap">
                                     <div class="d-flex align-center">
                                         <div class="dot available"></div> <small
-                                            class="text-grey-lighten-1">Available</small>
+                                            class="text-grey-lighten-1">{{ t('ticketBooking.available') }}</small>
                                     </div>
                                     <div class="d-flex align-center">
                                         <div class="dot selected"></div> <small
-                                            class="text-grey-lighten-1">Selected</small>
+                                            class="text-grey-lighten-1">{{ t('ticketBooking.selected') }}</small>
                                     </div>
                                     <div class="d-flex align-center">
-                                        <div class="dot pending-hold"></div> <small class="text-orange-accent-2">Holding
-                                            (Checking
-                                            Out)</small>
+                                        <div class="dot pending-hold"></div> <small class="text-orange-accent-2">{{ t('ticketBooking.holding') }}</small>
                                     </div>
                                     <div class="d-flex align-center">
-                                        <div class="dot sold-out"></div> <small class="text-grey-darken-1">Sold
-                                            Out</small>
+                                        <div class="dot sold-out"></div> <small class="text-grey-darken-1">{{ t('ticketBooking.soldOut') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -737,7 +736,7 @@ const handleCheckoutStep = async () => {
                                             class="me-4" />
 
                                         <div>
-                                            <div class="text-caption text-grey">Your Car</div>
+                                            <div class="text-caption text-grey">{{ t('ticketBooking.yourCar') }}</div>
                                             <v-menu activator="parent" transition="slide-y-transition">
                                                 <template v-slot:activator="{ props }">
                                                     <div v-bind="props"
@@ -751,9 +750,7 @@ const handleCheckoutStep = async () => {
                                                 <v-list bg-color="#1a1a24" theme="dark"
                                                     class="border-glass rounded-xl pa-2 mt-1" min-width="200px">
                                                     <v-list-item v-if="userVehicles.length === 0" disabled>
-                                                        <v-list-item-title class="text-caption text-grey">No vehicles
-                                                            saved
-                                                            yet</v-list-item-title>
+                                                        <v-list-item-title class="text-caption text-grey">{{ t('ticketBooking.noVehiclesSaved') }}</v-list-item-title>
                                                     </v-list-item>
 
                                                     <v-list-item v-for="(v, idx) in userVehicles"
@@ -774,12 +771,12 @@ const handleCheckoutStep = async () => {
                                         </div>
                                     </div>
                                     <div class="spot-info-pill pa-3 px-6 rounded-xl">
-                                        <div class="text-caption text-grey">Your Spot</div>
-                                        <div class="fw-bold text-blue">{{ selectedSpot || 'Not Selected' }}
+                                        <div class="text-caption text-grey">{{ t('ticketBooking.yourSpot') }}</div>
+                                        <div class="fw-bold text-blue">{{ selectedSpot || t('ticketBooking.notSelected') }}
                                         </div>
                                     </div>
                                     <div v-if="parkingTimeWindow" class="spot-info-pill pa-3 px-6 rounded-xl">
-                                        <div class="text-caption text-grey">Free Parking Duration</div>
+                                        <div class="text-caption text-grey">{{ t('ticketBooking.freeParkingDuration') }}</div>
                                         <div class="fw-bold text-green-accent-3">
                                             {{ parkingTimeWindow.start }} - {{ parkingTimeWindow.end }}
                                         </div>
@@ -787,7 +784,7 @@ const handleCheckoutStep = async () => {
                                 </div>
 
                                 <div class="d-flex align-center gap-4 my-3">
-                                    <span class="text-grey me-4">Level</span>
+                                    <span class="text-grey me-4">{{ t('ticketBooking.level') }}</span>
                                     <v-btn v-for="lvl in currentParking.levels" :key="lvl"
                                         :color="selectedLevel === lvl ? 'blue-lighten-3' : 'grey-darken-3'"
                                         variant="flat" size="small" rounded="lg" class="px-4"
@@ -818,19 +815,19 @@ const handleCheckoutStep = async () => {
                                 <div class="d-flex justify-center gap-4 mt-3 flex-wrap">
                                     <div class="d-flex align-center">
                                         <div class="dot parking-available"></div>
-                                        <small class="text-grey-lighten-1">Available Bay</small>
+                                        <small class="text-grey-lighten-1">{{ t('ticketBooking.availableBay') }}</small>
                                     </div>
                                     <div class="d-flex align-center">
                                         <div class="dot parking-selected"></div>
-                                        <small class="text-grey-lighten-1">Your Selection</small>
+                                        <small class="text-grey-lighten-1">{{ t('ticketBooking.yourSelection') }}</small>
                                     </div>
                                     <div class="d-flex align-center">
                                         <div class="dot parking-hold-legend"></div>
-                                        <small class="text-orange-accent-2">Reserved Lock (Holding)</small>
+                                        <small class="text-orange-accent-2">{{ t('ticketBooking.reservedLockHolding') }}</small>
                                     </div>
                                     <div class="d-flex align-center">
                                         <div class="dot parking-sold-legend"></div>
-                                        <small class="text-grey-darken-1">Occupied Bay</small>
+                                        <small class="text-grey-darken-1">{{ t('ticketBooking.occupiedBay') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -838,11 +835,11 @@ const handleCheckoutStep = async () => {
 
                         <v-col cols="12" lg="4">
                             <div class="order-sidebar pa-8">
-                                <h4 class="text-h4 mb-8">Checkout</h4>
+                                <h4 class="text-h4 mb-8">{{ t('ticketBooking.checkout') }}</h4>
 
                                 <div class="order-group mb-8">
                                     <div class="d-flex justify-space-between align-center mb-2">
-                                        <span class="text-overline">Movie Ticket Details: </span>
+                                        <span class="text-overline">{{ t('ticketBooking.movieTicketDetails') }}</span>
                                     </div>
                                     <div class="d-flex justify-space-between text-caption text-grey">
                                         <span>{{ selectedSeats.length }} Seats</span>
@@ -857,21 +854,21 @@ const handleCheckoutStep = async () => {
 
                                 <div class="order-group mt-4">
                                     <div class="d-flex justify-space-between align-center mb-2">
-                                        <span>Parking Details:</span>
+                                        <span>{{ t('ticketBooking.parkingDetails') }}</span>
                                     </div>
                                     <div class="d-flex justify-space-between text-caption text-grey">
-                                        <span>Spot</span>
-                                        <span class="text-blue">{{ selectedSpot || 'Not selected' }}</span>
+                                        <span>{{ t('ticketBooking.spot') }}</span>
+                                        <span class="text-blue">{{ selectedSpot || t('ticketBooking.notSelectedLower') }}</span>
                                     </div>
                                 </div>
 
                                 <div class="total-card-final pa-6 mt-3 rounded-xl">
                                     <div class="d-flex justify-space-between mb-2">
-                                        <span class="fw-bold">Movie Tickets</span>
+                                        <span class="fw-bold">{{ t('ticketBooking.movieTickets') }}</span>
                                         <span>RM {{ subtotal }}</span>
                                     </div>
                                     <div class="d-flex justify-space-between mb-4">
-                                        <span class=" fw-bold">Free Parking</span>
+                                        <span class=" fw-bold">{{ t('ticketBooking.freeParking') }}</span>
                                         <span>
                                             {{ parkingTimeWindow.start }} - {{ parkingTimeWindow.end }}
                                         </span>
@@ -885,12 +882,11 @@ const handleCheckoutStep = async () => {
                                         <span>
                                             <Plus size="18" class="me-2" />
                                         </span>
-                                        Add Vehicles
+                                        {{ t('ticketBooking.addVehicles') }}
                                     </v-btn>
                                     <v-btn :disabled="selectedSpot === null" block color="grey-darken-4" rounded="pill"
                                         height="55" class="font-weight-bold mt-3" :loading="isStoreLoading"
-                                        @click="handleCheckoutStep">To
-                                        Pay</v-btn>
+                                        @click="handleCheckoutStep">{{ t('ticketBooking.toPay') }}</v-btn>
                                 </div>
                             </div>
                         </v-col>
@@ -900,7 +896,7 @@ const handleCheckoutStep = async () => {
             <v-dialog v-model="is3DPreviewOpen" fullscreen transition="dialog-bottom-transition">
                 <v-card class="seat-preview-dialog" theme="dark">
                     <v-card-title class="d-flex justify-space-between align-center seat-preview-header">
-                        <span>Seat View: {{ selectedSeatPreviewLabel }}</span>
+                        <span>{{ t('ticketBooking.seatView', { label: selectedSeatPreviewLabel }) }}</span>
                         <v-btn icon variant="text" @click="is3DPreviewOpen = false">
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
@@ -919,8 +915,7 @@ const handleCheckoutStep = async () => {
                 <v-card-item class="pa-5 border-bottom  bg-matte-black">
                     <div class="d-flex justify-space-between align-center">
                         <div>
-                            <v-card-title class="text-h5 font-weight-black text-color pa-0">Manage
-                                Vehicles</v-card-title>
+                            <v-card-title class="text-h5 font-weight-black text-color pa-0">{{ t('ticketBooking.manageVehicles') }}</v-card-title>
                         </div>
                         <v-btn icon size="small" variant="tonal" color="grey-lighten-1" class="closeBtn"
                             @click="isVehicleModalOpen = false">
@@ -934,9 +929,9 @@ const handleCheckoutStep = async () => {
                         slider-color="blue-lighten-2" class="
                         
                         -soft border-bottom mb-4">
-                        <v-tab value="new">New Vehicle</v-tab>
+                        <v-tab value="new">{{ t('ticketBooking.newVehicle') }}</v-tab>
                         <v-tab value="saved">
-                            Saved Vehicles ({{ userVehicles.length }})
+                            {{ t('ticketBooking.savedVehicles', { count: userVehicles.length }) }}
                         </v-tab>
                     </v-tabs>
 
@@ -973,20 +968,18 @@ const handleCheckoutStep = async () => {
                                 </div>
                             </div>
 
-                            <v-label class=" text-grey-lighten-1 mb-1 ">Car Model Specification</v-label>
-                            <v-text-field v-model="vehicleForm.model" placeholder="e.g. Proton X50, Honda Civic"
+                            <v-label class=" text-grey-lighten-1 mb-1 ">{{ t('ticketBooking.carModelSpecification') }}</v-label>
+                            <v-text-field v-model="vehicleForm.model" :placeholder="t('ticketBooking.modelPlaceholder')"
                                 prepend-inner-icon="mdi-car-info" variant="solo" flat rounded="lg" density="comfortable"
                                 class=" text-white"></v-text-field>
 
-                            <v-label class="text-grey-lighten-1 mb-1 ">Plate
-                                Reference String</v-label>
-                            <v-text-field v-model="vehicleForm.plateNumber" placeholder="e.g. QAA 1234 A"
+                            <v-label class="text-grey-lighten-1 mb-1 ">{{ t('ticketBooking.plateReferenceString') }}</v-label>
+                            <v-text-field v-model="vehicleForm.plateNumber" :placeholder="t('ticketBooking.platePlaceholder')"
                                 prepend-inner-icon="mdi-card-text-outline" variant="solo" flat rounded="lg"
                                 density="comfortable" class="text-white"
                                 @update:model-value="val => vehicleForm.plateNumber = val.toUpperCase()"></v-text-field>
 
-                            <v-label class="text-grey-lighten-1 mb-2">Select
-                                Shell Aesthetic Tone</v-label>
+                            <v-label class="text-grey-lighten-1 mb-2">{{ t('ticketBooking.selectShellAestheticTone') }}</v-label>
                             <div class="d-flex gap-2 flex-wrap mb-2">
                                 <div v-for="color in ['#448aff', '#ff5252', '#00e676', '#fb8c00', '#ffffff', '#212121', '#ce93d8', '#80cbc4']"
                                     :key="color" class="color-swatch-pill cursor-pointer"
@@ -1000,13 +993,11 @@ const handleCheckoutStep = async () => {
                         </v-window-item>
 
                         <v-window-item value="saved" class="fade-in-content">
-                            <span class="text-grey-lighten-1 d-block mb-3">Your
-                                Registered Vehicles Fleet</span>
+                            <span class="text-grey-lighten-1 d-block mb-3">{{ t('ticketBooking.registeredVehiclesFleet') }}</span>
 
                             <div v-if="userVehicles.length === 0" class="text-center py-8 bg-glass  rounded-xl px-4">
                                 <v-icon size="36" color="grey-darken-2" class="mb-2">mdi-car-off</v-icon>
-                                <p class="text-body-2 text-grey">No vehicles registered in storage memory cache loops
-                                    yet.</p>
+                                <p class="text-body-2 text-grey">{{ t('ticketBooking.noVehiclesRegistered') }}</p>
                             </div>
 
                             <div v-else
@@ -1027,7 +1018,7 @@ const handleCheckoutStep = async () => {
                                     <div class="d-flex align-center gap-2" @click.stop>
                                         <v-btn icon="mdi-trash-can-outline" variant="text" size="small"
                                             color="red-lighten-2" class="delete-fleet-btn hover-bg-red"
-                                            title="Purge vehicle metadata"
+                                            :title="t('ticketBooking.purgeVehicleMetadata')"
                                             @click="deleteVehicleInstance(v.id, idx)"></v-btn>
                                     </div>
                                 </div>
@@ -1038,12 +1029,12 @@ const handleCheckoutStep = async () => {
 
                 <v-card-actions class="pa-4 border-top bg-matte-black d-flex gap-2">
                     <v-btn class="btn-cancel text-none font-weight-bold flex-1" variant="outlined" rounded="lg"
-                        height="40" @click="isVehicleModalOpen = false">Cancel</v-btn>
+                        height="40" @click="isVehicleModalOpen = false">{{ t('ticketBooking.cancel') }}</v-btn>
 
                     <v-btn v-if="activeVehicleTab === 'new'" class="btn-save text-none font-weight-bold flex-2"
                         color="#448aff" rounded="lg" height="40" variant="flat"
                         :disabled="!vehicleForm.model || !vehicleForm.plateNumber" @click="saveVehicle">
-                        <v-icon start size="16">mdi-content-save-move</v-icon> Save Vehicle
+                        <v-icon start size="16">mdi-content-save-move</v-icon> {{ t('ticketBooking.saveVehicle') }}
                     </v-btn>
                 </v-card-actions>
             </v-card>

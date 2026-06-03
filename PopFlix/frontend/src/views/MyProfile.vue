@@ -632,18 +632,26 @@ const passStrengthText = computed(() => {
           class="premium-cta-btn btn-edit"
         >
           <SquarePen size="16" class="me-2" />
-            {{ t('profile.editProfile') }}
-          >
-            {{ t('profile.cancel') }}
-          </button>
+          {{ t('profile.editProfile') }}
+        </button>
 
-          <button
-            @click="saveProfile"
-            class="premium-cta-btn btn-save"
-          >
-            {{ t('profile.saveChanges') }}
-          </button>
-        </template>
+        <button
+          v-if="isEditing"
+          @click="cancelEdit"
+          class="premium-cta-btn btn-cancel"
+          type="button"
+        >
+          {{ t('profile.cancel') }}
+        </button>
+
+        <button
+          v-if="isEditing"
+          @click="saveProfile"
+          class="premium-cta-btn btn-save"
+          type="button"
+        >
+          {{ t('profile.saveChanges') }}
+        </button>
       </div>
     </header>
 
@@ -925,15 +933,16 @@ const passStrengthText = computed(() => {
             >
 
               <div class="ticket-poster-container">
-              <img 
-                :src="resolveBackendAssetPath(ticket.design_image)" 
-                    :alt="ticket.booking?.showtime?.movie?.title || t('profile.ticketArt')"
-              
-              <button 
-                class="ticket-share-floating-btn" 
-                @click.stop="handleShare(ticket)"
-                title="Share Ticket Design"
-              >
+                <img 
+                  :src="resolveBackendAssetPath(ticket.design_image)" 
+                  :alt="ticket.booking?.showtime?.movie?.title || t('profile.ticketArt')"
+                />
+
+                <button 
+                  class="ticket-share-floating-btn" 
+                  @click.stop="handleShare(ticket)"
+                  title="Share Ticket Design"
+                >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               </button>
             </div>
@@ -997,8 +1006,8 @@ const passStrengthText = computed(() => {
                   v-if="review.booking?.showtime?.movie?.poster_path"
                   :src="`https://image.tmdb.org/t/p/w200${review.booking.showtime.movie.poster_path}`" 
                   class="thumbnail-img"
-                      :alt="t('profile.reviewMovieAlt')" 
-                </div>
+                  :alt="t('profile.reviewMovieAlt')" 
+                />
               </div>
 
               <div class="review-content-main-flow">
@@ -1722,7 +1731,7 @@ const passStrengthText = computed(() => {
 .ticket-card-ui { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
 .ticket-visual-stub { background-color: #f1f5f9; height: 110px; position: relative; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #64748b; font-weight: 500; }
 .stub-notch { position: absolute; left: -8px; top: calc(50% - 8px); width: 16px; height: 16px; border-radius: 50%; background-color: #f8fafc; border-right: 1px solid #e2e8f0; }
-.ticket-preview-image-placeholder { text-transform: uppercase; font-size: 0.75rem; tracking: 0.05em; color: #94a3b8; }
+.ticket-preview-image-placeholder { text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; color: #94a3b8; }
 .ticket-meta-info { padding: 12px; }
 .ticket-meta-info h4 { margin: 0 0 4px 0; font-size: 0.95rem; color: #0f172a; font-weight: 600; }
 .ticket-meta-info p { margin: 0; font-size: 0.8rem; color: #64748b; }
