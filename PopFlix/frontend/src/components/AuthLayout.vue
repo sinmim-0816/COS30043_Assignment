@@ -26,6 +26,7 @@ const carouselTitleHtml = computed(() =>
   )
 );
 const currentLanguageLabel = computed(() => getLocaleLabel(locale.value));
+const authContentKey = computed(() => locale.value);
 const languageOptions = computed(() =>
   supportedLocales.map((value) => ({
     value,
@@ -100,7 +101,9 @@ onUnmounted(() => {
       </v-col>
 
       <v-col cols="12" md="6" class="d-flex align-center justify-center bg-form-dark">
-        <slot />
+        <div class="auth-slot-shell" :key="authContentKey">
+          <slot />
+        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -182,6 +185,10 @@ onUnmounted(() => {
 
 .bg-form-dark {
   background-color: var(--bg-color);
+}
+
+.auth-slot-shell {
+  width: 100%;
 }
 
 .cinematic-img {
