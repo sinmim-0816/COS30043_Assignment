@@ -2373,6 +2373,16 @@ const passStrengthText = computed(() => {
   border-radius: 50px;
   padding: 6px;
   gap: 4px;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.faq-toggle-pill::-webkit-scrollbar {
+  display: none;
 }
 
 .faq-toggle-btn {
@@ -2390,6 +2400,7 @@ const passStrengthText = computed(() => {
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .faq-toggle-btn:hover {
@@ -2893,6 +2904,15 @@ const passStrengthText = computed(() => {
   .navigation-tab-item {
     min-width: max-content;
     padding-inline: 12px;
+  }
+
+  .faq-toggle-pill {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .faq-toggle-btn {
+    padding: 10px 18px;
   }
 
   .ticket-grid {

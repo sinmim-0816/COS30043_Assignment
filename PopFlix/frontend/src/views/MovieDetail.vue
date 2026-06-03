@@ -682,7 +682,17 @@ const getClipClass = (index) => {
 }
 
 .tagline {
-    width: 600px;
+    max-width: 600px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+
+    line-height: 1.5;
+    max-height: calc(1.5em * 2);
 }
 
 .position-relative {

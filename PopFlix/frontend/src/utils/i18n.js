@@ -1414,7 +1414,18 @@ const getStoredLocale = () => {
     return DEFAULT_LOCALE;
   }
 
-  return normalizeLocale(localStorage.getItem(LOCALE_KEY));
+  const stored = localStorage.getItem(LOCALE_KEY);
+  if (stored) {
+    return normalizeLocale(stored);
+  }
+
+  // Fallback to browser language preference
+  const browserLang = navigator.language?.split('-')[0]?.toLowerCase();
+  if (browserLang && SUPPORTED_LOCALES.includes(browserLang)) {
+    return browserLang;
+  }
+
+  return DEFAULT_LOCALE;
 };
 
 export const currentLocale = ref(getStoredLocale());
@@ -1439,7 +1450,9 @@ export const applyLocalePreference = (value = DEFAULT_LOCALE) => {
 };
 
 export const initLocalePreference = () => {
-  applyLocalePreference(getStoredLocale());
+  const stored = getStoredLocale();
+  applyLocalePreference(stored);
+  setDocumentLocale(stored);
 };
 
 export const setLocale = (value) => applyLocalePreference(value);
@@ -1451,6 +1464,10 @@ const resolveMessage = (locale, path) => {
   for (const segment of segments) {
     cursor = cursor?.[segment];
     if (cursor === undefined) {
+      // Log missing translation key for debugging
+      if (typeof window !== 'undefined' && window.__DEBUG_I18N__) {
+        console.warn(`Missing translation for locale '${locale}': ${path}`);
+      }
       return undefined;
     }
   }

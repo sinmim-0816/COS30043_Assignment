@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { movieRepository } from '../services/movieRepository';
 import { IMAGE_BASE_URL } from '../api/client';
 import { youtubeSearch } from '../api/client';
-import { currentLocale, getTmdbLanguageCode, useAppI18n } from '../utils/i18n';
+import { currentLocale, getTmdbLanguageCode } from '../utils/i18n';
 
 const featuredMovies = ref([]);
 const error = ref(null);
@@ -11,7 +11,6 @@ let isFetching = false;
 const comingSoonMovies = ref([]);
 const isComingSoonLoaded = ref(false);
 const allMovies = ref([]);
-const { locale } = useAppI18n();
 const allMoviesMeta = ref({
     page: 1,
     limit: 25,
