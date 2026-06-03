@@ -4,10 +4,36 @@ import { useRoute, useRouter } from 'vue-router';
 import { useResetPassword } from '../hook/useResetPassword';
 import AuthLayout from '@/components/AuthLayout.vue';
 import { Lock, Info, Eye, EyeOff, Check, X } from 'lucide-vue-next';
+import { useAppI18n } from '../utils/i18n';
 
 const route = useRoute();
 const router = useRouter();
 const { handleReset, isLoading, errorMessage, verifyToken } = useResetPassword();
+const { t, locale } = useAppI18n();
+const localeCopy = {
+    en: {
+        weak: 'Weak',
+        fair: 'Fair',
+        good: 'Good',
+        strong: 'Strong',
+        resetSuccess: 'Password successfully reset! Please login.',
+    },
+    zh: {
+        weak: '弱',
+        fair: '中等',
+        good: '良好',
+        strong: '强',
+        resetSuccess: '密码已成功重置！请登录。',
+    },
+    ms: {
+        weak: 'Lemah',
+        fair: 'Sederhana',
+        good: 'Baik',
+        strong: 'Kuat',
+        resetSuccess: 'Kata laluan berjaya ditetapkan semula! Sila log masuk.',
+    },
+};
+const authLocale = computed(() => localeCopy[locale.value] || localeCopy.en);
 
 const password = ref('');
 const confirmPassword = ref('');
@@ -48,15 +74,15 @@ const strengthColor = computed(() => {
 const strengthText = computed(() => {
     const count = Object.values(reqs.value).filter(Boolean).length;
     if (count === 0) return '';
-    if (count === 1) return 'Weak';
-    if (count === 2) return 'Fair';
-    if (count === 3) return 'Good';
-    return 'Strong';
+    if (count === 1) return authLocale.value.weak;
+    if (count === 2) return authLocale.value.fair;
+    if (count === 3) return authLocale.value.good;
+    return authLocale.value.strong;
 });
 
 const passwordError = computed(() => {
     if (password.value.length > 0 && !isPassValid.value) {
-        return 'Password does not meet requirements';
+        return t('auth.passwordRequirement');
     }
     return '';
 });
@@ -65,7 +91,7 @@ onMounted(async () => {
     if (!token) {
         isCheckingToken.value = false;
         isTokenValid.value = false;
-        tokenError.value = "No reset token provided in the link.";
+        tokenError.value = t('auth.noResetToken');
         router.push({
             path: '/login',
             state: { errorMessage: tokenError.value }
@@ -80,7 +106,7 @@ onMounted(async () => {
         isTokenValid.value = true;
     } catch (error) {
         isTokenValid.value = false;
-        const msg = error.response?.data?.message || errorMessage.value || "This reset link is invalid or has expired.";
+        const msg = error.response?.data?.message || errorMessage.value || t('auth.invalidLink');
         
         router.replace({
             path: '/login',
@@ -93,12 +119,12 @@ onMounted(async () => {
 
 const submit = async () => {
     if (!isConfirmMatch.value) {
-        errorMessage.value = "Passwords do not match";
+        errorMessage.value = t('auth.passwordMismatch');
         return;
     }
 
     if (!isPassValid.value) {
-        errorMessage.value = "Password does not meet requirements";
+        errorMessage.value = t('auth.passwordRequirement');
         return;
     }
 
@@ -106,7 +132,7 @@ const submit = async () => {
         await handleReset(token, password.value);
         router.push({
             path: '/login',
-            state: { successMessage: 'Password successfully reset! Please login.' }
+            state: { successMessage: authLocale.value.resetSuccess }
         });
     } catch (e) {
         console.log("Error reset Password:", e)
@@ -118,14 +144,14 @@ const submit = async () => {
     <AuthLayout>
         <v-card flat class="login-card bg-transparent" width="450" height="100vh">
             <div class="text-center text-md-left">
-                <h3 class="mt-4 fw-bold">Set New Password</h3>
+                <h3 class="mt-4 fw-bold">{{ t('auth.setNewPassword') }}</h3>
                 <p class="text-grey-darken-1 mt-2">
-                    Enter your new password below.
+                    {{ t('auth.newPasswordSubtitle') }}
                 </p>
             </div>
 
             <v-form @submit.prevent="submit">
-                <label class="premium-label mb-2">New Password</label>
+                <label class="premium-label mb-2">{{ t('auth.newPassword') }}</label>
                 <div class="input-group">
                     <v-text-field v-model="password" :type="showPassword ? 'text' : 'password'"
                         @focus="isTypingPassword = true" @blur="isTypingPassword = false" placeholder="••••••••"
@@ -167,22 +193,22 @@ const submit = async () => {
                         <!-- Requirements List -->
                         <ul class="requirements-list">
                             <li :class="{ 'valid': reqs.length }">
-                                <Check size="14" /> At least 8 characters
+                                <Check size="14" /> {{ t('auth.atLeastEight') }}
                             </li>
                             <li :class="{ 'valid': reqs.case }">
-                                <Check size="14" /> Mix of upper and lower case
+                                <Check size="14" /> {{ t('auth.mixCase') }}
                             </li>
                             <li :class="{ 'valid': reqs.number }">
-                                <Check size="14" /> At least one number
+                                <Check size="14" /> {{ t('auth.atLeastOneNumber') }}
                             </li>
                             <li :class="{ 'valid': reqs.symbol }">
-                                <Check size="14" /> At least one symbol (eg. &%$#)
+                                <Check size="14" /> {{ t('auth.atLeastOneSymbol') }}
                             </li>
                         </ul>
                     </div>
                 </v-expand-transition>
 
-                <label class="premium-label mb-2 mt-4">Confirm New Password</label>
+                <label class="premium-label mb-2 mt-4">{{ t('auth.confirmNewPassword') }}</label>
                 <div class="input-group">
                     <v-text-field v-model="confirmPassword" :type="showConPassword ? 'text' : 'password'"
                         placeholder="••••••••" variant="outlined" density="comfortable" rounded="lg"
@@ -208,15 +234,14 @@ const submit = async () => {
                 </p>
                 <v-btn block color="red-accent-3" height="54" class="login-btn mb-3 mt-4" :loading="isLoading"
                     type="submit">
-                    Update Password
+                    {{ t('auth.updatePassword') }}
                 </v-btn>
 
                 <div class="text-center mt-3 d-flex flex-row justify-center">
                     <p class="text-grey text-caption">
-                        Remembered it?
+                        {{ t('auth.rememberedIt') }}
                     </p>
-                    <router-link to="/login" class="text-grey text-decoration-none hover-red ms-2 p-0">Login
-                    </router-link>
+                    <router-link to="/login" class="text-grey text-decoration-none hover-red ms-2 p-0">{{ t('auth.signIn') }}</router-link>
                 </div>
             </v-form>
         </v-card>

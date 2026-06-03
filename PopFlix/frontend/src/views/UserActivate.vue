@@ -1,13 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Info, CheckCircle, AlertCircle, Loader2 } from 'lucide-vue-next';
 import { useActivate } from '../hook/useActivate';
 import AuthLayout from '@/components/AuthLayout.vue';
+import { useAppI18n } from '../utils/i18n';
 
 const route = useRoute();
 const router = useRouter();
 const { isLoading, isSuccess, message, activate } = useActivate();
+const { t, locale } = useAppI18n();
+const localeCopy = {
+    en: { activationSuccess: 'You can now log in to your account.' },
+    zh: { activationSuccess: '您现在可以登录您的账户。' },
+    ms: { activationSuccess: 'Anda kini boleh log masuk ke akaun anda.' },
+};
+const authLocale = computed(() => localeCopy[locale.value] || localeCopy.en);
 
 const showAuthBadge = ref(false);
 
@@ -23,7 +31,7 @@ onMounted(async () => {
             }, 3000);
         }
     } else {
-        message.value = "No activation link provided.";
+        message.value = t('auth.noActivationLink');
         isSuccess.value = false;
         showAuthBadge.value = true;
     }
@@ -37,7 +45,7 @@ onMounted(async () => {
             <div class="premium-toast-badge d-flex align-center gap-2" :class="isSuccess ? 'success' : 'not-success'">
                 <component :is="isSuccess ? CheckCircle : Info" size="20"
                     :class="isSuccess ? 'text-white' : 'text-red'" />
-                <span class="badge-text">{{ isSuccess ? 'Success! You can login with your account now!' : 'Error' }}</span>
+                <span class="badge-text">{{ isSuccess ? t('auth.setupSuccess') : t('auth.verificationFailed') }}</span>
             </div>
         </div>
     </v-snackbar>
@@ -46,15 +54,15 @@ onMounted(async () => {
         <v-card flat class="login-card bg-transparent" width="450">
             
             <div class="text-center text-md-left mb-8">
-                <h3 class="mt-2 fw-bold">Account Activation</h3>
+                <h3 class="mt-2 fw-bold">{{ t('auth.activationTitle') }}</h3>
                 <p class="text-grey-darken-1 mt-2">
-                    {{ isLoading ? 'Verifying your identity...' : 'Almost there!' }}
+                    {{ isLoading ? t('auth.verifyingIdentity') : t('auth.almostThere') }}
                 </p>
             </div>
 
             <div v-if="isLoading" class="text-center py-10">
                 <Loader2 size="48" class="text-red-accent-3 animate-spin mx-auto mb-4" />
-                <p class="text-grey">Communicating with our secure server...</p>
+                <p class="text-grey">{{ t('auth.communicatingSecurely') }}</p>
             </div>
 
             <div v-else class="text-center py-5">
@@ -66,10 +74,10 @@ onMounted(async () => {
                 />
                 
                 <h3 class="fw-bold mb-2">
-                    {{ isSuccess ? 'All Setup!' : 'Verification Failed' }}
+                    {{ isSuccess ? t('auth.setupSuccess') : t('auth.verificationFailed') }}
                 </h3>
                 <p class="text-grey-darken-1 mb-6">
-                    {{ isSuccess ? 'You can now log in to your account.' : message }}
+                    {{ isSuccess ? authLocale.value.activationSuccess : message }}
                 </p>
 
                 <v-btn 
@@ -79,7 +87,7 @@ onMounted(async () => {
                     class="login-btn text-white" 
                     to="/login"
                 >
-                    {{ isSuccess ? 'Login' : 'Back to Home' }}
+                    {{ isSuccess ? t('auth.loginNow') : t('auth.backToHome') }}
                 </v-btn>
             </div>
         </v-card>

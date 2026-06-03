@@ -2,11 +2,13 @@
 import { ref, onMounted } from 'vue';
 import { Mail, Lock, Eye, EyeOff, Info, CheckCircle } from 'lucide-vue-next';
 import { useRoute, useRouter } from 'vue-router';
+import { useAppI18n } from '../utils/i18n';
 
 // Import other hook and components
 import { useLogin } from '../hook/useLogin';
 import AuthLayout from '@/components/AuthLayout.vue';
 
+const { t } = useAppI18n();
 const { email, password, isLoading, errorMessage, handleLogin } = useLogin();
 const showPassword = ref(false);
 const rememberMe = ref(false);
@@ -26,7 +28,7 @@ onMounted(() => {
     }
 
     if (route.query.reason === 'auth_required') {
-        authMessage.value = 'Please sign in to access this page';
+        authMessage.value = t('auth.authRequired');
         isSuccess.value = false;
         showAuthBadge.value = true;
         router.replace({ query: {} });
@@ -70,19 +72,19 @@ const onFormSubmit = async () => {
         </div>
     </v-snackbar>
     <AuthLayout>
-        <v-card flat class="login-card bg-transparent" width="450" height="100vh">
+            <v-card flat class="login-card bg-transparent" width="450" height="100vh">
 
             <div class="text-center text-md-left">
-                <h3 class="mt-2 fw-bold">Welcome Back</h3>
+                <h3 class="mt-2 fw-bold">{{ t('auth.loginWelcome') }}</h3>
                 <p class="text-grey-darken-1 mt-2">
-                    Enter your credentials to access your account.
+                    {{ t('auth.loginSubtitle') }}
                 </p>
             </div>
 
-            <v-form @submit.prevent="handleLogin">
-                <label class="premium-label">Email Address</label>
+            <v-form @submit.prevent="onFormSubmit">
+                <label class="premium-label">{{ t('auth.emailAddress') }}</label>
                 <div class="input-group mb-3">
-                    <v-text-field v-model="email" placeholder="you@example.com" variant="outlined" density="comfortable"
+                    <v-text-field v-model="email" :placeholder="t('auth.emailAddress').toLowerCase()" variant="outlined" density="comfortable"
                         rounded="lg" color="red-accent-3" class="mt-2" hide-details>
                         <template v-slot:prepend-inner>
                             <Mail size="18" class="text-grey" />
@@ -90,9 +92,9 @@ const onFormSubmit = async () => {
                     </v-text-field>
                 </div>
 
-                <label class="premium-label">Password</label>
+                <label class="premium-label">{{ t('auth.password') }}</label>
                 <div class="input-group mb-8">
-                    <v-text-field v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
+                    <v-text-field v-model="password" :type="showPassword ? 'text' : 'password'" :placeholder="t('auth.password')"
                         variant="outlined" density="comfortable" rounded="lg" color="red-accent-3"
                         class="mt-2" hide-details>
                         <template v-slot:prepend-inner>
@@ -109,18 +111,18 @@ const onFormSubmit = async () => {
                 <div class="d-flex justify-between my-3 align-center option-row">
                     <v-checkbox
                         v-model="rememberMe"
-                        label="Remember me"
+                        :label="t('auth.rememberMe')"
                         color="red-accent-3"
                         hide-details
                         density="compact"
                         class="remember-me-checkbox"
                     ></v-checkbox>
-                    <router-link to="/forgot-password" class="text-caption text-grey hover-red">Forgot Password?</router-link>
+                    <router-link to="/forgot-password" class="text-caption text-grey hover-red">{{ t('auth.forgotPassword') }}</router-link>
                 </div>
 
-                <v-btn block color="red-accent-3" height="54" class="login-btn mb-3" @click="onFormSubmit"
+                <v-btn block color="red-accent-3" height="54" class="login-btn mb-3"
                     :loading="isLoading" type="submit">
-                    Sign In
+                    {{ t('auth.signIn') }}
                 </v-btn>
                 <p v-if="errorMessage" class="error">
                     <Info size="20" class="me-2" />{{ errorMessage }}
@@ -129,9 +131,8 @@ const onFormSubmit = async () => {
 
             <div class="text-center mt-1">
                 <p class="text-grey text-caption">
-                    Don't have an account?
-                    <router-link to="/register" class="text-red-accent-3 font-weight-bold ms-1">Register
-                        here</router-link>
+                    {{ t('auth.noAccount') }}
+                    <router-link to="/register" class="text-red-accent-3 font-weight-bold ms-1">{{ t('auth.registerHere') }}</router-link>
                 </p>
             </div>
         </v-card>

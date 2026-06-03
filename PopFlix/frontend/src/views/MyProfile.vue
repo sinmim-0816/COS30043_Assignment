@@ -7,7 +7,7 @@ import {SquarePen, MapPin, ClockFading, Ticket, Star, Mail, Phone, Users, Lock, 
 import { useAuthStore } from '../stores/auth';
 import { authService } from '../services/authService';
 import { formatMonthYear } from '../utils/formatDateTime';
-import { GENRE_MAP } from '../utils/genre';
+import { GENRE_IDS, getGenreName } from '../utils/genre';
 import { resolveBackendAssetPath } from '../utils/FormatPicture';
 import { useTicketDesign } from '../hook/useTicketDesign';
 import { formatTicketDate } from '../utils/formatDateTime';
@@ -207,27 +207,24 @@ const triggerLocalDownload = (url, fileName) => {
 };
 
 const genreOptions = computed(() =>
-  Object.entries(GENRE_MAP).map(([id, name]) => ({
-    id: Number(id),
-    name
+  GENRE_IDS.map((id) => ({
+    id,
+    name: getGenreName(id),
   }))
 );
 
 const renderGenreNames = (genreIds) => {
   const idsArray = parseGenres(genreIds);
   
-  if (!idsArray || idsArray.length === 0) return 'General';
+  if (!idsArray || idsArray.length === 0) return t('profile.general');
   return idsArray
-    .map(id => {
-      const cleanId = String(id).trim();
-      return GENRE_MAP[cleanId] || 'Movie';
-    })
+    .map((id) => getGenreName(Number(String(id).trim())))
     .join(', '); 
 };
 
 const availableGenres = computed(() =>
   genreOptions.value.filter(
-    genre => !user.genres.includes(genre.name)
+    (genre) => !user.genres.includes(String(genre.id))
   )
 );
 
@@ -317,7 +314,7 @@ const syncLocalUserFromStore = () => {
   user.gender = u.gender || 'Undisclosed';
   user.location = u.location || '';
   user.bio = u.bio || '';
-  user.genres = parseGenres(u.favouriteGenres );
+  user.genres = parseGenres(u.favouriteGenres).map((g) => String(g));
   user.tier = u.tier || 'Bronze';
   user.annualSpend = Number(u.totalSpent ?? u.annualSpend ?? u.totalSpentThisYear ?? 0) || 0;
   user.points = Number(u.points ?? u.loyaltyPoints ?? 0) || 0;
@@ -509,9 +506,9 @@ const submitPasswordMutation = async () => {
 const addGenre = () => {
   if (
     selectedGenre.value &&
-    !user.genres.includes(selectedGenre.value)
+    !user.genres.includes(String(selectedGenre.value))
   ) {
-    user.genres.push(selectedGenre.value);
+    user.genres.push(String(selectedGenre.value));
   }
 
   selectedGenre.value = '';
@@ -832,7 +829,7 @@ const passStrengthText = computed(() => {
             
             <div class="neon-pill-cloud">
               <span v-for="(genre, index) in user.genres" :key="genre" class="vector-pill">
-                {{ genre }}
+                {{ getGenreName(Number(genre)) }}
                 <button v-if="isEditing" @click="removeGenre(index)" class="pill-delete-cross"><XCircle size="16"/></button>
               </span>
             </div>
@@ -847,7 +844,7 @@ const passStrengthText = computed(() => {
                 <option
                   v-for="genre in availableGenres"
                   :key="genre.id"
-                  :value="genre.name"
+                  :value="String(genre.id)"
                 >
                   {{ genre.name }}
                 </option>

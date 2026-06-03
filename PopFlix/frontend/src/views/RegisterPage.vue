@@ -2,11 +2,13 @@
 import { reactive, computed, ref, watch } from 'vue';
 import { Check, User2, Mail, Phone, Lock, Eye, EyeOff, Info, X } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
+import { useAppI18n } from '../utils/i18n';
 
 // Import other hooks and components
 import AuthLayout from '@/components/AuthLayout.vue';
 import { useRegister } from '../hook/useRegister';
 
+const { t, locale } = useAppI18n();
 const { handleRegister, isLoading, errorMessage } = useRegister();
 const router = useRouter();
 const submitted = ref(false);
@@ -30,6 +32,40 @@ const showConPassword = ref(false);
 const isTypingPassword = ref(false);
 
 const form = reactive({ firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '' });
+const localeCopy = {
+    en: {
+        weak: 'Weak',
+        fair: 'Fair',
+        good: 'Good',
+        strong: 'Strong',
+        required: 'is required',
+        onlyLetters: 'must contain only letters',
+        invalidEmail: 'Invalid email format',
+        invalidPhone: 'Invalid phone format (01x-xxxxxxx)',
+    },
+    zh: {
+        weak: '弱',
+        fair: '中等',
+        good: '良好',
+        strong: '强',
+        required: '是必填项',
+        onlyLetters: '只能包含字母',
+        invalidEmail: '电子邮箱格式无效',
+        invalidPhone: '电话号码格式无效 (01x-xxxxxxx)',
+    },
+    ms: {
+        weak: 'Lemah',
+        fair: 'Sederhana',
+        good: 'Baik',
+        strong: 'Kuat',
+        required: 'adalah wajib',
+        onlyLetters: 'mestilah mengandungi huruf sahaja',
+        invalidEmail: 'Format emel tidak sah',
+        invalidPhone: 'Format telefon tidak sah (01x-xxxxxxx)',
+    },
+};
+
+const authLocale = computed(() => localeCopy[locale.value] || localeCopy.en);
 
 watch(() => form.firstName, (newVal) => {
     form.firstName = newVal.replace(/[^A-Za-z\s]/g, '');
@@ -87,32 +123,32 @@ const strengthColor = computed(() => {
 const strengthText = computed(() => {
     const count = Object.values(reqs.value).filter(Boolean).length;
     if (count === 0) return '';
-    if (count === 1) return 'Weak';
-    if (count === 2) return 'Fair';
-    if (count === 3) return 'Good';
-    return 'Strong';
+    if (count === 1) return authLocale.value.weak;
+    if (count === 2) return authLocale.value.fair;
+    if (count === 3) return authLocale.value.good;
+    return authLocale.value.strong;
 });
 
 const validationErrors = computed(() => {
     const errors = {};
     if (submitted.value) {
-        if (form.firstName.length === 0) errors.firstName = 'First name is required';
-        else if (!isFnameValid.value) errors.firstName = 'First name must contain only letters';
+        if (form.firstName.length === 0) errors.firstName = `${t('auth.firstName')} ${authLocale.value.required}`;
+        else if (!isFnameValid.value) errors.firstName = `${t('auth.firstName')} ${authLocale.value.onlyLetters}`;
 
-        if (form.lastName.length === 0) errors.lastName = 'Last name is required';
-        else if (!isLnameValid.value) errors.lastName = 'Last name must contain only letters';
+        if (form.lastName.length === 0) errors.lastName = `${t('auth.lastName')} ${authLocale.value.required}`;
+        else if (!isLnameValid.value) errors.lastName = `${t('auth.lastName')} ${authLocale.value.onlyLetters}`;
 
-        if (form.email.length === 0) errors.email = 'Email is required';
-        else if (!isEmailValid.value) errors.email = 'Invalid email format';
+        if (form.email.length === 0) errors.email = `${t('auth.emailAddress')} ${authLocale.value.required}`;
+        else if (!isEmailValid.value) errors.email = authLocale.value.invalidEmail;
 
-        if (form.phone.length === 0) errors.phone = 'Telephone is required';
-        else if (!isPhoneValid.value) errors.phone = 'Invalid phone format (01x-xxxxxxx)';
+        if (form.phone.length === 0) errors.phone = `${t('auth.telephone')} ${authLocale.value.required}`;
+        else if (!isPhoneValid.value) errors.phone = authLocale.value.invalidPhone;
 
-        if (form.password.length === 0) errors.password = 'Password is required';
-        else if (!Object.values(reqs.value).every(Boolean)) errors.password = 'Password does not meet requirements';
+        if (form.password.length === 0) errors.password = `${t('auth.password')} ${authLocale.value.required}`;
+        else if (!Object.values(reqs.value).every(Boolean)) errors.password = t('auth.passwordRequirement');
 
-        if (form.confirmPassword.length === 0) errors.confirmPassword = 'Confirm password is required';
-        else if (!isConfirmMatch.value) errors.confirmPassword = 'Passwords do not match';
+        if (form.confirmPassword.length === 0) errors.confirmPassword = `${t('auth.confirmPassword')} ${authLocale.value.required}`;
+        else if (!isConfirmMatch.value) errors.confirmPassword = t('auth.passwordMismatch');
     }
     return errors;
 });
@@ -126,7 +162,7 @@ const submitForm = async () => {
     if (result) {
         router.push({
             path: '/login',
-            state: { successMessage: 'Registration successful! Please check your inbox to activate your account.' }
+            state: { successMessage: t('auth.registrationSuccess') }
         });
     }
 };
@@ -136,9 +172,9 @@ const submitForm = async () => {
     <AuthLayout>
         <v-card flat class="login-card p-3 p-md-0 bg-transparent" width="500">
             <div class="text-center text-md-left">
-                <h3 class="mt-2 fw-bold">Create Account</h3>
+                <h3 class="mt-2 fw-bold">{{ t('auth.createAccount') }}</h3>
                 <p class="text-grey-darken-1 mt-2">
-                    Enter your information to unlock your personalized cinema experience.
+                    {{ t('auth.registerSubtitle') }}
                 </p>
             </div>
             <p v-if="errorMessage" class="text-red"><span>
@@ -148,7 +184,7 @@ const submitForm = async () => {
                 <v-row>
                     <v-col cols="6">
                         <!-- First name -->
-                        <label class="premium-label">First Name</label>
+                        <label class="premium-label">{{ t('auth.firstName') }}</label>
                         <div class="input-group">
                             <v-text-field v-model="form.firstName" @keypress="isLetter($event)" placeholder="John"
                                 variant="outlined" density="comfortable" rounded="lg" color="red-accent-3" class="mt-2" hide-details>
@@ -169,7 +205,7 @@ const submitForm = async () => {
                     </v-col>
                     <v-col cols="6">
                         <!-- Last Name -->
-                        <label class="premium-label">Last Name</label>
+                        <label class="premium-label">{{ t('auth.lastName') }}</label>
                         <div class="input-group">
                             <v-text-field v-model="form.lastName" placeholder="Doe" @keypress="isLetter($event)"
                                 variant="outlined" density="comfortable" rounded="lg" color="red-accent-3" class="mt-2" hide-details>
@@ -190,7 +226,7 @@ const submitForm = async () => {
                     </v-col>
                 </v-row>
                 <!-- Email -->
-                <label class="premium-label mt-3">Email</label>
+                <label class="premium-label mt-3">{{ t('auth.emailAddress') }}</label>
                 <div class="input-group">
                     <v-text-field v-model="form.email" placeholder="you@example.com" variant="outlined"
                         density="comfortable" rounded="lg" color="red-accent-3"
@@ -211,7 +247,7 @@ const submitForm = async () => {
                 </p>
 
                 <!-- Phone -->
-                <label class="premium-label mt-3">Telephone</label>
+                <label class="premium-label mt-3">{{ t('auth.telephone') }}</label>
                 <div class="input-group">
                     <v-text-field v-model="form.phone" @keypress="isNumber" placeholder="01x-xxxxxxx" variant="outlined"
                         density="comfortable" rounded="lg" color="red-accent-3"
@@ -232,7 +268,7 @@ const submitForm = async () => {
                 </p>
 
                 <!-- Password Input -->
-                <label class="premium-label mt-3">Password</label>
+                <label class="premium-label mt-3">{{ t('auth.password') }}</label>
                 <div class="input-group">
                     <v-text-field v-model="form.password" :type="showPassword ? 'text' : 'password'" @focus="isTypingPassword=true"
                     @blur="isTypingPassword=false" 
@@ -277,21 +313,21 @@ const submitForm = async () => {
                         <!-- Requirements List -->
                         <ul class="requirements-list">
                             <li :class="{ 'valid': reqs.length }">
-                                <Check size="14" /> At least 8 characters
+                                <Check size="14" /> {{ t('auth.atLeastEight') }}
                             </li>
                             <li :class="{ 'valid': reqs.case }">
-                                <Check size="14" /> Mix of upper and lower case
+                                <Check size="14" /> {{ t('auth.mixCase') }}
                             </li>
                             <li :class="{ 'valid': reqs.number }">
-                                <Check size="14" /> At least one number
+                                <Check size="14" /> {{ t('auth.atLeastOneNumber') }}
                             </li>
                             <li :class="{ 'valid': reqs.symbol }">
-                                <Check size="14" /> At least one symbol (eg. &%$#)
+                                <Check size="14" /> {{ t('auth.atLeastOneSymbol') }}
                             </li>
                         </ul>
                     </div>
                 </v-expand-transition>
-                <label class="premium-label mt-3">Confirm Password</label>
+                <label class="premium-label mt-3">{{ t('auth.confirmPassword') }}</label>
                 <div class="input-group mb-8">
                     <v-text-field v-model="form.confirmPassword" :type="showConPassword ? 'text' : 'password'"
                         placeholder="••••••••" variant="outlined" density="comfortable" rounded="lg"
@@ -320,13 +356,12 @@ const submitForm = async () => {
                 </p>
 
                 <v-btn block color="red-accent-3" height="50" class="login-btn mt-4" type="submit" :loading="isLoading">
-                    Sign Up
+                    {{ t('auth.signUp') }}
                 </v-btn>
                 <div class="text-center mt-3">
                     <p class="text-grey text-caption">
-                        Already have an account?
-                        <router-link to="/login" class="text-red-accent-3 font-weight-bold ms-1">Login
-                            here</router-link>
+                        {{ t('auth.alreadyHaveAccount') }}
+                        <router-link to="/login" class="text-red-accent-3 font-weight-bold ms-1">{{ t('auth.loginHere') }}</router-link>
                     </p>
                 </div>
             </v-form>

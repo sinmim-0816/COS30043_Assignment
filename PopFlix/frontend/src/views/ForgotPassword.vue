@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue';
 import { Mail, Info, CheckCircle } from 'lucide-vue-next';
+import { useAppI18n } from '../utils/i18n';
 
 // Import other hook and component
 import AuthLayout from '@/components/AuthLayout.vue';
 import { useForgotPassword } from '../hook/useForgotPassword';
 
+const { t } = useAppI18n();
 const { handleForgotPassword, isLoading } = useForgotPassword();
 const email = ref('');
 
@@ -17,10 +19,10 @@ const isSuccess = ref(false);
 const sendResetLink = async () => {
     try {
         await handleForgotPassword(email.value);
-        message.value = 'Reset link sent! Please check your email.';
+        message.value = t('auth.resetLinkSent');
         isSuccess.value = true;
     } catch (e) {
-        message.value = 'Unable to send link. Please try again.';
+        message.value = t('auth.resetLinkFailed');
         console.error("Error send the link:",e);
         isSuccess.value = false;
     } finally {
@@ -42,16 +44,16 @@ const sendResetLink = async () => {
     </v-snackbar>
 
     <AuthLayout>
-        <v-card flat class="login-card bg-transparent" width="450" height="100vh">
+            <v-card flat class="login-card bg-transparent" width="450" height="100vh">
             <div class="text-center text-md-left">
-                <h3 class="mt-2 fw-bold">Forgot Password</h3>
+                <h3 class="mt-2 fw-bold">{{ t('auth.forgotTitle') }}</h3>
                 <p class="text-grey-darken-1 mt-2">
-                    Enter your email to receive a password reset link.
+                    {{ t('auth.forgotSubtitle') }}
                 </p>
             </div>
 
             <v-form @submit.prevent="sendResetLink" class="mt-6">
-                <label class="premium-label mt-3">Email Address</label>
+                <label class="premium-label mt-3">{{ t('auth.emailAddress') }}</label>
                 <div class="input-group mb-6">
                     <v-text-field v-model="email" placeholder="you@example.com" variant="outlined" density="comfortable"
                         rounded="lg" color="red-accent-3" class="mt-2" hide-details>
@@ -63,16 +65,15 @@ const sendResetLink = async () => {
 
                 <v-btn block color="red-accent-3" height="54" class="login-btn mt-5 " :loading="isLoading"
                     type="submit">
-                    Send Reset Link
+                    {{ t('auth.sendResetLink') }}
                 </v-btn>
             </v-form>
 
             <div class="text-center mt-3 d-flex flex-row justify-center">
                 <p class="text-grey text-caption">
-                    Remembered it?
+                    {{ t('auth.rememberedIt') }}
                 </p>
-                <router-link to="/login" class="text-grey text-decoration-none hover-red ms-2 p-0">Login
-                </router-link>
+                <router-link to="/login" class="text-grey text-decoration-none hover-red ms-2 p-0">{{ t('auth.signIn') }}</router-link>
             </div>
         </v-card>
     </AuthLayout>

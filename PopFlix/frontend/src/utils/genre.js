@@ -66,6 +66,8 @@ export const GENRE_MAP = {
   },
 };
 
+export const GENRE_IDS = Object.keys(GENRE_MAP.en).map(Number);
+
 export const getGenreName = (id) => {
   const locale = currentLocale.value === 'zh' ? 'zh' : currentLocale.value === 'ms' ? 'ms' : 'en';
   return GENRE_MAP[locale]?.[id] || GENRE_MAP.en?.[id] || 'Unknown';
