@@ -1,4 +1,5 @@
-# PopFlix ![PopFlix Logo](frontend/public/popflix-logo.png)
+![PopFlix Logo](frontend/src/popflix_logo.png)
+# PopFlix ![Popcorn Logo](frontend/src/popcorn.png)
 
 Welcome to **PopFlix**, your go-to destination for movie discovery and booking.
 
