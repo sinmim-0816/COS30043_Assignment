@@ -68,7 +68,54 @@ export const GENRE_MAP = {
 
 export const GENRE_IDS = Object.keys(GENRE_MAP.en).map(Number);
 
-export const getGenreName = (id) => {
+const normalizeGenreKey = (value) =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s/_-]+/g, ' ')
+    .replace(/\./g, '')
+    .replace(/\s+/g, ' ');
+
+const GENRE_ALIASES = {
+  'sci fi': 878,
+  'sci-fi': 878,
+  'science fiction': 878,
+  sf: 878,
+  'tv movie': 10770,
+};
+
+const GENRE_LOOKUP = Object.entries(GENRE_MAP.en).reduce((acc, [id, label]) => {
+  acc[normalizeGenreKey(id)] = Number(id);
+  acc[normalizeGenreKey(label)] = Number(id);
+
+  const localizedLabels = [GENRE_MAP.zh?.[id], GENRE_MAP.ms?.[id]];
+  localizedLabels.forEach((localizedLabel) => {
+    if (localizedLabel) {
+      acc[normalizeGenreKey(localizedLabel)] = Number(id);
+    }
+  });
+
+  return acc;
+}, { ...GENRE_ALIASES });
+
+export const resolveGenreId = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+
+  const numeric = Number(value);
+  if (Number.isFinite(numeric) && GENRE_MAP.en?.[numeric]) {
+    return numeric;
+  }
+
+  const lookupKey = normalizeGenreKey(value);
+  return GENRE_LOOKUP[lookupKey] ?? null;
+};
+
+export const getGenreName = (value) => {
+  const resolvedId = resolveGenreId(value);
+  if (!resolvedId) {
+    return typeof value === 'string' && value.trim() ? value : 'Unknown';
+  }
+
   const locale = currentLocale.value === 'zh' ? 'zh' : currentLocale.value === 'ms' ? 'ms' : 'en';
-  return GENRE_MAP[locale]?.[id] || GENRE_MAP.en?.[id] || 'Unknown';
+  return GENRE_MAP[locale]?.[resolvedId] || GENRE_MAP.en?.[resolvedId] || 'Unknown';
 };

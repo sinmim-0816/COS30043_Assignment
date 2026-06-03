@@ -7,7 +7,7 @@ import {SquarePen, MapPin, ClockFading, Ticket, Star, Mail, Phone, Users, Lock, 
 import { useAuthStore } from '../stores/auth';
 import { authService } from '../services/authService';
 import { formatMonthYear } from '../utils/formatDateTime';
-import { GENRE_IDS, getGenreName } from '../utils/genre';
+import { GENRE_IDS, getGenreName, resolveGenreId } from '../utils/genre';
 import { resolveBackendAssetPath } from '../utils/FormatPicture';
 import { useTicketDesign } from '../hook/useTicketDesign';
 import { formatTicketDate } from '../utils/formatDateTime';
@@ -218,7 +218,7 @@ const renderGenreNames = (genreIds) => {
   
   if (!idsArray || idsArray.length === 0) return t('profile.general');
   return idsArray
-    .map((id) => getGenreName(Number(String(id).trim())))
+    .map((id) => getGenreName(id))
     .join(', '); 
 };
 
@@ -314,7 +314,10 @@ const syncLocalUserFromStore = () => {
   user.gender = u.gender || 'Undisclosed';
   user.location = u.location || '';
   user.bio = u.bio || '';
-  user.genres = parseGenres(u.favouriteGenres).map((g) => String(g));
+  user.genres = parseGenres(u.favouriteGenres)
+    .map((g) => resolveGenreId(g) ?? g)
+    .filter(Boolean)
+    .map((g) => String(g));
   user.tier = u.tier || 'Bronze';
   user.annualSpend = Number(u.totalSpent ?? u.annualSpend ?? u.totalSpentThisYear ?? 0) || 0;
   user.points = Number(u.points ?? u.loyaltyPoints ?? 0) || 0;
@@ -829,7 +832,7 @@ const passStrengthText = computed(() => {
             
             <div class="neon-pill-cloud">
               <span v-for="(genre, index) in user.genres" :key="genre" class="vector-pill">
-                {{ getGenreName(Number(genre)) }}
+                {{ getGenreName(genre) }}
                 <button v-if="isEditing" @click="removeGenre(index)" class="pill-delete-cross"><XCircle size="16"/></button>
               </span>
             </div>
