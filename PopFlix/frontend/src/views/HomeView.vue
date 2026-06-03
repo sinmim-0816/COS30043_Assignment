@@ -698,6 +698,18 @@ watch(
 </template>
 
 <style>
+.hero_section{
+    border:1px solid red;
+}
+#custom-ticket-cta{
+    border:1px solid red;
+}
+#now-showing{
+    border:1px solid red;
+}
+#experiences{
+    border:1px solid red;
+}
 .hero_section {
     position: relative;
     width: 100%;
