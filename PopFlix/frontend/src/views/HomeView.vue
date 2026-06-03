@@ -838,6 +838,17 @@ watch(
     transition: color 0.3s ease;
 }
 
+.btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-row > .v-btn {
+    flex: 1 1 160px;
+    min-width: 0;
+}
+
 .trailer-btn:hover {
     color: rgb(255, 61, 61);
 }
@@ -1341,6 +1352,17 @@ watch(
         max-width: 200px !important;
     }
 
+    .btn-row {
+        flex-wrap: nowrap;
+        gap: 0.5rem;
+    }
+
+    .btn-row > .v-btn {
+        flex: 1 1 0;
+        width: auto !important;
+        max-width: none !important;
+    }
+
     .movie-btn{
         margin-bottom: 2rem;
     }
@@ -1527,11 +1549,6 @@ watch(
 
     .experience-cta-icon {
         flex-shrink: 0;
-    }
-
-    .btn-row{
-        display:flex;
-        flex-direction:row;
     }
 
 }
