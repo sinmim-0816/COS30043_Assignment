@@ -1,5 +1,6 @@
-![PopFlix Logo](frontend/src/assets/popflix_logo.png)
+# <img src="frontend/src/assets/popflix_logo.png" alt="PopFlix Logo" width="60"/> 
 # PopFlix ![Popcorn Logo](frontend/src/assets/popcorn.png)
+# <img src="frontend/src/assets/popcorn.png" alt="Popcorn Logo" width="60"/> PopFlix
 
 Welcome to **PopFlix**, your go-to destination for movie discovery and booking.
 
