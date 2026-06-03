@@ -367,10 +367,14 @@ const currentTier = computed(() => {
   return 'Bronze';
 });
 
-const nextTierName = computed(() => {
-  if (currentTier.value === 'Bronze') return 'Silver';
-  if (currentTier.value === 'Silver') return 'Gold';
-  return 'Maxed';
+const currentTierLabel = computed(() => {
+  return t(`profile.${currentTier.value.toLowerCase()}`);
+});
+
+const nextTierLabel = computed(() => {
+  if (currentTier.value === 'Bronze') return t('profile.silver');
+  if (currentTier.value === 'Silver') return t('profile.gold');
+  return t('profile.gold');
 });
 
 const nextTierThreshold = computed(() => {
@@ -672,7 +676,7 @@ const passStrengthText = computed(() => {
           <div class="card-footer-metrics">
             <div>
               <p class="metric-lbl">{{ t('profile.tierStatus') }}</p>
-              <p class="metric-val VIP">{{ currentTier.toUpperCase() }} {{ t('profile.member') }}</p>
+              <p class="metric-val VIP">{{ currentTierLabel }} {{ t('profile.member') }}</p>
             </div>
             <div class="text-right">
               <p class="metric-lbl">{{ t('profile.statusPeriod') }}</p>
@@ -685,12 +689,12 @@ const passStrengthText = computed(() => {
       <div class="progression-glass-panel" :class="`tier-${currentTier.toLowerCase()}`">
         <div class="panel-header-row">
           <div class="tier-milestones">
-            <span class="milestone active">Bronze</span>
-            <span :class="['milestone', currentTier !== 'Bronze' ? 'active' : '']">Silver</span>
-            <span :class="['milestone', currentTier === 'Gold' ? 'active' : '']">Gold</span>
+            <span class="milestone active">{{ t('profile.bronze') }}</span>
+            <span :class="['milestone', currentTier !== 'Bronze' ? 'active' : '']">{{ t('profile.silver') }}</span>
+            <span :class="['milestone', currentTier === 'Gold' ? 'active' : '']">{{ t('profile.gold') }}</span>
           </div>
           <div class="spend-counter">
-            RM {{ Number(user.annualSpend).toFixed(2) }} <span class="total-label">spent</span>
+            RM {{ Number(user.annualSpend).toFixed(2) }} <span class="total-label">{{ t('profile.spent') }}</span>
           </div>
         </div>
 
@@ -702,12 +706,15 @@ const passStrengthText = computed(() => {
 
         <div class="progression-footer-messages" v-if="currentTier !== 'Gold'">
           <p class="incentive-text">
-            Spend another <span class="highlight">RM {{ Number(nextTierThreshold - Number(user.annualSpend)).toFixed(2) }}</span> to automatically unlock the premium benefits of <span class="highlight">{{ nextTierName }} Tier</span>.
+            {{ t('profile.spendMoreToUnlock', {
+              amount: `RM ${Number(nextTierThreshold.value - Number(user.annualSpend)).toFixed(2)}`,
+              tier: nextTierLabel.value
+            }) }}
           </p>
         </div>
         <div class="progression-footer-messages maxed" v-else>
           <p class="incentive-text maxed-text">
-            Maximum tier status achieved. You are enjoying premium access to all luxury configurations.
+            {{ t('profile.maxTierMessage') }}
           </p>
         </div>
       </div>
@@ -1066,7 +1073,7 @@ const passStrengthText = computed(() => {
                 <div class="tier-icon-badge bg-bronze-light">
                   <Award :size="22" class="color-bronze" />
                 </div>
-                <span v-if="currentTier === 'Bronze'" class="status-pill current-pill">Current</span>
+                <span v-if="currentTier === 'Bronze'" class="status-pill current-pill">{{ t('profile.current') }}</span>
               </div>
 
               <div class="tier-card-body">
@@ -1093,7 +1100,7 @@ const passStrengthText = computed(() => {
                 <div class="tier-icon-badge bg-silver-light">
                   <Award :size="22" class="color-silver" />
                 </div>
-                <span v-if="currentTier === 'Silver'" class="status-pill current-pill">Current</span>
+                <span v-if="currentTier === 'Silver'" class="status-pill current-pill">{{ t('profile.current') }}</span>
                 <Lock v-if="currentTier === 'Bronze'" :size="16" class="status-lock-icon" />
               </div>
 
@@ -1122,7 +1129,7 @@ const passStrengthText = computed(() => {
                 <div class="tier-icon-badge bg-gold-light">
                   <Award :size="22" class="color-gold" />
                 </div>
-                <span v-if="currentTier === 'Gold'" class="status-pill current-pill">Current</span>
+                <span v-if="currentTier === 'Gold'" class="status-pill current-pill">{{ t('profile.current') }}</span>
                 <Lock v-if="currentTier !== 'Gold'" :size="16" class="status-lock-icon" />
               </div>
 

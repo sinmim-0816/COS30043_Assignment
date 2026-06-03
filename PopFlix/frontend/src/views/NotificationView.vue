@@ -15,6 +15,7 @@ import { useRouter } from 'vue-router';
 // Import other hook and components
 import { useAuthStore } from '../stores/auth';
 import { useNotifications } from '../hook/useNotification';
+import { useAppI18n } from '../utils/i18n';
 import FooterView from '@/components/FooterView.vue';
 
 const authStore = useAuthStore();
@@ -30,6 +31,8 @@ const {
   deleteNotification,
   unreadCount 
 } = useNotifications();
+
+const { t } = useAppI18n();
 
 const activeFilter = ref('all');
 const searchQuery = ref('');
@@ -77,7 +80,7 @@ const highlightText = (text, search) => {
   if (!search || !search.trim() || !text) return text;
   
   const query = search.trim();
-  const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const escapedQuery = query.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
   const regex = new RegExp(`(${escapedQuery})`, 'gi');
   
   return text.replace(regex, '<span class="highlight-match">$1</span>');
@@ -114,7 +117,7 @@ const clearSearch = () => {
     <aside class="gmail-sidebar">
       <div class="compose-space">
           <div class="sidebar-brand">
-            <span class="fw-bold">Inbox</span>
+            <span class="fw-bold">{{ t('notifications.inboxTitle') }}</span>
           </div>
       </div>
 
@@ -125,7 +128,7 @@ const clearSearch = () => {
           @click="activeFilter = 'all'"
         >
           <Inbox :size="18" />
-          <span class="tab-label">All Notifications</span>
+          <span class="tab-label">{{ t('notifications.allNotifications') }}</span>
           <span class="total-badge">{{ notifications.length }}</span>
         </button>
 
@@ -135,7 +138,7 @@ const clearSearch = () => {
           @click="activeFilter = 'unread'"
         >
           <CircleAlert :size="18" />
-          <span class="tab-label">Unread</span>
+          <span class="tab-label">{{ t('notifications.unread') }}</span>
           <span v-if="unreadCount > 0" class="unread-count-pill">{{ unreadCount }}</span>
         </button>
 
@@ -151,17 +154,17 @@ const clearSearch = () => {
             v-if="unreadCount > 0"
             @click="readAllNotifications(userId)" 
             class="icon-action-btn" 
-            title="Mark all as read"
+            :title="t('notifications.markAllReadTitle')"
           >
             <MailOpen :size="18" />
-            <span>Mark all read</span>
+            <span>{{ t('notifications.markAllRead') }}</span>
           </button>
           <div class="search-wrapper">
             <Search :size="16" class="search-icon" />
             <input 
               v-model="searchQuery" 
               type="text" 
-              placeholder="Search notifications..." 
+              :placeholder="t('notifications.searchPlaceholder')" 
               class="search-input"
             />
             <button v-if="searchQuery" @click="clearSearch" class="clear-search-btn">
@@ -172,7 +175,7 @@ const clearSearch = () => {
 
         <div class="d-flex justify-end w-100">
           <span class="pagination-meta">
-            Showing <b>{{ filteredNotifications.length }}</b> entries
+            {{ t('notifications.showingEntries', { count: filteredNotifications.length }) }}
           </span>
         </div>
       </div>
@@ -180,8 +183,8 @@ const clearSearch = () => {
       <div class="mailbox-list-frame">
         <div v-if="filteredNotifications.length === 0" class="gmail-empty-state">
           <Inbox :size="40" class="empty-vector" />
-          <p v-if="searchQuery">No matching notifications found for "{{ searchQuery }}".</p>
-          <p v-else>Nothing in this category. Enjoy your empty inbox!</p>
+          <p v-if="searchQuery">{{ t('notifications.noMatches', { query: searchQuery }) }}</p>
+          <p v-else>{{ t('notifications.emptyInbox') }}</p>
         </div>
 
         <div 
@@ -210,14 +213,14 @@ const clearSearch = () => {
               v-if="!item.isRead"
               @click="handleInlineReadToggle($event, item)" 
               class="inline-action-circle" 
-              title="Mark as read"
+              :title="t('notifications.markAsRead')"
             >
               <Check :size="15" />
             </button>
             <button 
               @click="handleInlineDelete($event, item)" 
               class="inline-action-circle delete-btn" 
-              title="Delete notification"
+              :title="t('notifications.deleteNotification')"
             >
               <Trash2 :size="15" />
             </button>

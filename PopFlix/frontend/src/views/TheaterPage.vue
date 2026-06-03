@@ -10,8 +10,10 @@ import { useCinemas } from '../hook/useCinemas';
 import FooterView from '@/components/FooterView.vue';
 import { useFaqs } from '../hook/useFaqs';
 import { resolveBackendAssetPath } from '../utils/FormatPicture';
+import { useAppI18n } from '../utils/i18n';
 
 const { cinemas, isLoading } = useCinemas();
+const { t } = useAppI18n();
 const router = useRouter();
 const route=useRoute();
 
@@ -226,7 +228,7 @@ const selectCinema = (index) => {
 
 const copyAddr = (addr) => {
     navigator.clipboard.writeText(addr);
-    alert('Address copied to clipboard!');
+    alert(t('theaterPage.addressCopied'));
 };
 
 const bookNow = (id) => {
@@ -234,6 +236,17 @@ const bookNow = (id) => {
         path: '/showtimes',
         query: { cinema: id } 
     });
+};
+
+const openGoogleMaps = (cinema) => {
+    if (!cinema) return;
+
+    const locationQuery = cinema.latitude && cinema.longitude
+        ? `${cinema.latitude},${cinema.longitude}`
+        : cinema.location_address || cinema.name;
+
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery)}`;
+    window.open(mapsUrl, '_blank', 'noreferrer');
 };
 
 const getThemeColor = (index) => {
@@ -305,7 +318,7 @@ const filteredFaqs = computed(() => {
                     <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
                 </v-progress-circular>
 
-                <p class="mt-6 loading-text">Loading...</p>
+                <p class="mt-6 loading-text">{{ t('common.loading') }}</p>
                 <div class="loading-bar"></div>
             </div>
         </div>
@@ -319,8 +332,8 @@ const filteredFaqs = computed(() => {
 
         <div v-else>
             <div class="hero w-100" >
-                <h1 class="hero-title text-center mt-2">Our <span>Cinemas</span> Locations</h1>
-                <p class="hero-sub text-center">Premium cinema locations — pick your nearest and book your seat.</p>
+                <h1 class="hero-title text-center mt-2">{{ t('theaterPage.heroTitle') }}</h1>
+                <p class="hero-sub text-center">{{ t('theaterPage.heroSubtitle') }}</p>
             </div>
 
             <div class="custom-layout">
@@ -342,12 +355,12 @@ const filteredFaqs = computed(() => {
                                 class="cc-status" 
                                 :class="checkIsOpen(c.operating_hours) ? 'open' : 'closed'"
                             >
-                                {{ checkIsOpen(c.operating_hours) ? 'Open' : 'Closed' }}
+                                {{ checkIsOpen(c.operating_hours) ? t('theaterPage.open') : t('theaterPage.closed') }}
                             </span>
                         </div>
                         
                         <p class="cc-dist mt-3">
-                            {{c.hall}} Halls
+                            {{ c.hall }} {{ t('theaterPage.halls') }}
                         </p>
                     </div>
                 </div>
@@ -364,10 +377,13 @@ const filteredFaqs = computed(() => {
                             </div>
                             <div class="dp-actions">
                                 <button class="dp-btn" @click="copyAddr(cinemas[activeIndex].location_address)">
-                                    <Copy size="13" /> Copy
+                                    <Copy size="13" /> {{ t('theaterPage.copyAddress') }}
+                                </button>
+                                <button class="dp-btn" @click="openGoogleMaps(cinemas[activeIndex])">
+                                    <MapPin size="13" /> {{ t('theaterPage.openGoogleMaps') }}
                                 </button>
                                 <button class="dp-btn primary" @click="bookNow(cinemas[activeIndex].id)">
-                                    <Ticket size="13" /> Book Now
+                                    <Ticket size="13" /> {{ t('theaterPage.bookNow') }}
                                 </button>
                             </div>
                         </div>
@@ -378,25 +394,25 @@ const filteredFaqs = computed(() => {
                         </p>
 
                         <p class="sec-label mt-5 d-flex align-center gap-2">
-                            <Clock size="14" /> Opening Hours
+                            <Clock size="14" /> {{ t('theaterPage.openingHours') }}
                         </p>
                         <div class="premium-hours-list" v-if="cinemas[activeIndex].operating_hours">
                             <div class="hour-row">
-                                <span class="day">Weekdays (Mon – Fri)</span>
+                                <span class="day">{{ t('theaterPage.weekdays') }}</span>
                                 <span class="time">{{ cinemas[activeIndex].operating_hours.weekday }}</span>
                             </div>
                             <div class="hour-row">
-                                <span class="day">Weekends (Sat – Sun)</span>
+                                <span class="day">{{ t('theaterPage.weekends') }}</span>
                                 <span class="time">{{ cinemas[activeIndex].operating_hours.weekend }}</span>
                             </div>
                             <div class="hour-row">
-                                <span class="day">Public Holidays</span>
+                                <span class="day">{{ t('theaterPage.publicHolidays') }}</span>
                                 <span class="time">{{ cinemas[activeIndex].operating_hours.ph }}</span>
                             </div>
                         </div>
 
                         <!-- Dynamic Amenities -->
-                        <p class="sec-label mt-5">Available Amenities</p>
+                        <p class="sec-label mt-5">{{ t('theaterPage.availableAmenities') }}</p>
                         <div class="amenities-row" v-if="cinemas[activeIndex].amenities">
                             <span v-for="am in cinemas[activeIndex].amenities" :key="am.label" class="am-chip">
                                 <component :is="getAmenityIcon(am.label)" size="14" />
@@ -412,9 +428,9 @@ const filteredFaqs = computed(() => {
   <section id="faq-section">
         <v-container fluid width="100vw">
             <div class="faq-header text-center mb-10">
-                <h2 class="faq-title mb-4">Frequently Asked Questions</h2>
+                <h2 class="faq-title mb-4">{{ t('theaterPage.faqTitle') }}</h2>
                 <p class="faq-desc mx-auto">
-                    Got questions? We've got answers! Check out our FAQs to find everything you need to know about our services, pricing, and more.
+                    {{ t('theaterPage.faqDescription') }}
                 </p>
             </div>
 
