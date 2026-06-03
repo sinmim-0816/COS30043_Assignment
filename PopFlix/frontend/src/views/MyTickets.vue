@@ -298,7 +298,7 @@ const submitReview = async () => {
                             <div class="neon-identity-stripe"></div>
 
                             <div class="stub-poster-dock d-none d-sm-flex align-center justify-center">
-                                <v-img :src="normalizeImageUrl(ticket.poster)" cover width="100%" height="100%" />
+                                <v-img :src="ticket.poster" cover width="100%" height="100%" />
                             </div>
 
                             <div class="stub-center-body d-flex flex-column justify-space-between pa-4 ">
