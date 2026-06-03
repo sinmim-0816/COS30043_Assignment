@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
@@ -9,7 +9,7 @@ import { Experience } from './../../experiences/entities/experience.entity';
 import moment from 'moment';
 
 @Injectable()
-export class ShowtimesSchedulerService {
+export class ShowtimesSchedulerService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Showtime)
     private readonly showtimeRepo: Repository<Showtime>,
@@ -23,6 +23,16 @@ export class ShowtimesSchedulerService {
     @InjectRepository(Experience)
     private readonly expRepo: Repository<Experience>,
   ) {}
+
+  async onApplicationBootstrap() {
+    try {
+      console.log('--- [PopFlix] Startup showtime sync started ---');
+      await this.ensureFutureShowtimes(8);
+      console.log('--- [PopFlix] Startup showtime sync completed ---');
+    } catch (error) {
+      console.error('Startup showtime sync failed:', error);
+    }
+  }
 
   @Cron('0 0 * * *')
   async syncShowtimesDaily() {
