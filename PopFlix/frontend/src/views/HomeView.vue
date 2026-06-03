@@ -587,7 +587,7 @@ watch(
 
             </v-container>
         </section>
-        <section id="experiences" >
+        <!-- <section id="experiences" >
             <v-container fluid class="">
                 <div class="text-center mb-5">
                     <h2 class="text-h3 font-weight-black mx-auto">
@@ -690,7 +690,7 @@ watch(
                     </v-col>
                 </v-row>
             </v-container>
-        </section>
+        </section> -->
         
         <FooterView />
     </v-app>
@@ -698,18 +698,6 @@ watch(
 </template>
 
 <style>
-.hero_section{
-    border:1px solid red;
-}
-#custom-ticket-cta{
-    border:1px solid red;
-}
-#now-showing{
-    border:1px solid red;
-}
-#experiences{
-    border:1px solid red;
-}
 .hero_section {
     position: relative;
     width: 100%;
