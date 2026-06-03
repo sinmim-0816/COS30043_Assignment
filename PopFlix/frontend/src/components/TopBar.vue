@@ -840,6 +840,28 @@ button {
         object-fit: contain;
     }
 
+    .search,
+    .bell-link-wrapper,
+    .theme-toggler,
+    .mobile-menu-button {
+        width: 34px !important;
+        height: 34px !important;
+        margin-right: 0.4rem;
+        padding: 0;
+    }
+
+    .search .icon,
+    .bell-link-wrapper .icon,
+    .theme-toggler svg,
+    .mobile-menu-button svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .theme-toggler {
+        padding: 6px;
+    }
+
     .desktop-nav, .desktop-profile {
         display: none;
     }
@@ -855,6 +877,10 @@ button {
     header {
         gap: 0.5rem;
         padding: 0.75rem 0.85rem;
+    }
+
+    .nav-right-container {
+        gap: 0.25rem;
     }
 
 }
