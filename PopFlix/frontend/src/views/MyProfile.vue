@@ -2485,6 +2485,17 @@ const passStrengthText = computed(() => {
   position: relative;
   overflow: hidden;
   border-radius: 8px; /* Optional: ensures matching crisp container edges */
+  width: 100%;
+    height: 320px;
+    overflow: hidden;
+}
+
+
+.ticket-poster-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 /* Floating Share Button Core Styling */
