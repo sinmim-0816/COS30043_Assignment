@@ -1712,6 +1712,7 @@ const passStrengthText = computed(() => {
 
 .pill-injection-dock { display: flex; gap: 6px; }
 .dock-input {
+  /* neutral base for light theme */
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
@@ -1719,8 +1720,19 @@ const passStrengthText = computed(() => {
   color: #0f172a;
   font-size: 0.8rem;
   flex-grow: 1;
+  /* remove native arrow so we can use a themed arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23334755' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 34px;
 }
 .dock-input:focus { outline: none; border-color: #0f172a; }
+
+/* Ensure option list matches theme where supported */
+.dock-input option { background: #ffffff; color: #0f172a; }
 .dock-action-btn { 
   background: var(--movie-btn) !important; 
   color: white; 
@@ -2975,6 +2987,23 @@ const passStrengthText = computed(() => {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.08);
   color: #f8fafc;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* white arrow for dark theme */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23f8fafc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 34px;
+}
+
+.profile-page-light.theme-dark .dock-input option {
+  background: rgba(17,24,39,0.98);
+  color: #e5e7eb;
+}
+
+.profile-page-light.theme-dark .dock-input::placeholder {
+  color: rgba(226, 232, 240, 0.45);
 }
 
 .profile-page-light.theme-dark .node-field::placeholder,

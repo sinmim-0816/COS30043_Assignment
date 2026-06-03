@@ -332,8 +332,8 @@ const filteredFaqs = computed(() => {
 
         <div v-else>
             <div class="hero w-100" >
-                <h1 class="hero-title text-center mt-2">{{ t('theaterPage.heroTitle') }}</h1>
-                <p class="hero-sub text-center">{{ t('theaterPage.heroSubtitle') }}</p>
+                <h1 class="hero-title text-center mt-2">Our <span>Cinemas</span> Locations</h1>
+                <p class="hero-sub text-center">Premium cinema locations — pick your nearest and book your seat.</p>
             </div>
 
             <div class="custom-layout">
