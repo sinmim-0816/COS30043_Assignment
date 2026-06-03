@@ -587,7 +587,7 @@ watch(
 
             </v-container>
         </section>
-        <!-- <section id="experiences" >
+        <section id="experiences" >
             <v-container fluid class="">
                 <div class="text-center mb-5">
                     <h2 class="text-h3 font-weight-black mx-auto">
@@ -690,7 +690,7 @@ watch(
                     </v-col>
                 </v-row>
             </v-container>
-        </section> -->
+        </section>
         
         <FooterView />
     </v-app>

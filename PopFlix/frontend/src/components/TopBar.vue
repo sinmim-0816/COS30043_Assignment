@@ -150,9 +150,9 @@ watch(
         'transparent-header': isAuthPage && !isSearchOpen,
         'search-open-header': isSearchOpen
     }">
-        <router-link to="/">
+        <!-- <router-link to="/">
             <img :src="logo" alt="PopFlix Logo" class="company_logo">
-        </router-link>
+        </router-link> -->
         <!-- Navigation -->
         <nav v-if="showNavLinks" class="desktop-nav">
             <ul @mouseleave="handleMouseLeave" class="nav-list-wrapper">
