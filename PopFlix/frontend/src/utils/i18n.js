@@ -556,6 +556,7 @@ const messages = {
       dataUnavailable: 'Data Unavailable',
     },
     theaterPage: {
+      heroSubtitle: 'Premium cinema locations — pick your nearest and book your seat.',
       halls: 'Halls',
       open: 'Open',
       closed: 'Closed',
@@ -568,8 +569,8 @@ const messages = {
       weekends: 'Weekends',
       publicHolidays: 'Public Holidays',
       availableAmenities: 'Available Amenities',
-      faqTitle: 'Cinema FAQ',
-      faqDescription: 'Find answers to common cinema questions, from parking to seating and accessibility services.',
+      faqTitle: 'Frequently Asked Questions',
+      faqDescription: 'Got questions? We\'ve got answers. Check out our FAQs for more information about our theaters, booking process, and more.',
     },
     checkoutPayment: {
       title: 'Checkout Payment',
@@ -915,8 +916,8 @@ const messages = {
       weekends: '周末',
       publicHolidays: '公共假期',
       availableAmenities: '可用设施',
-      faqTitle: '影院常见问题',
-      faqDescription: '查找常见影院问题的答案，从停车到座位和无障碍服务。',
+      faqTitle: '常见问题',
+      faqDescription: '有疑问吗？我们有答案。查看我们的常见问题，了解更多关于影院、订票流程等信息。',
     },
     checkoutPayment: {
       title: '结账付款',
@@ -1261,8 +1262,9 @@ const messages = {
       weekends: 'Hujung Minggu',
       publicHolidays: 'Cuti Umum',
       availableAmenities: 'Kemudahan Tersedia',
-      faqTitle: 'Soalan Lazim Pawagam',
-      faqDescription: 'Cari jawapan untuk soalan pawagam biasa, dari tempat letak kereta hingga tempat duduk dan perkhidmatan aksesibiliti.',
+      faqTitle: 'Soalan Lazim',
+      faqDescription: 'Ada soalan? Kami ada jawapan. Lihat Soalan Lazim kami untuk maklumat lanjut tentang pawagam, proses tempahan, dan banyak lagi.',
+
     },
     checkoutPayment: {
       title: 'Daftar Keluar & Bayar',

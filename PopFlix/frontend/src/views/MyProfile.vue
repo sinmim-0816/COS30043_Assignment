@@ -19,7 +19,7 @@ import {
 import { useAppI18n } from '../utils/i18n';
 import FooterView from '@/components/FooterView.vue';
 
-const activeTab = ref('Profile');
+const activeTab = ref('profile');
 const route = useRoute();
 const isEditing = ref(false);
 const isPasswordModalOpen = ref(false);
@@ -336,7 +336,7 @@ watch(
   { immediate: true },
 );
 watch(() => activeTab.value, (newTab) => {
-  if (newTab === 'Reviews' && currentUser.value?.id) {
+  if (newTab === 'reviews' && currentUser.value?.id) {
     fetchUserReviews(currentUser.value.id);
   }
 });
@@ -386,20 +386,20 @@ const progressToNextTier = computed(() => {
 });
 
 const tabs = computed(() => [
-  { name: t('profile.tabs.profile') },
-  { name: t('profile.tabs.ticketDesign') },
-  { name: t('profile.tabs.reviews') },
-  { name: t('profile.tabs.rewards') }
+  { id: 'profile', label: t('profile.tabs.profile') },
+  { id: 'ticket-design', label: t('profile.tabs.ticketDesign') },
+  { id: 'reviews', label: t('profile.tabs.reviews') },
+  { id: 'rewards', label: t('profile.tabs.rewards') }
 ]);
 
 const normalizeTabQuery = (tabValue) => {
   if (!tabValue) return null;
 
   const normalized = String(tabValue).replace(/\+/g, ' ').trim().toLowerCase();
-  if (normalized === 'profile') return 'Profile';
-  if (normalized === 'ticket design') return 'Ticket Design';
-  if (normalized === 'reviews') return 'Reviews';
-  if (normalized === 'rewards') return 'Rewards';
+  if (normalized === 'profile') return 'profile';
+  if (normalized === 'ticket design' || normalized === 'ticket-design') return 'ticket-design';
+  if (normalized === 'reviews') return 'reviews';
+  if (normalized === 'rewards') return 'rewards';
 
   return null;
 };
@@ -408,10 +408,10 @@ const scrollTabSectionIntoView = async (tabName) => {
   await nextTick();
 
   const targetMap = {
-    Profile: tabViewportRef,
-    'Ticket Design': ticketDesignSectionRef,
-    Reviews: reviewsSectionRef,
-    Rewards: rewardsSectionRef,
+    profile: tabViewportRef,
+    'ticket-design': ticketDesignSectionRef,
+    reviews: reviewsSectionRef,
+    rewards: rewardsSectionRef,
   };
 
   const target = targetMap[tabName]?.value;
@@ -421,10 +421,10 @@ const scrollTabSectionIntoView = async (tabName) => {
 };
 
 const applyRouteTab = async (tabValue) => {
-  const targetTab = normalizeTabQuery(tabValue) || 'Profile';
+  const targetTab = normalizeTabQuery(tabValue) || 'profile';
   activeTab.value = targetTab;
 
-  if (targetTab === 'Reviews' && currentUser.value?.id) {
+  if (targetTab === 'reviews' && currentUser.value?.id) {
     fetchUserReviews(currentUser.value.id);
   }
 
@@ -722,18 +722,18 @@ const passStrengthText = computed(() => {
         <div class="faq-toggle-pill">
           <button
             v-for="tab in tabs"
-            :key="tab.name"
+            :key="tab.id"
             class="faq-toggle-btn"
-            :class="{ 'active': activeTab === tab.name }"
-            @click="activeTab = tab.name"
+            :class="{ 'active': activeTab === tab.id }"
+            @click="activeTab = tab.id"
           >
-            {{ tab.name }}
+            {{ tab.label }}
           </button>
         </div>
       </div>
 
       <div class="tab-view-viewport" ref="tabViewportRef">
-        <section v-if="activeTab === 'Profile'" class="control-grid-3col">
+        <section v-if="activeTab === 'profile'" class="control-grid-3col">
           
           <div class="glass-control-card">
             <h3 class="panel-inner-title fs-6">{{ t('profile.personalDetails') }}</h3>
@@ -861,7 +861,7 @@ const passStrengthText = computed(() => {
           </div>
         </section>
 
-        <section v-if="activeTab === 'Profile'" class="display-settings-shell">
+        <section v-if="activeTab === 'profile'" class="display-settings-shell">
           <div class="glass-control-card display-settings-card">
             <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
               <div>
@@ -919,7 +919,7 @@ const passStrengthText = computed(() => {
           </div>
         </section>
 
-        <section v-if="activeTab === 'Ticket Design'" class="gallery-panel animate-fade" ref="ticketDesignSectionRef">
+        <section v-if="activeTab === 'ticket-design'" class="gallery-panel animate-fade" ref="ticketDesignSectionRef">
           <div v-if="isTicketsLoading" class="loading-placeholder">
             <p>{{ t('profile.loadingTicketDesigns') }}</p>
           </div>
@@ -985,7 +985,7 @@ const passStrengthText = computed(() => {
           </div>
         </section>
 
-       <section v-if="activeTab === 'Reviews'" class="reviews-panel animate-fade" ref="reviewsSectionRef">
+       <section v-if="activeTab === 'reviews'" class="reviews-panel animate-fade" ref="reviewsSectionRef">
           <div v-if="isLoading" class="d-flex justify-center align-center py-10">
             <v-progress-circular indeterminate color="#ff5252" size="40" />
           </div>
@@ -1062,7 +1062,7 @@ const passStrengthText = computed(() => {
             </div>
           </div>
         </section>
-        <section v-if="activeTab === 'Rewards'" class="rewards-panel animate-fade" ref="rewardsSectionRef">
+        <section v-if="activeTab === 'rewards'" class="rewards-panel animate-fade" ref="rewardsSectionRef">
           <div class="tier-cards-grid">
           
             <div class="tier-card border-bronze" :class="{ 'is-active': currentTier === 'Bronze' }">
