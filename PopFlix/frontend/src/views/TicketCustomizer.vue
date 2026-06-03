@@ -192,9 +192,19 @@ onMounted(async () => {
         const movie = await fetchMovieDetails(movieId);
         if (movie) {
             movieTitle.value = movie.title;
-            moviePosters.value = movie.posters || [movie.poster];
+            moviePosters.value = (movie.posters || [movie.poster])
+            .filter(Boolean)
+            .map(path => {
+                if (path.startsWith('http')) return path;
+                return `${BASE_URL}${path}`;
+            });
             const BASE_URL = 'https://image.tmdb.org/t/p/original';
-            movieBackdrops.value = (movie.backdrops || []).map(path => `${BASE_URL}${path}`);
+            movieBackdrops.value = (movie.backdrops || [])
+            .filter(Boolean)
+            .map(path => {
+                if (path.startsWith('http')) return path;
+                return `${BASE_URL}${path}`;
+            });
         }
 
     }

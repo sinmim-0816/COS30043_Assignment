@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, Pagination, EffectFade, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -47,10 +47,24 @@ const toastMessage = ref('');
 const isSuccess = ref(true);
 
 const hasScrolledExperiences = ref(false);
+const scrollY = ref(0);
+let scrollObserver = null;
 
 const handleExperienceScroll = (event) => {
     hasScrolledExperiences.value = event.target.scrollTop > 10;
 };
+
+const handleWindowScroll = () => {
+    scrollY.value = window.scrollY || window.pageYOffset || 0;
+};
+
+const heroBackdropStyle = computed(() => ({
+    transform: `translate3d(0, ${Math.min(scrollY.value * 0.12, 140)}px, 0) scale(1.08)`,
+}));
+
+const heroOverlayStyle = computed(() => ({
+    opacity: Math.max(0.65, 1 - scrollY.value / 1100),
+}));
 const onSwiper = (swiper) => {
     swiperInstance.value = swiper;
 };
@@ -303,6 +317,9 @@ onMounted(async () => {
         }
     }
 
+    handleWindowScroll();
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -311,7 +328,13 @@ onMounted(async () => {
         });
     }, { threshold: 0.2 });
 
-    document.querySelectorAll('h2, .scroll-animate').forEach((el) => observer.observe(el));
+    document.querySelectorAll('h2, .scroll-animate, [data-scroll-reveal]').forEach((el) => observer.observe(el));
+    scrollObserver = observer;
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', handleWindowScroll);
+    scrollObserver?.disconnect();
 });
 
 watch(
@@ -368,10 +391,17 @@ watch(locale, async () => {
                 <SwiperSlide v-for="movie in featuredMovies.slice(0, 10)" :key="movie?.id" class="slider_img">
                     <div class="overlay-gradient"></div>
                     <div class="bottom-fade"></div>
-                    <v-img :src="getImageURL(movie?.backdrop)" :alt="movie?.title" class="hero_bg" cover height="100%" />
+                    <v-img
+                        :src="getImageURL(movie?.backdrop)"
+                        :alt="movie?.title"
+                        class="hero_bg"
+                        :style="heroBackdropStyle"
+                        cover
+                        height="100%"
+                    />
                     <v-container fluid class="overlay-elements fill-height">
                         <v-row align="end" class="fill-height hero-row">
-                            <v-col class="hero_content" cols="12" md="6">
+                            <v-col class="hero_content scroll-reveal" cols="12" md="6" :style="heroOverlayStyle">
                                 <div class="d-flex align-center gap-3 mb-2">
                                     <v-img :src="getCertImage(getCertificate(movie))" contain width="45px" height="45px"
                                         class="flex-grow-0 cert"></v-img>
@@ -449,7 +479,7 @@ watch(locale, async () => {
             </v-dialog>
             <div class="section-connector"></div>
         </section>
-        <section id="now-showing">
+        <section id="now-showing" data-scroll-reveal>
             <v-container v-if="!isLoading" class="reveal-on-load" fluid>
                 <h2>{{ t('home.movieShowtime') }}</h2>
                 <div class="now-showing-toolbar mt-4 mx-5 mb-8">
@@ -551,7 +581,7 @@ watch(locale, async () => {
                 </v-window>
             </v-container>
         </section>
-        <section id="custom-ticket-cta" class=" position-relative">
+        <section id="custom-ticket-cta" class="position-relative" data-scroll-reveal>
             
             <v-container fluid class="text-center position-relative z-index-2 w-100 px-0">
                 
@@ -596,7 +626,7 @@ watch(locale, async () => {
 
             </v-container>
         </section>
-        <section id="experiences" >
+        <section id="experiences" data-scroll-reveal>
             <v-container fluid class="">
                 <div class="text-center mb-5">
                     <h2 class="text-h3 font-weight-black mx-auto">
@@ -646,7 +676,7 @@ watch(locale, async () => {
                         <v-fade-transition mode="out-in">
                             <div v-if="!expLoading && experienceData.length > 0" class="w-100 custom-feature-layout">
                                 
-                                <div class="d-flex flex-column feature-col-small">
+                                <div class="d-flex flex-column feature-col-small scroll-reveal">
                                     <div v-if="experienceData[0]" class="feature-card rounded-xl overflow-hidden position-relative">
                                         <v-img :src="experienceData[0].image_url" cover class="h-100 w-100 feature-img">
                                             <div class=" bottom-gradient"></div>
@@ -673,7 +703,7 @@ watch(locale, async () => {
                                     </v-btn>
                                 </div>
 
-                                <div class="feature-col-large" v-if="experienceData[1]">
+                                <div class="feature-col-large scroll-reveal" v-if="experienceData[1]">
                                     <div class="feature-card rounded-xl overflow-hidden position-relative h-100">
                                         <v-img :src="experienceData[1].image_url" cover class="h-100 w-100 feature-img">
                                             <div class="fill-height bottom-gradient"></div>
@@ -742,6 +772,8 @@ watch(locale, async () => {
     inset: 0;
     width: 100%;
     height: 100%;
+    will-change: transform;
+    transition: transform 180ms linear;
 }
 
 .hero_bg img,
@@ -898,6 +930,22 @@ watch(locale, async () => {
 
 .reveal-on-load {
     animation: professionalReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.scroll-reveal,
+.hero_content.scroll-reveal {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+    transition:
+        opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+}
+
+.scroll-reveal.is-visible,
+.hero_content.scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
 }
 
 .v-card:hover {
