@@ -96,10 +96,197 @@ watch(()=>props.filters, (newFilters)=>{
 </script>
 
 <template>
+    <template v-if="isMobile">
+        <v-dialog
+            :model-value="modelValue"
+            fullscreen
+            scrollable
+            transition="dialog-bottom-transition"
+            scrim="#00000099"
+            @update:model-value="val => $emit('update:modelValue', val)"
+        >
+            <v-card class="filter-sheet-shell">
+                <div class="d-flex flex-column drawer-inner">
+                    <div class="d-flex justify-space-between align-center mb-3">
+                        <h3 class="text-color">
+                            Filters
+                        </h3>
+                        <v-btn color="text-color" icon="mdi-close" variant="text" @click="$emit('close')"></v-btn>
+                    </div>
+                    <div class="filter-scroll-area">
+                        <div class="mb-4">
+                            <p class="text-overline text-color mb-2">Genre</p>
+                            <v-chip-group 
+                                v-model="localFilters.genre" 
+                                column 
+                                multiple
+                                selected-class="genre-chip-selected"
+                            >
+                                <v-chip
+                                    v-for="g in genreOptions"
+                                    :key="g.id"
+                                    :value="g.id"
+                                    :filter="false"
+                                    class="m-1 genre-chip"
+                                >
+                                    {{ g.name }}
+                                </v-chip>
+                            </v-chip-group>
+                        </div>
+
+                        <v-divider class="mb-3" color="grey-lighten-1"></v-divider>
+
+                        <!-- Languages -->
+                        <div class="mb-4">
+                            <v-expansion-panels 
+                            v-model="openedPanel"
+                            variants="accordion" class="filter-expansion">
+                                <v-expansion-panel bg-color="transparent">
+                                    <v-expansion-panel-title>
+                                        <div class="d-flex flex-column">
+                                            <p class="text-overline text-color m-0">Languages</p>
+                                            <span class="text-caption text-grey">
+                                                {{ localFilters.language.length > 0 ? `${localFilters.language.length} Selected` : '' }}
+                                            </span>
+                                        </div>
+                                    </v-expansion-panel-title>
+                                    <v-expansion-panel-text class="p-0 m-0">
+                                        <v-row no-gutters class="m-0">
+                                            <v-col cols="6" v-for="(lang) in availableLanguages" :key="lang">
+                                            <v-checkbox
+                                                v-model="localFilters.language"
+                                                :value="lang"
+                                                color="red-accent-3"
+                                                density="compact"
+                                                hide-details
+                                                multiple
+                                                class="language-checkbox"
+                                            >
+                                                <template v-slot:label>
+                                                    <span class="language-label">
+                                                        {{ lang === 'All' ? 'All Languages' : getLanguageName(lang) }}
+                                                    </span>
+                                                </template>
+                                            </v-checkbox>
+                                            </v-col>
+                                        </v-row>
+                                    </v-expansion-panel-text>
+                                </v-expansion-panel>
+                            </v-expansion-panels>
+                        </div>
+
+                        <v-divider class="mb-3" color="grey-lighten-1"></v-divider>
+                        
+                        <!-- Movie Age Filter -->
+                        <div class="mb-4">
+                            <v-expansion-panels 
+                            v-model="openedAge" variant="accordion" class="filter-expansion">
+                                <v-expansion-panel bg-color="transparent">
+                                <v-expansion-panel-title>
+                                    <div class="d-flex flex-column">
+                                    <p class="text-overline text-color m-0">Age Rating</p>
+                                    <span class="text-caption text-grey">
+                                        {{ localFilters.rating.length > 0 ? `${localFilters.rating.length} Selected` : '' }}
+                                    </span>
+                                    </div>
+                                </v-expansion-panel-title>
+
+                                <v-expansion-panel-text>
+                                    <div class="d-flex flex-wrap gap-3 py-2">
+                                    <div
+                                        v-for="rating in availableRatings"
+                                        :key="rating.value"
+                                        class="rating-item"
+                                        :class="{ 'rating-active': localFilters.rating.includes(rating.value) }"
+                                        @click="toggleRating(rating.value)"
+                                    >
+                                        <v-img
+                                            :src="rating.img"
+                                            width="50"
+                                            height="50"
+                                            contain
+                                            class="rounded-sm cursor-pointer transition-swing"
+                                            :style="{ opacity: localFilters.rating.includes(rating.value) ? '1' : '0.4' }"
+                                        ></v-img>
+                                    </div>
+                                    </div>
+                                </v-expansion-panel-text>
+                                </v-expansion-panel>
+                            </v-expansion-panels>
+                        </div>
+
+                        <v-divider class="mb-3" color="grey-lighten-1"></v-divider>
+                        <!-- Star Rating -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <p class="text-overline text-color m-0">Rating Range</p>
+                                <span class="text-caption text-red-accent-3 font-weight-bold">
+                                    {{ localFilters.ratingRange[0].toFixed(1) }} - {{ localFilters.ratingRange[1].toFixed(1) }}
+                                </span>
+                            </div>
+
+                            <v-range-slider
+                                v-model="localFilters.ratingRange"
+                                min="0"
+                                max="10"
+                                step="0.5"
+                                color="red-accent-3"
+                                thumb-label
+                                hide-details
+                                strict
+                                class="me-3"
+                            >
+                                <template v-slot:prepend>
+                                    <v-icon color="yellow-darken-2" class="me-3">mdi-star</v-icon>
+                                </template>
+                            </v-range-slider>
+                        </div>
+
+                        <v-divider class="mb-6" color="grey-lighten-1"></v-divider>
+
+                        <!-- SortBy -->
+                        <div class="mb-6">
+                            <p class="text-overline text-color mb-2">Sort By</p>
+                            <v-chip-group
+                                v-model="localFilters.sortBy"
+                                mandatory
+                                column
+                                selected-class="sort-chip-selected"
+                                class="sort-pills flex-wrap"
+                            >
+                                <v-chip value="default" :filter="false" class="m-1 sort-chip">
+                                    Default
+                                </v-chip>
+
+                                <v-chip value="latest" :filter="false" class="m-1 sort-chip">
+                                    Latest Release
+                                </v-chip>
+
+                                <v-chip value="rating" :filter="false" class="m-1 sort-chip">
+                                    Highest Rating
+                                </v-chip>
+
+                                <v-chip value="popularity" :filter="false" class="m-1 sort-chip">
+                                    Popularity
+                                </v-chip>
+                            </v-chip-group>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-4 justify-space-between filter-actions">
+                        <v-btn variant="outlined" height="48" width="140" color="grey" @click="reset" class="rounded-3">Clear All</v-btn>
+                        <v-btn color="red-accent-3" height="48" width="140" @click="apply" class="font-weight-bold rounded-3 movie-btn">
+                            Apply Filters
+                        </v-btn>
+                    </div>
+                </div>
+            </v-card>
+        </v-dialog>
+    </template>
     <v-navigation-drawer
-        :location="isMobile ? 'bottom' : 'right'"
+        v-else
+        location="right"
         temporary
-        :width="isMobile ? '100vw' : 400"
+        width="400"
         class="bg-grey-darken-4 filter-drawer-shell"
         :model-value="modelValue"
         @update:model-value="val => $emit('update:modelValue', val)"
@@ -309,15 +496,17 @@ watch(()=>props.filters, (newFilters)=>{
 }
 
 @media (max-width: 600px) {
+    .filter-sheet-shell {
+        width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        background: var(--bg-color);
+        overflow: hidden;
+    }
+
     .filter-drawer-shell {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        height: min(88vh, 760px) !important;
-        top: auto !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        border-radius: 24px 24px 0 0;
         padding-top: 1rem;
         padding-bottom: 1rem;
     }
