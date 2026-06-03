@@ -1,44 +1,40 @@
-# PopFlix
+# PopFlix ![PopFlix Logo](frontend/public/popflix-logo.png)
 
-This template should help get you started developing with Vue 3 in Vite.
+Welcome to **PopFlix**, your go-to destination for movie discovery and booking.
 
-## Recommended IDE Setup
+### 🌐 Live Demo
+Access the website here: [https://popflix-frontend.onrender.com/](https://popflix-frontend.onrender.com/)
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+> **Note on Performance:** This project is hosted on Render’s free tier. If the backend hasn't been used recently, it may take **1–2 minutes to wake up** upon your first visit. Please be patient!
 
-## Recommended Browser Setup
+---
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+### 🚀 Overview
+PopFlix is a full-stack web application designed for movie enthusiasts to browse films, manage their profiles, and track loyalty points based on their viewing habits.
 
-## Customize configuration
+---
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### 🔑 Test User Credentials
+You can use the following accounts to explore the platform. All accounts use the same password.
 
-## Project Setup
+**Password for all users:** `[Password123!]`
 
-```sh
-npm install
-```
+| Name | Email |
+| :--- | :--- |
+| Fam Sin Mim | `janefam88@gmail.com` |
+| John Doe | `john@popflix.com` |
+| Alice Tan | `alice.tan@example.com` |
+| Michael Lee | `michael.lee@example.com` |
+| Sophia Ng | `sophia.ng@example.com` |
+| David Chan | `david.chan@example.com` |
+| Emily Wong | `emily.wong@example.com` |
 
-### Compile and Hot-Reload for Development
+---
 
-```sh
-npm run dev
-```
+### 🛠️ Built With
+* **Frontend:** Vue 3 + Vite
+* **Backend:** NestJS
+* **Database:** [Insert Database Name, e.g., MongoDB]
+* **Hosting:** Render
 
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+---
