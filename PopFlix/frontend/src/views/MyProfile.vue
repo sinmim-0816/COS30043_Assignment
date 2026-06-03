@@ -707,8 +707,8 @@ const passStrengthText = computed(() => {
         <div class="progression-footer-messages" v-if="currentTier !== 'Gold'">
           <p class="incentive-text">
             {{ t('profile.spendMoreToUnlock', {
-              amount: `RM ${Number(nextTierThreshold.value - Number(user.annualSpend)).toFixed(2)}`,
-              tier: nextTierLabel.value
+              amount: `RM ${Number(nextTierThreshold - Number(user.annualSpend)).toFixed(2)}`,
+              tier: nextTierLabel
             }) }}
           </p>
         </div>
