@@ -2,19 +2,21 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import {
     Calendar, MapPin, Instagram, MessageCircle,
-    Clock, Copy, Check, X, Sofa, Pencil, Star
+    Clock, Copy, Check, X, Sofa, Pencil, Star, Armchair
 } from 'lucide-vue-next';
 import QrcodeVue from 'qrcode.vue';
 
-// Import other hooks and components
 import { useTickets } from '../hook/useTickets';
 import { useReviews } from '../hook/useReviews';
 import { useAuthStore } from '../stores/auth';
+import { useAppI18n } from '@/utils/i18n';
 import FooterView from '@/components/FooterView.vue';
 
 const { ticketsList: tickets, isTicketsLoading, ticketsError, fetchTickets } = useTickets();
 const { submitReview: postReview } = useReviews();
 const authStore = useAuthStore();
+const { t, locale } = useAppI18n();
+
 const currentUser = computed(() => authStore.user);
 const selectedTicketIndex = ref(0);
 const isOverlayOpen = ref(false);
@@ -27,6 +29,7 @@ const reviewSubmitting = ref(false);
 const reviewError = ref('');
 const reviewSuccess = ref('');
 const reviewTicket = ref(null);
+
 const newReview = ref({
     rating: 0,
     title: '',
@@ -35,20 +38,25 @@ const newReview = ref({
 
 const activeTicket = computed(() => tickets.value[selectedTicketIndex.value]);
 
+const appDateLocale = computed(() => {
+    if (locale.value === 'zh') return 'zh-CN';
+    if (locale.value === 'ms') return 'ms-MY';
+    return 'en-US';
+});
+
 const countdowns = computed(() => {
-    return tickets.value.reduce((acc, t) => {
-        const diff = new Date(t.startTime) - currentTime.value;
+    return tickets.value.reduce((acc, ticket) => {
+        const diff = new Date(ticket.startTime) - currentTime.value;
 
         if (diff <= 0) {
-            acc[t.id] = {
+            acc[ticket.id] = {
                 expired: true,
-                text: 'Completed',
+                text: t('myTickets.completed'),
                 hrs: '00',
                 mins: '00',
                 secs: '00',
                 critical: false
             };
-
             return acc;
         }
 
@@ -61,19 +69,10 @@ const countdowns = computed(() => {
         const secs = String(totalSecs % 60).padStart(2, '0');
 
         const now = new Date(currentTime.value);
-        const target = new Date(t.startTime);
+        const target = new Date(ticket.startTime);
 
-        const startOfNow = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            now.getDate()
-        );
-
-        const startOfTarget = new Date(
-            target.getFullYear(),
-            target.getMonth(),
-            target.getDate()
-        );
+        const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfTarget = new Date(target.getFullYear(), target.getMonth(), target.getDate());
 
         const calendarDayDiff = Math.round(
             (startOfTarget - startOfNow) / (1000 * 60 * 60 * 24)
@@ -82,16 +81,16 @@ const countdowns = computed(() => {
         let text = '';
 
         if (totalHrs < 4) {
-            text = `${hrs}h ${mins}m left`;
+            text = t('myTickets.left', { hrs, mins });
         } else if (calendarDayDiff === 0) {
-            text = 'Today';
+            text = t('myTickets.today');
         } else if (calendarDayDiff === 1) {
-            text = '1 Day Away';
+            text = t('myTickets.oneDayAway');
         } else {
-            text = `${calendarDayDiff} Days Away`;
+            text = t('myTickets.daysAway', { days: calendarDayDiff });
         }
 
-        acc[t.id] = {
+        acc[ticket.id] = {
             expired: false,
             text,
             hrs,
@@ -106,7 +105,6 @@ const countdowns = computed(() => {
 
 const isTicketReviewable = (ticket) => {
     const start = new Date(ticket.startTime);
-
     const runtimeText = ticket.runtime || '';
 
     const hoursMatch = runtimeText.match(/(\d+)h/);
@@ -123,9 +121,12 @@ const isTicketReviewable = (ticket) => {
 };
 
 let timerInstance = null;
+
 onMounted(async () => {
     await fetchTickets();
-    timerInstance = setInterval(() => { currentTime.value = new Date(); }, 1000);
+    timerInstance = setInterval(() => {
+        currentTime.value = new Date();
+    }, 1000);
 });
 
 onUnmounted(() => {
@@ -155,23 +156,37 @@ const handleCloseOverlay = () => {
 const handleCopyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     copySuccess.value = true;
-    setTimeout(() => { copySuccess.value = false; }, 2000);
+
+    setTimeout(() => {
+        copySuccess.value = false;
+    }, 2000);
 };
 
 const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+    return new Date(dateStr).toLocaleDateString(appDateLocale.value, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short'
+    });
 };
 
 const formatTime = (dateStr) => {
-    return new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return new Date(dateStr).toLocaleTimeString(appDateLocale.value, {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
 };
 
 const getHallLabel = (hall) => {
-    return String(hall || 'Hall unavailable').split('—')[0].split('-')[0].trim();
+    return String(hall || t('myTickets.hallUnavailable'))
+        .split('—')[0]
+        .split('-')[0]
+        .trim();
 };
 
 const getParkingLabel = (parkingSpot) => {
-    if (!parkingSpot || parkingSpot === 'None') return 'None';
+    if (!parkingSpot || parkingSpot === 'None') return t('myTickets.none');
     return String(parkingSpot).split('·').pop().trim();
 };
 
@@ -198,41 +213,48 @@ const submitReview = async () => {
     reviewSuccess.value = '';
 
     if (!reviewTicket.value?.bookingId) {
-        reviewError.value = 'Unable to identify booking for this ticket.';
+        reviewError.value = t('myTickets.unableBooking');
         return;
     }
+
     const userId = currentUser.value?.id;
+
     if (!userId) {
-        reviewError.value = 'Please login again before posting review.';
+        reviewError.value = t('myTickets.loginAgain');
         return;
     }
+
     if (!newReview.value.rating || newReview.value.rating < 1) {
-        reviewError.value = 'Please select a star rating.';
+        reviewError.value = t('myTickets.selectRating');
         return;
     }
+
     if (!newReview.value.comment?.trim()) {
-        reviewError.value = 'Please enter your comment.';
+        reviewError.value = t('myTickets.enterComment');
         return;
     }
 
     reviewSubmitting.value = true;
+
     try {
         await postReview({
-            title: newReview.value.title?.trim() || 'Review',
+            title: newReview.value.title?.trim() || t('myTickets.reviewDefaultTitle'),
             comment: newReview.value.comment.trim(),
             rating: Number(newReview.value.rating),
             booking: { id: Number(reviewTicket.value.bookingId) },
             user: { id: Number(userId) }
         });
-        reviewSuccess.value = 'Review posted successfully.';
+
+        reviewSuccess.value = t('myTickets.reviewPosted');
         newReview.value = { rating: 0, title: '', comment: '' };
+
         setTimeout(() => {
             isReviewDialogOpen.value = false;
             reviewTicket.value = null;
             reviewSuccess.value = '';
         }, 900);
     } catch (err) {
-        reviewError.value = err?.response?.data?.message || 'Failed to post review.';
+        reviewError.value = err?.response?.data?.message || t('myTickets.reviewFailed');
     } finally {
         reviewSubmitting.value = false;
     }
@@ -243,12 +265,12 @@ const submitReview = async () => {
     <v-app>
     <v-layout class="cinematic-dashboard fill-height align-start pa-6" fluid width="100vw">
         <v-row class="mt-3 w-100 ma-0">
-            <h2>My Bookings</h2>
+            <h2>{{ t('myTickets.title') }}</h2>
 
             <v-col cols="12" class="px-0">
                 <div v-if="isTicketsLoading" class="tickets-state-panel">
                     <v-progress-circular indeterminate color="red-accent-3" size="46"></v-progress-circular>
-                    <p class="mt-4 text-grey-lighten-1">Loading your confirmed tickets...</p>
+                    <p class="mt-4 text-grey-lighten-1">{{ t('myTickets.loadingTickets') }}</p>
                 </div>
 
                 <v-alert v-else-if="ticketsError" type="error" variant="tonal" class="mb-5 rounded-lg">
@@ -257,8 +279,8 @@ const submitReview = async () => {
 
                 <div v-else-if="tickets.length === 0" class="tickets-state-panel">
                     <v-icon size="58" color="grey-darken-1" class="mb-3">mdi-ticket-confirmation-outline</v-icon>
-                    <h3 class="text-white">No confirmed tickets yet</h3>
-                    <p class="text-grey-lighten-1">Paid bookings will appear here automatically.</p>
+                    <h3 class="text-white">{{ t('myTickets.noTicketsTitle') }}</h3>
+                    <p class="text-grey-lighten-1">{{ t('myTickets.noTicketsSubtitle') }}</p>
                 </div>
 
                 <div v-else class="cyber-ticket-stack-container" :class="{ 'overlay-active': isOverlayOpen }">
@@ -331,12 +353,12 @@ const submitReview = async () => {
                                     </div>
                                 </div>
                                 <span class="text-uppercase tracking-widest text-grey font-weight-black"
-                                    style="font-size: 8px;">FAST PASS</span>
+                                    style="font-size: 8px;">{{ t('myTickets.fastPass') }}</span>
                                 <div class="d-flex justify-center mt-3">
                                     <v-btn v-if="isTicketReviewable(t)" class=" review-btn rounded-pill" @click.stop="openReviewDialog(t)">
                                         <span>
                                             <Pencil size="16" class="me-2" />
-                                        </span>Leave a Review
+                                        </span>{{ t('myTickets.leaveReview') }}
                                     </v-btn>
                                 </div>
                             </div>
@@ -351,11 +373,11 @@ const submitReview = async () => {
             <v-card class="clipping clip-1 pa-6">
                 <div class="clip-tape"></div>
 
-                <v-card-title class="clip-headline fw-bold text-center">Leave a Comment</v-card-title>
+                <v-card-title class="clip-headline fw-bold text-center">{{ t('myTickets.leaveComment') }}</v-card-title>
 
                 <v-card-text class="px-0">
                     <p class="clip-byline d-flex align-center gap-1">
-                        {{ currentUser ? currentUser.firstName : 'Anonymous' }} •
+                        {{ currentUser ? currentUser.firstName : t('myTickets.anonymous') }} •
 
                         <span class="d-flex">
                             <Star v-for="n in 5" :key="n" size="20" :fill="n <= newReview.rating ? '#f5c518' : 'none'"
@@ -364,16 +386,15 @@ const submitReview = async () => {
                         </span>
                     </p>
 
-                    <v-text-field v-model="newReview.title" placeholder="Headline Title" variant="plain"
+                    <v-text-field v-model="newReview.title" :placeholder="t('myTickets.headlineTitle')" variant="plain"
                         class="clip-headline-input"></v-text-field>
 
-                    <v-textarea v-model="newReview.comment" placeholder="Your review..." variant="plain"
+                    <v-textarea v-model="newReview.comment" :placeholder="t('myTickets.yourReview')" variant="plain"
                         class="clip-body-input" rows="3"></v-textarea>
                 </v-card-text>
 
                 <v-card-actions class="px-0">
-                    <v-btn block class="submit-review-btn" :loading="reviewSubmitting" @click="submitReview">Post
-                        Review</v-btn>
+                    <v-btn block class="submit-review-btn" :loading="reviewSubmitting" @click="submitReview">{{ t('myTickets.postReview') }}</v-btn>
                 </v-card-actions>
                 <p v-if="reviewError" class="review-error mt-2">{{ reviewError }}</p>
                 <p v-if="reviewSuccess" class="review-success mt-2">{{ reviewSuccess }}</p>
@@ -445,18 +466,18 @@ const submitReview = async () => {
 
                                     <div class="stub-details-inline-grid mb-5">
                                         <div class="detail-cell">
-                                            <span class="lbl">Hall</span>
+                                            <span class="lbl">{{ t('myTickets.hall') }}</span>
                                             <span class="val">{{ getHallLabel(activeTicket.hall) }}</span>
                                         </div>
                                         <v-divider vertical class="mx-3 border-opacity-20" color="#111" />
                                         <div class="detail-cell">
-                                            <span class="lbl">Seats</span>
+                                            <span class="lbl">{{ t('myTickets.seats') }}</span>
                                             <span class="val font-mono font-weight-black">{{
                                                 activeTicket.seats.join(', ') }}</span>
                                         </div>
                                         <v-divider vertical class="mx-3 border-opacity-20" color="#111" />
                                         <div class="detail-cell">
-                                            <span class="lbl">Parking</span>
+                                            <span class="lbl">{{ t('myTickets.parking') }}</span>
                                             <span class="val text-blue-darken-2 font-weight-bold">
                                                 {{ getParkingLabel(activeTicket.parkingSpot) }}
                                             </span>

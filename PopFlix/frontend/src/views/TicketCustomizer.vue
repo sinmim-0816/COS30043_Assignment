@@ -77,29 +77,26 @@ const loadTicketResources = async () => {
     const movieId = route.params.movieId;
     activeTicket.value = await fetchTicketDetails(route.params.bookingId);
 
-    movieTitle.value = '';
-    moviePosters.value = [];
-    movieBackdrops.value = [];
-    movieBackdrop.value = '';
-    bg.value.src = '';
-    selectedBgIndex.value = -1;
+    if (!movieId) return;
 
-    if (!movieId) {
-        return;
-    }
+    const oldBackdrops = [...movieBackdrops.value];
+    const oldPosters = [...moviePosters.value];
 
     const movie = await fetchMovieDetails(movieId);
-    if (!movie) {
-        return;
-    }
+    if (!movie) return;
 
     movieTitle.value = movie.title;
-    moviePosters.value = (movie.posters || [movie.poster])
+
+    const nextPosters = (movie.posters || [movie.poster])
         .filter(Boolean)
         .map(normalizeImageUrl);
-    movieBackdrops.value = (movie.backdrops || [])
+
+    const nextBackdrops = (movie.backdrops || [])
         .filter(Boolean)
         .map(normalizeImageUrl);
+
+    moviePosters.value = nextPosters.length > 0 ? nextPosters : oldPosters;
+    movieBackdrops.value = nextBackdrops.length > 0 ? nextBackdrops : oldBackdrops;
 };
 
 const syncLayoutMode = () => {
