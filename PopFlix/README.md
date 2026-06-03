@@ -36,7 +36,7 @@ You can use the following accounts to explore the platform. All accounts use the
 ### 🛠️ Built With
 * **Frontend:** Vue 3 + Vite
 * **Backend:** NestJS
-* **Database:** [Insert Database Name, e.g., MongoDB]
-* **Hosting:** Render
+* **Database:** PostgreSQL
+* **Hosting:** Render, Supabase
 
 ---
