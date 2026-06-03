@@ -47,9 +47,7 @@ export class AuthService {
   async forgotPassword(email: string) {
     const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
-      throw new NotFoundException(
-        'If an account exists, a reset link has been sent.',
-      );
+      throw new NotFoundException('If an account exists, a reset link has been sent.');
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -96,9 +94,7 @@ export class AuthService {
     }
 
     if (!user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
-      throw new BadRequestException(
-        'This reset link has expired. Please request a new one.',
-      );
+      throw new BadRequestException('This reset link has expired. Please request a new one.');
     }
 
     return { valid: true, email: user.email };
@@ -128,11 +124,7 @@ export class AuthService {
       where: { activationToken: token },
     });
 
-    if (
-      !user ||
-      !user.activationTokenExpiry ||
-      user.activationTokenExpiry < new Date()
-    ) {
+    if (!user || !user.activationTokenExpiry || user.activationTokenExpiry < new Date()) {
       throw new BadRequestException('Invalid or expired activation link.');
     }
 
@@ -154,11 +146,7 @@ export class AuthService {
     return { message: 'Account activated successfully.' };
   }
 
-  async changePassword(
-    userId: number,
-    currentPassword: string,
-    newPassword: string,
-  ) {
+  async changePassword(userId: number, currentPassword: string, newPassword: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       select: ['id', 'password'],
@@ -176,18 +164,13 @@ export class AuthService {
       throw new BadRequestException('User password not found');
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.password,
-    );
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
       throw new BadRequestException('Current password is incorrect');
     }
 
     if (currentPassword === newPassword) {
-      throw new BadRequestException(
-        'New password must be different from current password',
-      );
+      throw new BadRequestException('New password must be different from current password');
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
