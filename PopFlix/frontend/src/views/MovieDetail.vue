@@ -1513,7 +1513,7 @@ const getClipClass = (index) => {
 }
 
 .press-section {
-    background: #0d0d12;
+    background: var(--bg-color);
     overflow: hidden;
 }
 
@@ -1522,13 +1522,13 @@ const getClipClass = (index) => {
     min-height: 300px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
     gap: 30px;
     flex-wrap: wrap;
     padding: 40px 0;
-    margin: 0 95px;
+    margin: 0 auto;
+    max-width: 1200px;
 }
-
 .clipping {
     background: #f5f0e0f2;
     border: 0.5px solid #ddd;
@@ -1649,14 +1649,24 @@ const getClipClass = (index) => {
 }
 
 @media (max-width: 960px) {
+    .press-section {
+        padding-inline: 16px;
+    }
+
     .news-wrap {
         flex-direction: column;
         align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        padding: 24px 0;
+        width: 100%;
     }
 
     .clipping {
         transform: none !important;
-        margin-bottom: 30px;
+        width: 100%;
+        max-width: 340px;
+        margin: 0 auto 24px;
     }
 }
 

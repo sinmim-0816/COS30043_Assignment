@@ -311,7 +311,6 @@ const submitReview = async () => {
                                     </div>
                                     <h4 class="text-color fw-bold mb-2">{{ ticket.title }}</h4>
                                     <div class="d-flex align-center gap-1 mb-2">
-                                        <Armchair size="12" class="text-color" />
                                         <span class="text-caption fw-bold" style="color: var(--ticket-accent)">
                                             <Sofa size="18" /> {{ ticket.seats.join(', ') }}
                                         </span>
