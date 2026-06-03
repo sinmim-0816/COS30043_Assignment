@@ -21,10 +21,12 @@ import ThemeToggle from './ThemeToggle.vue'
 import GlobalSearch from './GlobalSearch.vue'
 import { resolveBackendAssetPath } from '../utils/FormatPicture.js'
 import { useNotifications } from '../hook/useNotification.js'
+import { useAppI18n } from '../utils/i18n'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const { t } = useAppI18n()
 
 const isSearchOpen = ref(false)
 const isMobileMenuOpen = ref(false)
@@ -157,10 +159,10 @@ watch(
         <nav v-if="showNavLinks" class="desktop-nav">
             <ul @mouseleave="handleMouseLeave" class="nav-list-wrapper">
                 <li class="hover-capsule" :style="hoverStyle"></li>
-                <li @mouseenter="handleMouseEnter"><router-link to="/movies">Movies</router-link></li>
-                <li @mouseenter="handleMouseEnter"><router-link to="/showtimes">Showtimes</router-link></li>
-                <li @mouseenter="handleMouseEnter"><router-link to="/theaters">Cinemas</router-link></li>
-                <li @mouseenter="handleMouseEnter"><router-link to="/customize-list">Customization</router-link></li>
+                <li @mouseenter="handleMouseEnter"><router-link to="/movies">{{ t('topbar.movies') }}</router-link></li>
+                <li @mouseenter="handleMouseEnter"><router-link to="/showtimes">{{ t('topbar.showtimes') }}</router-link></li>
+                <li @mouseenter="handleMouseEnter"><router-link to="/theaters">{{ t('topbar.cinemas') }}</router-link></li>
+                <li @mouseenter="handleMouseEnter"><router-link to="/customize-list">{{ t('topbar.customization') }}</router-link></li>
             </ul>
         </nav>
         <div class="nav-right-container">
@@ -175,7 +177,7 @@ watch(
                 v-if="isLoggedIn" 
                 to="/notification" 
                 class="p-2 desktop-action bell-link-wrapper"
-                aria-label="View notifications"
+                :aria-label="t('topbar.notifications')"
             >
                 <Bell class="icon" />
                 <span v-if="unreadCount > 0" class="badge-counter-indicator">
@@ -222,19 +224,19 @@ watch(
                     <ul v-if="isDropdownOpen" class="profile-dropdown-menu me-2">
                         <li @click="navigateTo('MyProfile')" class="dropdown-item">
                             <User size="16" />
-                            <span>View Profile</span>
+                            <span>{{ t('topbar.viewProfile') }}</span>
                         </li>
 
                         <li @click="navigateTo('MyTickets')" class="dropdown-item">
                             <Ticket size="16" />
-                            <span>My Bookings</span>
+                            <span>{{ t('topbar.myBookings') }}</span>
                         </li>
 
                         <li class="dropdown-divider"></li>
 
                         <li @click="handleLogout" class="dropdown-item logout-item">
                             <LogOut size="16" />
-                            <span>Log Out</span>
+                            <span>{{ t('topbar.logOut') }}</span>
                         </li>
                     </ul>
                 </transition>
@@ -245,12 +247,12 @@ watch(
 
                 <div class="auth-buttons-group desktop-action">
                     <router-link to="/register" class="register-btn px-4 py-2">
-                        Register
+                        {{ t('topbar.register') }}
                     </router-link>
 
                     <router-link to="/login" class="login-btn px-4 py-2 me-2">
                         <User class="icon me-1" size="22" />
-                        Login
+                        {{ t('topbar.login') }}
                     </router-link>
                 </div>
 
@@ -260,7 +262,7 @@ watch(
                 type="button"
                 class="p-2 mobile-menu-button m-0"
                 @click.stop="toggleMobileMenu"
-                aria-label="Open menu"
+                :aria-label="t('topbar.openMenu')"
             >
                 <Menu />
             </button>
@@ -274,19 +276,19 @@ watch(
     >
         <nav class="mobile-dropdown-links">
             <router-link to="/movies" @click="closeMobileMenu">
-                Movies
+                {{ t('topbar.movies') }}
             </router-link>
 
             <router-link to="/showtimes" @click="closeMobileMenu">
-                Showtimes
+                {{ t('topbar.showtimes') }}
             </router-link>
 
             <router-link to="/theaters" @click="closeMobileMenu">
-                Cinemas
+                {{ t('topbar.cinemas') }}
             </router-link>
 
             <router-link to="/customize-list" @click="closeMobileMenu">
-                Customization
+                {{ t('topbar.customization') }}
             </router-link>
 
             <template v-if="isLoggedIn">
@@ -295,7 +297,7 @@ watch(
                     @click="handleLogout"
                 >
                     <LogOut size="18" />
-                    Logout
+                    {{ t('topbar.logOut') }}
                 </button>
             </template>
         </nav>

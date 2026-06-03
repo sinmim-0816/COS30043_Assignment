@@ -275,7 +275,7 @@ const getClipClass = (index) => {
                     <v-icon icon="mdi-movie-roll" size="24"></v-icon>
                 </v-progress-circular>
 
-                <p class="mt-6 loading-text">Loading...</p>
+                <p class="mt-6 loading-text">{{ t('common.loading') }}</p>
                 <div class="loading-bar"></div>
             </div>
         </div>

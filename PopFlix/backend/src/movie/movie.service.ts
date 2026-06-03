@@ -21,6 +21,14 @@ export class MovieService {
     private showtimeRepo: Repository<Showtime>,
   ) {}
 
+  private normalizeTmdbLanguage(language: string) {
+    const normalized = String(language || '').toLowerCase();
+
+    if (normalized.startsWith('zh')) return 'zh-CN';
+    if (normalized.startsWith('ms')) return 'ms-MY';
+    return 'en-US';
+  }
+
   async findAll({
     page = 1,
     limit = 25,
@@ -287,7 +295,7 @@ export class MovieService {
     };
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, language = 'en-US') {
     const movie = await this.movieRepo.findOne({
       where: { tmdb_id: id },
     });
@@ -304,8 +312,13 @@ export class MovieService {
     ];
 
     const tmdbKey = process.env.TMDB_KEY;
+    const tmdbLanguage = this.normalizeTmdbLanguage(language);
+    const tmdbParams = `api_key=${tmdbKey}&language=${encodeURIComponent(tmdbLanguage)}`;
 
     const detailsRes = await axios.get<{
+      title: string;
+      overview: string;
+      original_language: string;
       runtime: number;
       vote_average: number;
       tagline: string;
@@ -322,19 +335,19 @@ export class MovieService {
         logo_path: string | null;
         origin_country: string;
       }[];
-    }>(`https://api.themoviedb.org/3/movie/${id}?api_key=${tmdbKey}`);
+    }>(`https://api.themoviedb.org/3/movie/${id}?${tmdbParams}`);
     const tmdb = detailsRes.data;
 
     const creditsRes: AxiosResponse<TmdbCreditsResponse> = await axios.get(
-      `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${tmdbKey}`,
+      `https://api.themoviedb.org/3/movie/${id}/credits?${tmdbParams}`,
     );
 
     const videoRes: AxiosResponse<TmdbVideosResponse> = await axios.get(
-      `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${tmdbKey}`,
+      `https://api.themoviedb.org/3/movie/${id}/videos?${tmdbParams}`,
     );
 
     const imagesRes = await axios.get<TmdbImageResponse>(
-      `https://api.themoviedb.org/3/movie/${id}/images?api_key=${tmdbKey}`,
+      `https://api.themoviedb.org/3/movie/${id}/images?${tmdbParams}`,
     );
 
     const actors = creditsRes.data.cast.map((a) => ({
@@ -382,8 +395,8 @@ export class MovieService {
     return {
       movie: {
         id: movie.tmdb_id,
-        title: movie.title,
-        overview: movie.overview,
+        title: tmdb.title || movie.title,
+        overview: tmdb.overview || movie.overview,
         poster: movie.poster_path,
         posters,
         backdrops,
@@ -393,7 +406,7 @@ export class MovieService {
         director: director,
         release_date: movie.release_date,
         runtime,
-        language: movie.original_language,
+        language: tmdb.original_language || movie.original_language,
         genres: movie.genre_ids,
         experiences,
         actors,

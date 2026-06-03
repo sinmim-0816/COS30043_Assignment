@@ -14,6 +14,7 @@ import { EXPERIENCE_NAMES, getExperienceStyle, getExpButtonStyle } from '../util
 import { useShowtimes } from '../hook/useShowtimes';
 import { addDays } from 'date-fns';
 import FooterView from '@/components/FooterView.vue';
+import { useAppI18n } from '../utils/i18n';
 
 const {
     allMovies,
@@ -29,6 +30,7 @@ const { items: experiences, loading, loadExperiences } = useExperience();
 const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
 const router = useRouter();
 const route = useRoute();
+const { t } = useAppI18n();
 const initialExp = route.query.exp && EXPERIENCE_NAMES.includes(String(route.query.exp).toUpperCase())
     ? String(route.query.exp).toUpperCase()
     : 'All';
@@ -236,7 +238,7 @@ const activeFilterPills = computed(() => {
         pills.push({
             type: 'range',
             id: filters.ratingRange,
-            label: `${filters.ratingRange[0]}-${filters.ratingRange[1]} Stars`
+            label: `${filters.ratingRange[0]}-${filters.ratingRange[1]} ${t('allMovies.stars')}`
         });
     }
     return pills;
@@ -290,7 +292,7 @@ onBeforeUnmount(() => {
                     <v-icon icon="mdi-movie-roll" size="24"></v-icon>
                 </v-progress-circular>
 
-                <p class="mt-6 loading-text">Loading...</p>
+                <p class="mt-6 loading-text">{{ t('allMovies.loading') }}</p>
                 <div class="loading-bar"></div>
             </div>
         </div>
@@ -298,13 +300,13 @@ onBeforeUnmount(() => {
     <v-app v-else>
     <v-layout>
         <v-container fluid class="container-fluid">
-            <h2 class="mt-2">Explore Big Screens</h2>
+            <h2 class="mt-2">{{ t('allMovies.title') }}</h2>
             <v-row class="ms-5">
                 <div class="d-flex flex-wrap gap-3 mx-auto mt-3 mb-3 align-center">
                     <v-btn rounded="pill" :variant="activeExp === 'All' ? 'flat' : 'outlined'"
                         :color="activeExp === 'All' ? 'white' : 'grey-lighten-1'" @click="activeExp = 'All'"
                         class="experience-font all-btn">
-                        ALL
+                        {{ t('allMovies.all') }}
                     </v-btn>
 
                     <v-btn v-for="name in EXPERIENCE_NAMES" :key="name" class="experience-font exp-btn" rounded="pill"
@@ -326,7 +328,7 @@ onBeforeUnmount(() => {
                 <div class="d-flex justify-space-between flex-row my-3 tool gap-3">
                     <v-text-field
                         v-model="searchQuery"
-                        placeholder="Search movies..."
+                        :placeholder="t('allMovies.searchPlaceholder')"
                         prepend-inner-icon="mdi-magnify"
                         variant="plain"
                         density="compact"
@@ -335,7 +337,7 @@ onBeforeUnmount(() => {
                         class="custom-search px-2 py-0"
                     ></v-text-field>
                 <v-btn variant="outlined" prepend-icon="mdi-filter-variant"
-                            @click="showFilterDrawer = true">Filter-By
+                            @click="showFilterDrawer = true">{{ t('allMovies.filterBy') }}
                         </v-btn>
                         <FilterSideBar v-model="showFilterDrawer" :filters="sidebarFilters" :movies="allMovies" :languages="allMoviesMeta.availableLanguages"
                             @close="showFilterDrawer = false" @apply-filters="handleApplyFilters" />
@@ -345,9 +347,13 @@ onBeforeUnmount(() => {
                     <v-col cols="12">
                         <v-tabs v-model="activeSchedule" bg-color="transparent" color="red-accent-4" align-tabs="start"
                             class="custom-tabs">
-                            <v-tab v-for="tab in ['Now Showing', 'Kids', 'Coming Soon']" :key="tab" :value="tab"
-                                :class="getTabClass(tab)">
-                                {{ tab }}
+                            <v-tab v-for="tab in [
+                                { value: 'Now Showing', label: t('home.nowShowing') },
+                                { value: 'Kids', label: t('home.kids') },
+                                { value: 'Coming Soon', label: t('home.comingSoon') },
+                            ]" :key="tab.value" :value="tab.value"
+                                :class="getTabClass(tab.value)">
+                                {{ tab.label }}
                             </v-tab>
                         </v-tabs>
                     </v-col>
@@ -371,8 +377,8 @@ onBeforeUnmount(() => {
             <div v-if="finalFilteredMovies.length === 0"
                 class="d-flex flex-column align-center justify-center py-16 text-center">
                 <v-icon size="64" color="grey-darken-1" class="mb-4">mdi-movie-off-outline</v-icon>
-                <h3 class="text-h5 text-grey-lighten-1">No movies found</h3>
-                <p class="text-grey-darken-1">Try adjusting your filters or checking a different experience.</p>
+                <h3 class="text-h5 text-grey-lighten-1">{{ t('allMovies.noMoviesFound') }}</h3>
+                <p class="text-grey-darken-1">{{ t('allMovies.noMoviesHint') }}</p>
             </div>
             <div v-else class="masonry-wrapper">
                 <masonry-wall :items="finalFilteredMovies"
@@ -407,7 +413,7 @@ onBeforeUnmount(() => {
                                         <v-btn variant="flat" class="info p-0 m-2"
                                             @click="gotoMovieDetails(slotProps.item.id)">
                                             <BadgeInfo size="28" color="white" class="mb-2 info-icon" />
-                                            <span class="text-white info-text ms-2 mb-2">More Info</span>
+                                            <span class="text-white info-text ms-2 mb-2">{{ t('allMovies.movieInfo') }}</span>
                                         </v-btn>
                                         <div class="position-absolute bottom-0 overlay-container p-3">
                                             <h3 class="title text-white mb-1 fs-5">{{ slotProps.item.title }}</h3>
@@ -437,7 +443,7 @@ onBeforeUnmount(() => {
                                         :class="['rounded-2', activeSchedule === 'Coming Soon' ? '' : 'movie-btn', 'd-block mx-auto mt-2']"
                                         @click="activeSchedule === 'Coming Soon' ? null : handleBuyNowRedirect(slotProps.item)">
                                         <BellRing size="16" class="me-1" v-if="activeSchedule === 'Coming Soon'" />{{
-                                            activeSchedule === 'Coming Soon' ? 'Remind Me' : 'Buy Now' }}
+                                            activeSchedule === 'Coming Soon' ? t('allMovies.remindMe') : t('allMovies.buyNow') }}
                                     </v-btn>
                                 </div>
                             </v-card>

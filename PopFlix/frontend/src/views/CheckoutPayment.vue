@@ -9,6 +9,7 @@ import { useAuthStore } from '../stores/auth';
 import { useMovieDetails } from '../hook/useMovieDetails';
 import { useShowtimes } from '../hook/useShowtimes';
 import FooterView from '@/components/FooterView.vue';
+import { useAppI18n } from '../utils/i18n';
 
 const { fetchShowtimeById } = useShowtimes();
 
@@ -17,6 +18,7 @@ const route = useRoute();
 const bookingStore = useBookingStore();
 const authStore = useAuthStore();
 const { movie, loadMovieDetails, getImageURL, isLoading } = useMovieDetails();
+const { t } = useAppI18n();
 const currentStage = ref(2);
 const generatedTxnId = ref('');
 
@@ -165,7 +167,7 @@ onUnmounted(() => {
 
 watch(currentBooking, (newVal, oldVal) => {
     if (!newVal && oldVal && currentStage.value !== 3) {
-        alert("The 8-minute reservation timeout window expired. Your locked items have been freed.");
+        alert(t('checkoutPayment.reservationExpired'));
         cleanupAndExit();
     }
 });
@@ -187,7 +189,7 @@ const handlePaymentExecution = async () => {
     if (paymentMethod.value === 'stripe') {
         const cleanCard = cardNumber.value.replace(/\s+/g, '');
         if (cleanCard.length < 16) {
-            bookingStore.errorMessages = "Invalid card configuration layout. Please use a standard 16-digit number string.";
+            bookingStore.errorMessages = t('checkoutPayment.invalidCard');
             return;
         }
     }
@@ -227,7 +229,7 @@ const formatExpiry = (e) => {
 
 const formattedSeats = computed(() => {
     if (!currentBooking.value || !currentBooking.value.tickets || currentBooking.value.tickets.length === 0) {
-        return 'No Seats Selected';
+        return t('common.noSeatsSelected');
     }
 
     return currentBooking.value.tickets.map(ticket => {
@@ -245,7 +247,7 @@ const formattedSeats = computed(() => {
                     <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
                 </v-progress-circular>
 
-                <p class="mt-6 loading-text">Loading...</p>
+                <p class="mt-6 loading-text">{{ t('common.loading') }}</p>
                 <div class="loading-bar"></div>
             </div>
         </div>
@@ -258,7 +260,7 @@ const formattedSeats = computed(() => {
         :class="isDarkTheme ? 'theme-dark' : 'theme-light'"
         :theme="isDarkTheme ? 'dark' : 'light'"
     >
-        <h2>Checkout Payment</h2>
+        <h2>{{ t('checkoutPayment.title') }}</h2>
         <v-row no-gutters class="fill-height pt-5">
             <v-col cols="12" md="5" class="d-flex flex-column align-end">
                 <div class="w-100 max-width-left p-3">
@@ -273,7 +275,7 @@ const formattedSeats = computed(() => {
                     </v-btn>
 
                     <h4 class=" text-white mb-4">
-                        {{ movie?.title || 'Loading Selection...' }}
+                        {{ movie?.title || t('checkoutPayment.loadingSelection') }}
                     </h4>
 
                     <v-row no-gutters>
@@ -298,7 +300,7 @@ const formattedSeats = computed(() => {
                                     </v-avatar>
                                     <div>
                                         <span
-                                            class="text-caption text-grey d-block tracking-wide-soft lh-1 mb-1">Seats</span>
+                                            class="text-caption text-grey d-block tracking-wide-soft lh-1 mb-1">{{ t('checkoutPayment.seats') }}</span>
                                         <span class="text-body-2 font-weight-black text-white text-glow-red">{{
                                             formattedSeats }}</span>
                                     </div>
@@ -310,8 +312,7 @@ const formattedSeats = computed(() => {
                                     </v-avatar>
                                     <div>
                                         <span
-                                            class="text-caption text-grey d-block tracking-wide-soft lh-1 mb-1">Booking
-                                            ID</span>
+                                            class="text-caption text-grey d-block tracking-wide-soft lh-1 mb-1">{{ t('checkoutPayment.bookingId') }}</span>
                                         <span class="text-body-2 font-weight-bold text-amber-accent-3">#{{
                                             currentBooking?.id }}</span>
                                     </div>
@@ -321,8 +322,7 @@ const formattedSeats = computed(() => {
                                         <v-icon size="16" color="amber-accent-3">mdi-car-connected</v-icon>
                                     </v-avatar>
                                     <div>
-                                        <span class="text-caption text-grey d-block tracking-wide-soft mt-2">Parking
-                                            Spot</span>
+                                        <span class="text-caption text-grey d-block tracking-wide-soft mt-2">{{ t('checkoutPayment.parkingSpot') }}</span>
                                         <span class=" text-uppercase">{{ currentBooking?.parkingSpot }}</span>
                                     </div>
                                 </div>
@@ -334,30 +334,30 @@ const formattedSeats = computed(() => {
 
                     <div class="pricing-rows px-2">
                         <div class="d-flex justify-space-between text-body-2 text-grey-lighten-2 mb-2">
-                            <span>Subtotal Cost</span>
+                            <span>{{ t('checkoutPayment.subtotalCost') }}</span>
                             <span class="font-weight-bold text-white">RM {{ originalPrice.toFixed(2) }}</span>
                         </div>
                         <div v-if="discountPercentage > 0" class="d-flex justify-space-between text-body-2 text-green-accent-2 mb-2">
-                            <span>{{ membershipTier }} Member Discount (-{{ discountPercentage }}%)</span>
+                            <span>{{ t('checkoutPayment.memberDiscount', { tier: membershipTier, percent: discountPercentage }) }}</span>
                             <span class="font-weight-bold text-green-accent-2">-RM {{ discountAmount.toFixed(2) }}</span>
                         </div>
                         <div class="d-flex justify-space-between text-body-2 text-grey-lighten-2 mb-2">
-                            <span>Booking Service Fee</span>
+                            <span>{{ t('checkoutPayment.bookingServiceFee') }}</span>
                             <span
-                                class="text-red-accent-3 font-weight-bold tracking-wider text-caption text-uppercase">FREE</span>
+                                class="text-red-accent-3 font-weight-bold tracking-wider text-caption text-uppercase">{{ t('checkoutPayment.free') }}</span>
                         </div>
                         <div class="d-flex justify-space-between text-body-2 text-grey-lighten-2 mb-2">
-                            <span>Smart Parking Stall</span>
+                            <span>{{ t('checkoutPayment.smartParkingStall') }}</span>
                             <span
-                                class="text-blue-accent-2 font-weight-bold tracking-wider text-caption text-uppercase">INCLUSIVE</span>
+                                class="text-blue-accent-2 font-weight-bold tracking-wider text-caption text-uppercase">{{ t('checkoutPayment.inclusive') }}</span>
                         </div>
 
                         <v-divider class="my-4 divider-opacity-soft"></v-divider>
 
                         <div class="d-flex justify-space-between align-end pt-2">
                             <div>
-                                <span class="text-h6 font-weight-bold text-white d-block ">Total</span>
-                                <span class="text-caption text-grey-lighten-1">GST (10%) Inclusive Mapping</span>
+                                <span class="text-h6 font-weight-bold text-white d-block ">{{ t('checkoutPayment.total') }}</span>
+                                <span class="text-caption text-grey-lighten-1">{{ t('checkoutPayment.gstInclusive') }}</span>
                             </div>
                             <span class="text-h3 font-weight-black text-white text-glow-red">
                                 RM {{ subtotalPrice.toFixed(2) }}
@@ -376,19 +376,19 @@ const formattedSeats = computed(() => {
                         <div class="step-tracker-pill d-flex mx-auto gap-2">
 
                             <span class="step-badge checked-green">1</span>
-                            <span class="text-body-2 ms-1 text-white font-weight-medium">Information</span>
+                            <span class="text-body-2 ms-1 text-white font-weight-medium">{{ t('checkoutPayment.information') }}</span>
                             <span class="step-line line-active-green"></span>
 
                             <span class="step-badge" :class="currentStage === 2 ? 'active' : 'checked-green'">2</span>
                             <span class="text-body-2 ms-1 text-white"
-                                :class="{ 'font-weight-bold': currentStage === 2 }">Payment</span>
+                                :class="{ 'font-weight-bold': currentStage === 2 }">{{ t('checkoutPayment.payment') }}</span>
                             <span class="step-line"
                                 :class="currentStage === 3 ? 'line-active-red' : 'line-pending'"></span>
 
                             <span class="step-badge"
                                 :class="{ 'active': currentStage === 3, 'pending': currentStage < 3 }">3</span>
                             <span class="text-body-2 ms-1"
-                                :class="currentStage === 3 ? 'text-white font-weight-bold' : 'text-grey'">Confirmation</span>
+                                :class="currentStage === 3 ? 'text-white font-weight-bold' : 'text-grey'">{{ t('checkoutPayment.confirmation') }}</span>
                         </div>
 
                     </div>
@@ -398,13 +398,12 @@ const formattedSeats = computed(() => {
                         <v-chip color="red-accent-3" class="text-white font-weight-black px-4" variant="flat"
                             v-if="currentStage !== 3">
                             <v-icon start size="16" class="pulse-slow me-2">mdi-clock-outline</v-icon>
-                            Timer Left: {{ countdownText }}
+                            {{ t('checkoutPayment.timerLeft') }}: {{ countdownText }}
                         </v-chip>
                     </div>
                     <div v-if="currentStage === 2" class="fade-in-content">
-                        <h3 class="text-white mb-2 tracking-wide">Enter Payment Details</h3>
-                        <p class="text-body-2 text-grey-lighten-1 mb-6">Select a routing transaction pipeline method to
-                            proceed.</p>
+                        <h3 class="text-white mb-2 tracking-wide">{{ t('checkoutPayment.enterPaymentDetails') }}</h3>
+                        <p class="text-body-2 text-grey-lighten-1 mb-6">{{ t('checkoutPayment.paymentDescription') }}</p>
 
                         <v-alert v-if="apiError" type="error" variant="tonal"
                             class="mb-6 rounded-xl border-red text-red-lighten-3 font-weight-bold">
@@ -413,8 +412,7 @@ const formattedSeats = computed(() => {
 
                         <v-form @submit.prevent="handlePaymentExecution" class="w-100">
 
-                            <span class=" text-grey-lighten-1 d-block mb-3">Select
-                                Method:</span>
+                            <span class=" text-grey-lighten-1 d-block mb-3">{{ t('checkoutPayment.selectMethod') }}</span>
                             <v-row class="mb-4">
                                 <v-col cols="6" class="pe-2">
                                     <div class="method-selector pa-4 text-center cursor-pointer"
@@ -422,8 +420,7 @@ const formattedSeats = computed(() => {
                                         @click="paymentMethod = 'stripe'">
                                         <v-icon size="24" class="mb-1"
                                             :color="paymentMethod === 'stripe' ? '#ff1744' : '#616161'">mdi-credit-card</v-icon>
-                                        <div class="text-body-2 font-weight-bold text-white mt-1">Debit / Credit Card
-                                        </div>
+                                        <div class="text-body-2 font-weight-bold text-white mt-1">{{ t('checkoutPayment.debitCreditCard') }}</div>
                                     </div>
                                 </v-col>
                                 <v-col cols="6" class="ps-2">
@@ -432,14 +429,13 @@ const formattedSeats = computed(() => {
                                         @click="paymentMethod = 'virtual_account'">
                                         <v-icon size="24" class="mb-1"
                                             :color="paymentMethod === 'virtual_account' ? '#ff1744' : '#616161'">mdi-bank-transfer</v-icon>
-                                        <div class="text-body-2 font-weight-bold text-white mt-1">Virtual Account</div>
+                                        <div class="text-body-2 font-weight-bold text-white mt-1">{{ t('checkoutPayment.virtualAccount') }}</div>
                                     </div>
                                 </v-col>
                             </v-row>
 
                             <div v-if="paymentMethod === 'stripe'" class="fade-in-content">
-                                <v-label class=" text-grey-lighten-1 mb-1">Card
-                                    Information *</v-label>
+                                <v-label class=" text-grey-lighten-1 mb-1">{{ t('checkoutPayment.cardInformation') }}</v-label>
                                 <v-text-field v-model="cardNumber" placeholder="4242 4242 4242 4242"
                                     prepend-inner-icon="mdi-credit-card-outline" variant="solo" flat rounded="lg"
                                     density="comfortable" class="mb-2 text-white v-input-dark" required
@@ -447,45 +443,37 @@ const formattedSeats = computed(() => {
 
                                 <v-row>
                                     <v-col cols="6" class="py-0 pe-2">
-                                        <v-label class="text-grey-lighten-1 mb-1">Expiry
-                                            Date *</v-label>
+                                        <v-label class="text-grey-lighten-1 mb-1">{{ t('checkoutPayment.expiryDate') }}</v-label>
                                         <v-text-field v-model="cardExpiry" placeholder="MM/YY" variant="solo" flat
                                             rounded="lg" density="comfortable" class="mb-2 text-white v-input-dark"
                                             required @input="formatExpiry"></v-text-field>
                                     </v-col>
                                     <v-col cols="6" class="py-0 ps-2">
                                         <v-label
-                                            class="text-caption font-weight-bold text-grey-lighten-1 mb-1 text-uppercase tracking-wide">CVC
-                                            / CVV *</v-label>
+                                            class="text-caption font-weight-bold text-grey-lighten-1 mb-1 text-uppercase tracking-wide">{{ t('checkoutPayment.cvcCvv') }}</v-label>
                                         <v-text-field v-model="cardCvc" placeholder="123" maxlength="3" type="password"
                                             variant="solo" flat rounded="lg" density="comfortable"
                                             class="mb-2 text-white v-input-dark" required></v-text-field>
                                     </v-col>
                                 </v-row>
 
-                                <v-label class="text-grey-lighten-1 mb-1 mt-2">Cardholder
-                                    Name *</v-label>
+                                <v-label class="text-grey-lighten-1 mb-1 mt-2">{{ t('checkoutPayment.cardholderName') }}</v-label>
                                 <v-text-field v-model="cardName" placeholder="John Doe" variant="solo" flat rounded="lg"
                                     density="comfortable" class="mb-4 text-white v-input-dark" required></v-text-field>
                             </div>
 
                             <div v-else class="pa-6 border-glass rounded-xl mb-5 bg-glass text-center fade-in-content">
                                 <v-icon size="40" color="red-accent-3" class="mb-2">mdi-bank-outline</v-icon>
-                                <p class="text-body-2 font-weight-bold text-white text-uppercase tracking-wider">FPX
-                                    Automated Online Banking System</p>
-                                <p class="text-caption text-grey-lighten-1">A secure multi-bank gateway redirect
-                                    authorization routing node will initialize upon submission confirmation step.</p>
+                                <p class="text-body-2 font-weight-bold text-white text-uppercase tracking-wider">{{ t('checkoutPayment.fpxTitle') }}</p>
+                                <p class="text-caption text-grey-lighten-1">{{ t('checkoutPayment.fpxDescription') }}</p>
                             </div>
 
                             <v-checkbox v-model="saveInfo" color="red-accent-3" hide-details
                                 class="mb-6 checkbox-custom text-white">
                                 <template v-slot:label>
                                     <div class="text-caption text-grey-lighten-2 font-weight-medium">
-                                        Securely save my information for 1-click checkout via Stripe Elements
-                                        encryption.<br />
-                                        <span class="text-grey-darken-1 text-xsmall">Tokenize account hashes across
-                                            local
-                                            session instances securely.</span>
+                                        {{ t('checkoutPayment.saveInfo') }}<br />
+                                        <span class="text-grey-darken-1 text-xsmall">{{ t('checkoutPayment.saveInfoHint') }}</span>
                                     </div>
                                 </template>
                             </v-checkbox>
@@ -493,11 +481,11 @@ const formattedSeats = computed(() => {
                             <v-btn block type="submit" color="red-accent-3" height="54" rounded="lg"
                                 class="text-white btn-pay-now mt-3" :loading="isStoreLoading"
                                 :disabled="!currentBooking">
-                                Pay Now
+                                {{ t('checkoutPayment.payNow') }}
                             </v-btn>
 
                             <div class="d-flex justify-center align-center mt-3 mb-2 text-caption text-grey">
-                                <v-icon size="14" color="grey">mdi-lock-outline</v-icon> Secured & Protected by
+                            <v-icon size="14" color="grey">mdi-lock-outline</v-icon> {{ t('checkoutPayment.securedBy') }}
                                 <span class="text-white ms-1">stripe</span>
                             </div>
 
@@ -509,44 +497,44 @@ const formattedSeats = computed(() => {
                                 <CheckCircle2 :size="42" color="#4caf50" />
                             </v-avatar>
                             <h4 class="text-white mb-2 tracking-wide d-flex align-center justify-center gap-2">
-                                Booking Confirmed
+                                {{ t('checkoutPayment.bookingConfirmed') }}
                                 <Sparkles :size="22" color="#ffc400" />
                             </h4>
-                            <p class=" text-grey-lighten-1 mb-2">Payment received and seats are now secured.</p>
+                            <p class=" text-grey-lighten-1 mb-2">{{ t('checkoutPayment.paymentReceived') }}</p>
                         </div>
 
                         <v-card class="confirmation-ticket mb-5 ms-4" variant="flat">
                             <div class="confirmation-ticket-top">
                                 <div>
-                                    <span class="ticket-label d-block">Official Ticket Receipt</span>
+                                    <span class="ticket-label d-block">{{ t('checkoutPayment.officialTicketReceipt') }}</span>
                                     <span class="ticket-movie d-block mt-1">{{ movie?.title }}</span>
                                 </div>
                                 <v-chip color="green" size="small" class="font-weight-bold text-white"
-                                    variant="flat">Paid</v-chip>
+                                    variant="flat">{{ t('checkoutPayment.paid') }}</v-chip>
                             </div>
 
                             <v-divider class="my-4 divider-opacity-soft"></v-divider>
 
                             <div class="confirmation-grid">
                                 <div class="confirmation-item">
-                                    <span class="item-label">Booking Reference</span>
+                                    <span class="item-label">{{ t('checkoutPayment.bookingReference') }}</span>
                                     <span class="item-value text-amber-accent-3">#{{ currentBooking?.id }}</span>
                                 </div>
                                 <div class="confirmation-item">
-                                    <span class="item-label">Seats</span>
+                                    <span class="item-label">{{ t('checkoutPayment.seats') }}</span>
                                     <span class="item-value">{{ formattedSeats }}</span>
                                 </div>
                                 <div class="confirmation-item">
-                                    <span class="item-label">Payment Method</span>
-                                    <span class="item-value">{{ paymentMethod === 'stripe' ? 'Card (Stripe)' : 'Virtual Account'}}</span>
+                                    <span class="item-label">{{ t('checkoutPayment.paymentMethod') }}</span>
+                                    <span class="item-value">{{ paymentMethod === 'stripe' ? t('checkoutPayment.cardStripe') : t('checkoutPayment.virtualAccount') }}</span>
                                 </div>
                                 <div class="confirmation-item">
-                                    <span class="item-label">Total Paid</span>
+                                    <span class="item-label">{{ t('checkoutPayment.totalPaid') }}</span>
                                     <span class="item-value">RM {{ originalPrice }}</span>
                                 </div>
                                 <div v-if="currentBooking?.parkingSpot"
                                     class="confirmation-item confirmation-item-full">
-                                    <span class="item-label">Parking Spot</span>
+                                    <span class="item-label">{{ t('checkoutPayment.parkingSpot') }}</span>
                                     <span class="item-value text-blue-accent-2 text-uppercase">{{
                                         currentBooking?.parkingSpot
                                         }}</span>
@@ -556,14 +544,14 @@ const formattedSeats = computed(() => {
                             <v-divider class="my-4 divider-opacity-soft"></v-divider>
 
                             <div class="txn-row">
-                                <span class="item-label">Transaction ID</span>
+                                <span class="item-label">{{ t('checkoutPayment.transactionId') }}</span>
                                 <span class="txn-pill">{{ generatedTxnId }}</span>
                             </div>
                         </v-card>
 
                         <v-btn color="red-accent-3" height="54"
                             class="text-white font-weight-black letter-spacing-2 ms-md-3 px-8 w-100 movie-btn mb-2" @click="navigateHome">
-                            View Ticket
+                            {{ t('checkoutPayment.viewTicket') }}
                         </v-btn>
                     </div>
                 </div>

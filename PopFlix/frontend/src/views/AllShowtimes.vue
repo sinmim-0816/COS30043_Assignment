@@ -11,9 +11,11 @@ import { getCertImage } from '../utils/AgeRating';
 import { getExperienceStyle, getExpButtonStyle } from '../utils/experience';
 import FilterSideBar from '@/components/FilterSideBar.vue';
 import FooterView from '@/components/FooterView.vue';
+import { useAppI18n } from '../utils/i18n';
 
 const { featuredMovies = featuredMovies, getImageURL = getImageURL, fetchHeroMovies, getLanguageName, getCertificate } = useMovies();
 const { cinemas, allSessions, isLoading, loadInitialData, fetchAllShowtimes, filterSessions } = useShowtimes();
+const { t } = useAppI18n();
 
 const selectedCinemaId = ref(null);
 const selectedDate = ref(new Date());
@@ -211,23 +213,23 @@ onMounted(async () => {
                 <v-icon icon="mdi-movie-roll" size="24"></v-icon>
             </v-progress-circular>
             
-            <p class="mt-6 loading-text">Loading...</p>
+            <p class="mt-6 loading-text">{{ t('allShowtimes.loading') }}</p>
             <div class="loading-bar"></div>
             </div>
         </div>
     </template>
     <v-app v-else full-height class="mt-2 ms-md-5">
-        <h2>Movie Showtimes</h2>
+        <h2>{{ t('allShowtimes.title') }}</h2>
         <v-container fluid width="100vw">
             <v-row class="align-center mx-auto mt-2 selection">
                 <v-col cols="12" md="4">
-                    <p class="text-subtitle-2 text-color mb-4 mx-2">Select your Theatre:</p>
+                    <p class="text-subtitle-2 text-color mb-4 mx-2">{{ t('allShowtimes.selectTheatre') }}</p>
                     <v-menu offset-y transition="scale-transition">
                         <template v-slot:activator="{ props }">
                             <v-btn v-bind="props" class="theatre-selector-btn text-none px-6" block height="50"
                                 rounded="pill">
                                 <span class="text-truncate">{{cinemas.find(c => c.id === selectedCinemaId)?.name ||
-                                    'Select a Cinema: '}}</span>
+                                    t('allShowtimes.selectCinema') }}</span>
                                 <v-spacer></v-spacer>
                                 <v-icon icon="mdi-chevron-down" color="grey"></v-icon>
                             </v-btn>
@@ -243,7 +245,7 @@ onMounted(async () => {
                 </v-col>
 
                 <v-col cols="6" md="8" >
-                    <p class="text-subtitle-2 text-color mb-4 mx-md-4">Select Date:</p>
+                    <p class="text-subtitle-2 text-color mb-4 mx-md-4">{{ t('allShowtimes.selectDate') }}</p>
                     <div class="date-scroll-container px-md-4">
                         <v-card v-for="date in dateOptions" :key="date" @click="selectedDate = date"
                             :class="['date-pill', { 'active-date': format(date, 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd') }]"
@@ -279,7 +281,7 @@ onMounted(async () => {
                             @click="showFilterDrawer = true"
                             class="me-md-3"
                             >
-                            Filter-By
+                            {{ t('allShowtimes.filterBy') }}
                         </v-btn>
                     </div>
 
@@ -337,14 +339,14 @@ onMounted(async () => {
                                         </div>
                                     </div>
                                     <v-btn variant="outlined" @click="gotoMovieDetails(movie.id)">
-                                        Movie Info
+                                        {{ t('allShowtimes.movieInfo') }}
                                     </v-btn>
                                 </div>
 
                                 <v-divider color="grey-darken-3"></v-divider>
 
                                 <div v-if="!activeExperiences[movie.id]" class="animate__animated animate__fadeIn">
-                                    <p class="text-subtitle-2 text-color mb-4">Select Experience:</p>
+                                    <p class="text-subtitle-2 text-color mb-4">{{ t('allShowtimes.selectExperience') }}</p>
 
                                     <div class="d-flex flex-wrap gap-3">
                                         <v-btn v-for="(group, name) in movie.groups" :key="name"
@@ -373,7 +375,7 @@ onMounted(async () => {
                                     <div class="d-flex align-center mb-6">
                                         <v-btn icon="mdi-arrow-left" variant="text" color="grey" class="mr-2"
                                             @click="activeExperiences[movie.id] = null" />
-                                        <span class="ml-3 text-grey">Select a time:</span>
+                                        <span class="ml-3 text-grey">{{ t('allShowtimes.selectTime') }}</span>
                                     </div>
 
                                     <div class="d-flex flex-wrap gap-3 ms-5">
@@ -392,8 +394,8 @@ onMounted(async () => {
             <v-row v-else justify="center" class="mt-16">
                 <v-col cols="12" class="text-center text-grey-darken-1">
                     <v-icon size="80" class="mb-4">mdi-movie-off-outline</v-icon>
-                    <p class="text-h5">No showtimes found for this selection.</p>
-                    <p>Try selecting a different cinema or date.</p>
+                    <p class="text-h5">{{ t('allShowtimes.noShowtimesFound') }}</p>
+                    <p>{{ t('allShowtimes.noShowtimesHint') }}</p>
                 </v-col>
             </v-row>
         </v-container>

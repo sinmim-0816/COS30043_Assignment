@@ -10,8 +10,9 @@ export const movieRepository = {
         return backendClient.get(API_ENDPOINTS.COMING_SOON(page) + `&limit=${limit}`);
     },
 
-    getMovieDetails(movieId) {
-        return backendClient.get(API_ENDPOINTS.MOVIE_DETAILS(movieId));
+    getMovieDetails(movieId, language = '') {
+        const query = language ? `?language=${encodeURIComponent(language)}` : '';
+        return backendClient.get(`${API_ENDPOINTS.MOVIE_DETAILS(movieId)}${query}`);
     },
 
     getAllMovies({

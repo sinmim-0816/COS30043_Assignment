@@ -331,7 +331,7 @@ watch(
                     <v-icon icon="mdi-movie-roll" class="icon-color" size="24"></v-icon>
                 </v-progress-circular>
 
-                <p class="mt-6 loading-text">Loading...</p>
+                <p class="mt-6 loading-text">{{ t('common.loading') }}</p>
                 <div class="loading-bar"></div>
             </div>
         </div>
@@ -384,7 +384,7 @@ watch(
                                             v-for="(genreId, index) in movie?.genres" :key="genreId">{{
                                                 getGenreName(genreId) }}<span v-if="index < movie?.genres.length - 1">,
                                             </span></span> &bull; <span>{{ movie?.release_date ? new
-                                                Date(movie?.release_date).getFullYear() : 'N/A' }}</span></p>
+                                                Date(movie?.release_date).getFullYear() : t('common.nA') }}</span></p>
 
                                 </div>
                                 <p class="fs-6 text-wrap">{{ movie?.overview }}</p>
@@ -418,7 +418,7 @@ watch(
                                     </div>
                                     <div v-if="movie?.actors?.length > 5" class="col-auto d-flex align-items-center">
                                         <button class="btn view-btn mb-5" @click="gotoMovieDetails(movie.id)">VIEW
-                                            ALL</button>
+                                            {{ t('home.all') }}</button>
                                     </div>
                                 </div>
                             </v-col>
@@ -486,7 +486,7 @@ watch(
                                                     <v-btn variant="flat" class="info p-0"
                                                         @click="gotoMovieDetails(movie?.id)">
                                                         <BadgeInfo color="white" class="mb-2 info-icon" />
-                                                        <span class="text-white info-text ms-2 mb-2">More Info</span>
+                                                        <span class="text-white info-text ms-2 mb-2">{{ t('home.moreInfo') }}</span>
                                                     </v-btn>
 
 
@@ -523,8 +523,8 @@ watch(
                                                             @click="handleBuyOrRemind(movie)">
                                                             <BellRing size="16" class="me-1" v-if="activeTab === 2" />{{
                                                                 activeTab === 2
-                                                                    ? (reminderStatusMap[movie?.id] ? 'Reminder Set' : 'Remind Me')
-                                                                    : 'Buy Now' }}
+                                                                    ? (reminderStatusMap[movie?.id] ? t('home.reminderSet') : t('home.remindMe'))
+                                                                    : t('home.buyNow') }}
                                                         </v-btn>
                                                     </div>
                                                 </div>
@@ -593,7 +593,7 @@ watch(
             <v-container fluid class="">
                 <div class="text-center mb-5">
                     <h2 class="text-h3 font-weight-black mx-auto">
-                        Immersive ways <br/> to watch your movie.
+                        {{ t('home.immersiveTitle') }}
                     </h2>
                 </div>
 
@@ -657,7 +657,7 @@ watch(
                                         class="rounded-xl font-weight-bold text-white text-subtitle-1 text-none mt-4 shadow-md view-all-btn view-all-btn-desktop"
                                         @click="viewMoreExperiences"
                                     >
-                                        View All Experiences
+                                        {{ t('home.viewAllExperiences') }}
                                         <ChevronRight size="20" class="ms-1" />
                                     </v-btn>
                                 </div>
@@ -685,7 +685,7 @@ watch(
                             @click="viewMoreExperiences"
                         >
                             <span class="d-inline-flex align-center view-all-label">
-                                View All Experiences
+                                {{ t('home.viewAllExperiences') }}
                                 <ChevronRight size="20" class="ms-1 experience-cta-icon" />
                             </span>
                         </v-btn>

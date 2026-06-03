@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { movieRepository } from '../services/movieRepository';
 import { IMAGE_BASE_URL } from '../api/client';
 import { youtubeSearch } from '../api/client';
-import { currentLocale } from '../utils/i18n';
+import { currentLocale, getTmdbLanguageCode } from '../utils/i18n';
 
 const featuredMovies = ref([]);
 const error = ref(null);
@@ -63,11 +63,12 @@ export function useMovies() {
         try {
             const res = await movieRepository.getComingSoon(1);
             const movies = res.data?.results || [];
+            const tmdbLanguage = getTmdbLanguageCode();
 
             const enriched = await Promise.all(
                 movies.map(async (m) => {
                     try {
-                        const detailRes = await movieRepository.getMovieDetails(m.id);
+                        const detailRes = await movieRepository.getMovieDetails(m.id, tmdbLanguage);
                         const d = detailRes.data.movie;
 
                         return {
@@ -156,12 +157,35 @@ export function useMovies() {
             const payload = res.data || {};
             const results = payload.results || [];
 
-            allMovies.value = results.map((movie) => ({
-                ...movie,
-                poster: getImageURL(movie.poster),
-                runtime: formatRuntime(movie.runtime || 0),
-                experiences: movie.experiences || [],
-            }));
+            const tmdbLanguage = getTmdbLanguageCode();
+            const localizedMovies = await Promise.all(
+                results.map(async (movie) => {
+                    try {
+                        const detailRes = await movieRepository.getMovieDetails(movie.id, tmdbLanguage);
+                        const details = detailRes.data?.movie || {};
+
+                        return {
+                            ...movie,
+                            title: details.title || movie.title,
+                            overview: details.overview || movie.overview,
+                            poster: getImageURL(details.poster || movie.poster),
+                            runtime: formatRuntime(details.runtime || movie.runtime || 0),
+                            language: details.language || movie.language,
+                            genres: details.genres || movie.genres || [],
+                            experiences: movie.experiences || [],
+                        };
+                    } catch (err) {
+                        return {
+                            ...movie,
+                            poster: getImageURL(movie.poster),
+                            runtime: formatRuntime(movie.runtime || 0),
+                            experiences: movie.experiences || [],
+                        };
+                    }
+                })
+            );
+
+            allMovies.value = localizedMovies;
 
             allMoviesMeta.value = {
                 page: payload.page || page,
@@ -206,15 +230,16 @@ export function useMovies() {
 
         try {
             const pages = await Promise.all([
-                movieRepository.getNowShowing(1),
-                movieRepository.getNowShowing(2),
-                movieRepository.getNowShowing(3)
+            movieRepository.getNowShowing(1),
+            movieRepository.getNowShowing(2),
+            movieRepository.getNowShowing(3)
             ]);
             const allMovies = pages.flatMap(res => res.data?.results || []);
+            const tmdbLanguage = getTmdbLanguageCode();
             const enrichedMovies = await Promise.all(
                 allMovies.map(async (m) => {
                     try {
-                        const res = await movieRepository.getMovieDetails(m.id);
+                        const res = await movieRepository.getMovieDetails(m.id, tmdbLanguage);
                         const d = res.data.movie;
 
                         return {
@@ -354,7 +379,7 @@ export function useMovies() {
         isLoading.value = true;
 
         try {
-            const res = await movieRepository.getMovieDetails(id);
+            const res = await movieRepository.getMovieDetails(id, getTmdbLanguageCode());
 
             const details = res.data?.movie;
 

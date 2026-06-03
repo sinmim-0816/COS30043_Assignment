@@ -33,8 +33,11 @@ export class MovieController {
   }
 
   @Get(':id/details')
-  findFullDetails(@Param('id') id: string) {
-    return this.movieService.findOne(Number(id));
+  findFullDetails(
+    @Param('id') id: string,
+    @Query('language') language = 'en-US',
+  ) {
+    return this.movieService.findOne(Number(id), language);
   }
 
   @Get()
@@ -69,14 +72,17 @@ export class MovieController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(
+    @Param('id') id: string,
+    @Query('language') language = 'en-US',
+  ) {
     const movieId = Number(id);
 
     if (isNaN(movieId)) {
       throw new BadRequestException('Invalid movie id');
     }
 
-    return this.movieService.findOne(movieId);
+    return this.movieService.findOne(movieId, language);
   }
 
   @Patch(':id')
