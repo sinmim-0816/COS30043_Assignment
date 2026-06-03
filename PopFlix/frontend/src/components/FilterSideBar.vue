@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useDisplay } from 'vuetify';
 import { GENRE_MAP } from '../utils/genre';
 import { useMovies } from '../hook/useMovies';
 
 const {getLanguageName}=useMovies();
+const { smAndDown } = useDisplay();
+const isMobile = computed(() => smAndDown.value);
 
 const props = defineProps({
     modelValue:Boolean,
@@ -94,9 +97,9 @@ watch(()=>props.filters, (newFilters)=>{
 
 <template>
     <v-navigation-drawer
-        location="right"
+        :location="isMobile ? 'bottom' : 'right'"
         temporary
-        width="400"
+        :width="isMobile ? '100vw' : 400"
         class="bg-grey-darken-4 filter-drawer-shell"
         :model-value="modelValue"
         @update:model-value="val => $emit('update:modelValue', val)"
@@ -303,6 +306,30 @@ watch(()=>props.filters, (newFilters)=>{
     padding-top:3rem;
     padding-bottom:2rem;
     background: var(--bg-color);
+}
+
+@media (max-width: 600px) {
+    .filter-drawer-shell {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: min(88vh, 760px) !important;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        border-radius: 24px 24px 0 0;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .drawer-inner {
+        padding: 12px 12px 16px;
+    }
+
+    .filter-actions {
+        margin-bottom: 0;
+        padding: 0 0.5rem;
+    }
 }
 
 .drawer-inner {

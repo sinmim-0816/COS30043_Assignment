@@ -1067,14 +1067,16 @@ watch(
 
 .custom-feature-layout {
     display: grid;
-    grid-template-columns: 1fr 1.3fr; 
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
     gap: 24px;
     min-height: 520px;
+    align-items: stretch;
 }
 
 .feature-col-small {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .feature-col-small .feature-card {
@@ -1086,6 +1088,7 @@ watch(
 .feature-col-large {
     height: 100%;
     width: 450px;
+    min-width: 0;
 }
 
 .feature-card {
@@ -1120,7 +1123,7 @@ watch(
 }
 
 .view-all-btn-mobile {
-    display: none;
+    display: none !important;
 }
 
 .view-all-btn:hover {
@@ -1188,6 +1191,16 @@ watch(
     .feature-col-large {
         min-height: 400px;
         margin-top: 16px;
+        width: 100%;
+        max-width: 100%;
+    }
+    .feature-col-small {
+        width: 100%;
+        max-width: 100%;
+    }
+    .feature-col-small .feature-card {
+        width: 100%;
+        max-width: 100%;
     }
     .experience-list-container {
         max-height: 300px;
@@ -1436,16 +1449,22 @@ watch(
     .custom-feature-layout {
         grid-template-columns: 1fr;
         min-height: auto;
+        gap: 16px;
     }
 
     .feature-col-large {
-        width: 90%;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 0;
     }
     .feature-col-large .feature-card {
+        width: 100%;
+        max-width: 100%;
         height: 350px !important;
     }
     .feature-col-small .feature-card{
-        width: 400px;
+        width: 100%;
+        max-width: 100%;
         height: 200px !important;
     }
 
@@ -1468,17 +1487,15 @@ watch(
     }
 
     .view-all-btn-desktop {
-        display: none;
+        display: none !important;
     }
 
     .view-all-btn-mobile {
-        display: flex;
+        display: flex !important;
         width: 100%;
         max-width: 100%;
         margin-top: 1rem !important;
         justify-content: center;
-        gap: 0.5rem;
-        overflow: visible;
     }
 
     .view-all-label {
