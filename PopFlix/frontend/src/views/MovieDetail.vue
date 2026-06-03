@@ -162,6 +162,20 @@ const closePlayer = () => {
 const sectionRef = ref(null);
 const isVisible = ref(false);
 
+const scrollY = ref(0);
+
+const handleHeroScroll = () => {
+  scrollY.value = window.scrollY || window.pageYOffset || 0;
+};
+
+const movieHeroBackdropStyle = computed(() => ({
+  transform: `translate3d(0, ${Math.min(scrollY.value * 0.12, 140)}px, 0) scale(1.08)`,
+}));
+
+const movieHeroContentStyle = computed(() => ({
+  opacity: Math.max(0.65, 1 - scrollY.value / 1100),
+}));
+
 const initObserver = () => {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -191,6 +205,8 @@ onMounted(async () => {
       await loadMovieDetails(id);
       await fetchReviews(id);
       await checkReminderStatus(id);
+      handleHeroScroll();
+        window.addEventListener('scroll', handleHeroScroll, { passive: true });
     setTimeout(() => {
         initObserver();
         updateScrollButtons();
@@ -204,6 +220,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
     fontSizeObserver.value?.disconnect();
+    window.removeEventListener('scroll', handleHeroScroll);
 });
 
 onUnmounted(() => {
@@ -298,12 +315,22 @@ const getClipClass = (index) => {
         </v-fade-transition>
         <v-main>
             <section class="hero-section">
-                <v-img :src="getImageURL(movie?.backdrop, 'original')" :height="heroBackdropHeight" cover>
+                <v-img
+                    :src="getImageURL(movie?.backdrop, 'original')"
+                    :height="heroBackdropHeight"
+                    cover
+                    class="movie-detail-hero-bg"
+                    :style="movieHeroBackdropStyle"
+                    >
                     <div class="overlay-gradient"></div>
                     <div class="hero-overlay-bottom"></div>
                     <div class="hero-overlay-left"></div>
 
-                    <v-container class="relative-z container-fluid overlay-content" width="100vw">
+                    <v-container
+                        class="relative-z container-fluid overlay-content"
+                        width="100vw"
+                        :style="movieHeroContentStyle"
+                        >
                         <v-row align="end" class="mb-5 hero-row">
                             <v-col cols="12" md="4" lg="3" class="hero-poster-col flex-start">
                                 <div class="position-relative d-inline-block hero-poster-wrap">
@@ -1466,6 +1493,11 @@ const getClipClass = (index) => {
         min-width: 120px;
         padding-inline: 16px;
     }
+}
+
+.movie-detail-hero-bg {
+  will-change: transform;
+  transition: transform 180ms linear;
 }
 
 .press-section {

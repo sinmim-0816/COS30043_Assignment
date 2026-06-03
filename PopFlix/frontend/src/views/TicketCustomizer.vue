@@ -33,7 +33,7 @@ import TicketShape14 from '@/components/TicketShape14.vue';
 const route = useRoute();
 const { fetchMovieDetails, isLoading } = useMovies();
 const { fetchTicketDetails, isTicketsLoading } = useTickets();
-const { t } = useAppI18n();
+const { t, locale } = useAppI18n();
 const activeTicket = ref(null);
 
 const shapes = [TicketShape1, TicketShape2, TicketShape3, TicketShape4, TicketShape5, TicketShape6,TicketShape7,TicketShape8,TicketShape9,TicketShape10,TicketShape11,TicketShape12,TicketShape13,TicketShape14];
@@ -62,6 +62,45 @@ const textElements = ref([]);
 const selectedText = ref(null);
 const { save, isLoading: isSaving } = useTicketDesign();
 const ticketDescription = ref('');
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
+
+const normalizeImageUrl = (path) => {
+    if (!path) return '';
+    if (typeof path !== 'string') return '';
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
+        return path;
+    }
+    return `${TMDB_IMAGE_BASE_URL}${path}`;
+};
+
+const loadTicketResources = async () => {
+    const movieId = route.params.movieId;
+    activeTicket.value = await fetchTicketDetails(route.params.bookingId);
+
+    movieTitle.value = '';
+    moviePosters.value = [];
+    movieBackdrops.value = [];
+    movieBackdrop.value = '';
+    bg.value.src = '';
+    selectedBgIndex.value = -1;
+
+    if (!movieId) {
+        return;
+    }
+
+    const movie = await fetchMovieDetails(movieId);
+    if (!movie) {
+        return;
+    }
+
+    movieTitle.value = movie.title;
+    moviePosters.value = (movie.posters || [movie.poster])
+        .filter(Boolean)
+        .map(normalizeImageUrl);
+    movieBackdrops.value = (movie.backdrops || [])
+        .filter(Boolean)
+        .map(normalizeImageUrl);
+};
 
 const syncLayoutMode = () => {
     windowWidth.value = window.innerWidth;
@@ -184,30 +223,11 @@ const handleResize = (el, x, y, width, height) => {
 onMounted(async () => {
     syncLayoutMode();
     window.addEventListener('resize', syncLayoutMode);
+    await loadTicketResources();
+});
 
-    const movieId = route.params.movieId;
-    activeTicket.value = await fetchTicketDetails(route.params.bookingId);
-
-    if (movieId) {
-        const movie = await fetchMovieDetails(movieId);
-        if (movie) {
-            movieTitle.value = movie.title;
-            moviePosters.value = (movie.posters || [movie.poster])
-            .filter(Boolean)
-            .map(path => {
-                if (path.startsWith('http')) return path;
-                return `${BASE_URL}${path}`;
-            });
-            const BASE_URL = 'https://image.tmdb.org/t/p/original';
-            movieBackdrops.value = (movie.backdrops || [])
-            .filter(Boolean)
-            .map(path => {
-                if (path.startsWith('http')) return path;
-                return `${BASE_URL}${path}`;
-            });
-        }
-
-    }
+watch(locale, async () => {
+    await loadTicketResources();
 });
 
 onUnmounted(() => {
