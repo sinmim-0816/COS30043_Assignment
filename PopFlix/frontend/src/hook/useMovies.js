@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { movieRepository } from '../services/movieRepository';
 import { IMAGE_BASE_URL } from '../api/client';
 import { youtubeSearch } from '../api/client';
-import { currentLocale, getTmdbLanguageCode } from '../utils/i18n';
+import { currentLocale, getTmdbLanguageCode, useAppI18n } from '../utils/i18n';
 
 const featuredMovies = ref([]);
 const error = ref(null);
@@ -11,6 +11,7 @@ let isFetching = false;
 const comingSoonMovies = ref([]);
 const isComingSoonLoaded = ref(false);
 const allMovies = ref([]);
+const { locale } = useAppI18n();
 const allMoviesMeta = ref({
     page: 1,
     limit: 25,
@@ -61,9 +62,9 @@ export function useMovies() {
         error.value = null;
 
         try {
-            const res = await movieRepository.getComingSoon(1);
-            const movies = res.data?.results || [];
             const tmdbLanguage = getTmdbLanguageCode();
+            const res = await movieRepository.getComingSoon(1, 20, tmdbLanguage);
+            const movies = res.data?.results || [];
 
             const enriched = await Promise.all(
                 movies.map(async (m) => {
@@ -91,7 +92,6 @@ export function useMovies() {
                             popularity: d.popularity,
                             writers: d.writers,
                             production_companies: d.production_companies,
-                            production_companies: d.production_companies,
                             budget: d.budget,
                             revenue: d.revenue,
                         };
@@ -117,7 +117,6 @@ export function useMovies() {
                             director: null,
                             popularity: null,
                             writers: null,
-                            production_companies: null,
                             production_companies: null,
                             budget: null,
                             revenue: null,
@@ -175,6 +174,7 @@ export function useMovies() {
                             experiences: movie.experiences || [],
                         };
                     } catch (err) {
+                        console.error(err);
                         return {
                             ...movie,
                             poster: getImageURL(movie.poster),
@@ -229,13 +229,13 @@ export function useMovies() {
         isFetching = true;
 
         try {
+            const tmdbLanguage = getTmdbLanguageCode();
             const pages = await Promise.all([
-            movieRepository.getNowShowing(1),
-            movieRepository.getNowShowing(2),
-            movieRepository.getNowShowing(3)
+                movieRepository.getNowShowing(1, 20, tmdbLanguage),
+                movieRepository.getNowShowing(2, 20, tmdbLanguage),
+                movieRepository.getNowShowing(3, 20, tmdbLanguage)
             ]);
             const allMovies = pages.flatMap(res => res.data?.results || []);
-            const tmdbLanguage = getTmdbLanguageCode();
             const enrichedMovies = await Promise.all(
                 allMovies.map(async (m) => {
                     try {
@@ -262,7 +262,6 @@ export function useMovies() {
                             popularity: d.popularity,
                             writers: d.writers,
                             production_companies: d.production_companies,
-                            production_companies: d.production_companies,
                             budget: d.budget,
                             revenue: d.revenue,
                         };
@@ -287,7 +286,6 @@ export function useMovies() {
                             director: null,
                             popularity: null,
                             writers: null,
-                            production_companies: null,
                             production_companies: null,
                             budget: null,
                             revenue: null,

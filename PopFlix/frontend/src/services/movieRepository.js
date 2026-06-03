@@ -2,12 +2,14 @@ import backendClient from "../api/backendClient";
 import { API_ENDPOINTS } from "../api/apiEndpoint";
 
 export const movieRepository = {
-    getNowShowing(page = 1, limit = 20) {
-        return backendClient.get(API_ENDPOINTS.NOW_SHOWING(page) + `&limit=${limit}`);
+    getNowShowing(page = 1, limit = 20, language = '') {
+        const query = language ? `&language=${encodeURIComponent(language)}` : '';
+        return backendClient.get(API_ENDPOINTS.NOW_SHOWING(page) + `&limit=${limit}${query}`);
     },
 
-    getComingSoon(page = 1, limit = 20) {
-        return backendClient.get(API_ENDPOINTS.COMING_SOON(page) + `&limit=${limit}`);
+    getComingSoon(page = 1, limit = 20, language = '') {
+        const query = language ? `&language=${encodeURIComponent(language)}` : '';
+        return backendClient.get(API_ENDPOINTS.COMING_SOON(page) + `&limit=${limit}${query}`);
     },
 
     getMovieDetails(movieId, language = '') {
