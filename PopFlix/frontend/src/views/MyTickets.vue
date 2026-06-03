@@ -284,36 +284,36 @@ const submitReview = async () => {
                 </div>
 
                 <div v-else class="cyber-ticket-stack-container" :class="{ 'overlay-active': isOverlayOpen }">
-                    <div v-for="(t) in sortedTickets" :key="t.id"
+                    <div v-for="(ticket) in sortedTickets" :key="ticket.id"
                         class="horizontal-ticket-stub-card position-relative mb-3" :class="{
-                            'selected-card': isOverlayOpen && selectedTicketIndex === tickets.indexOf(t),
+                            'selected-card': isOverlayOpen && selectedTicketIndex === tickets.indexOf(ticket),
 
-                            'hidden-card': isOverlayOpen && selectedTicketIndex !== tickets.indexOf(t),
-                        }" @click="handleOpenTicketOverlay(t)"
-                        :style="{ '--ticket-accent': t.themeColor, '--ticket-glow': t.glassGlow }">
-                        <div class="stub-silhouette" :style="{ backgroundImage: `url(${t.backdrop})` }"></div>
+                            'hidden-card': isOverlayOpen && selectedTicketIndex !== tickets.indexOf(ticket),
+                        }" @click="handleOpenTicketOverlay(ticket)"
+                        :style="{ '--ticket-accent': ticket.themeColor, '--ticket-glow': ticket.glassGlow }">
+                        <div class="stub-silhouette" :style="{ backgroundImage: `url(${ticket.backdrop})` }"></div>
                         <div class="stub-darkener-gradient"></div>
 
                         <div class="stub-inner-layout">
                             <div class="neon-identity-stripe"></div>
 
                             <div class="stub-poster-dock d-none d-sm-flex align-center justify-center">
-                                <v-img :src="t.poster" cover width="100%" height="100%" />
+                                <v-img :src="normalizeImageUrl(ticket.poster)" cover width="100%" height="100%" />
                             </div>
 
                             <div class="stub-center-body d-flex flex-column justify-space-between pa-4 ">
                                 <div>
                                     <div class="d-flex align-center gap-2 mb-1">
-                                        <span class="experience-pill" :style="{ background: t.themeColor }">{{
-                                            t.experience }}</span>
-                                        <span class="text-caption text-color fw-bold">{{ t.runtime
-                                        }} • {{ t.certificate }}</span>
+                                        <span class="experience-pill" :style="{ background: ticket.themeColor }">{{
+                                            ticket.experience }}</span>
+                                        <span class="text-caption text-color fw-bold">{{ ticket.runtime
+                                        }} • {{ ticket.certificate }}</span>
                                     </div>
-                                    <h4 class="text-color fw-bold mb-2">{{ t.title }}</h4>
+                                    <h4 class="text-color fw-bold mb-2">{{ ticket.title }}</h4>
                                     <div class="d-flex align-center gap-1 mb-2">
                                         <Armchair size="12" class="text-color" />
                                         <span class="text-caption fw-bold" style="color: var(--ticket-accent)">
-                                            <Sofa size="18" /> {{ t.seats.join(', ') }}
+                                            <Sofa size="18" /> {{ ticket.seats.join(', ') }}
                                         </span>
                                     </div>
                                 </div>
@@ -323,18 +323,18 @@ const submitReview = async () => {
                                     <div class="metadata-rows-group">
                                         <div
                                             class="d-flex align-center text-caption text-color mb-1">
-                                            <Calendar size="13" class="me-1" /> {{ formatDate(t.startTime) }} &bull; {{
-                                                formatTime(t.startTime) }}
+                                            <Calendar size="13" class="me-1" /> {{ formatDate(ticket.startTime) }} &bull; {{
+                                                formatTime(ticket.startTime) }}
                                         </div>
                                         <div
                                             class="d-flex align-center text-caption text-color font-weight-medium">
-                                            <MapPin size="13" class="me-1" /> {{ t.cinema }}
+                                            <MapPin size="13" class="me-1" /> {{ ticket.cinema }}
                                         </div>
                                     </div>
 
                                     <span class="status-badge-pill"
-                                        :class="[countdowns[t.id].expired ? 'expired' : (countdowns[t.id].critical ? 'flash' : 'active')]">
-                                        <Clock size="12" class="me-1" /> {{ countdowns[t.id].text }}
+                                        :class="[countdowns[ticket.id].expired ? 'expired' : (countdowns[ticket.id].critical ? 'flash' : 'active')]">
+                                        <Clock size="12" class="me-1" /> {{ countdowns[ticket.id].text }}
                                     </span>
                                 </div>
                             </div>
@@ -349,13 +349,13 @@ const submitReview = async () => {
                                 class="stub-qr-dock pa-4 text-center d-none d-md-flex flex-column align-center justify-center">
                                 <div class="qr-code-canvas-container rounded-lg bg-white pa-2 mb-1">
                                     <div class="qr-code-canvas-container rounded-lg bg-white pa-2 mb-1">
-                                        <qrcode-vue :value="t.id.toString()" :size="52" level="H" />
+                                        <qrcode-vue :value="ticket.id.toString()" :size="52" level="H" />
                                     </div>
                                 </div>
                                 <span class="text-uppercase tracking-widest text-grey font-weight-black"
                                     style="font-size: 8px;">{{ t('myTickets.fastPass') }}</span>
                                 <div class="d-flex justify-center mt-3">
-                                    <v-btn v-if="isTicketReviewable(t)" class=" review-btn rounded-pill" @click.stop="openReviewDialog(t)">
+                                    <v-btn v-if="isTicketReviewable(ticket)" class=" review-btn rounded-pill" @click.stop="openReviewDialog(ticket)">
                                         <span>
                                             <Pencil size="16" class="me-2" />
                                         </span>{{ t('myTickets.leaveReview') }}

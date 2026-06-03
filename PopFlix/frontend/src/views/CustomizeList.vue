@@ -10,6 +10,23 @@ import { useTickets } from '../hook/useTickets';
 import { useTicketDesign } from '../hook/useTicketDesign';
 import { resolveBackendAssetPath } from '../utils/FormatPicture';
 
+const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
+
+const normalizeImageUrl = (path) => {
+    if (!path) return '';
+    if (typeof path !== 'string') return '';
+    if (
+        path.startsWith('http://') ||
+        path.startsWith('https://') ||
+        path.startsWith('data:') ||
+        path.startsWith('blob:')
+    ) {
+        return path;
+    }
+
+    return `${TMDB_IMAGE_BASE_URL}${path}`;
+};
+
 const router = useRouter();
 const { ticketsList: tickets, isTicketsLoading, fetchTickets } = useTickets();
 const { fetchByBooking } = useTicketDesign();
@@ -60,7 +77,7 @@ const openDesignDialog = async (ticket) => {
                 <v-col v-for="t in tickets" :key="t.id" cols="12" sm="6" md="4" lg="3" class="d-flex justify-center">
                     <div class="movie-card">
                         <div class="poster-container">
-                            <v-img :src="t.poster" cover height="180" class="rounded-t-lg"></v-img>
+                            <v-img :src="normalizeImageUrl(t.poster)" cover height="180" class="rounded-t-lg"></v-img>
                             <div class="poster-overlay"></div>
                             <div class="movie-meta">
 
