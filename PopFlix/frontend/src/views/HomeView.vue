@@ -328,7 +328,9 @@ onMounted(async () => {
         });
     }, { threshold: 0.2 });
 
-    document.querySelectorAll('h2, .scroll-animate, [data-scroll-reveal]').forEach((el) => observer.observe(el));
+    document
+  .querySelectorAll('h2, .scroll-animate, .scroll-reveal, [data-scroll-reveal]')
+  .forEach((el) => observer.observe(el));
     scrollObserver = observer;
 });
 
@@ -932,14 +934,10 @@ watch(locale, async () => {
     animation: professionalReveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.scroll-reveal,
-.hero_content.scroll-reveal {
-    opacity: 0;
-    transform: translate3d(0, 28px, 0);
-    transition:
-        opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-        transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: opacity, transform;
+.scroll-reveal.is-visible,
+.hero_content.scroll-reveal.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
 }
 
 .scroll-reveal.is-visible,
