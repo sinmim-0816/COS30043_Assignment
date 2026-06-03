@@ -46,6 +46,18 @@ const messages = {
       notifications: 'View notifications',
       openMenu: 'Open menu',
     },
+    footer: {
+      description:
+        'Your all-in-one movie booking space for showtimes, tickets, and custom cinema experiences.',
+      explore: 'Explore',
+      account: 'Account',
+      support: 'Support',
+      helpCenter: 'Help Center',
+      copyright: '© 2026 PopFlix. All rights reserved.',
+      builtForMovieLovers: 'Built for movie lovers',
+      fastBooking: 'Fast booking',
+      easyCustomization: 'Easy customization',
+    },
     profile: {
       displaySettings: 'Display Settings',
       textSizeDescription: 'Adjust the app text size for a more comfortable reading experience.',
@@ -203,6 +215,17 @@ const messages = {
       notifications: '查看通知',
       openMenu: '打开菜单',
     },
+    footer: {
+      description: '您的一站式电影订票空间，提供场次、票券与自定义影院体验。',
+      explore: '探索',
+      account: '账号',
+      support: '支持',
+      helpCenter: '帮助中心',
+      copyright: '© 2026 PopFlix。保留所有权利。',
+      builtForMovieLovers: '为电影爱好者打造',
+      fastBooking: '快速订票',
+      easyCustomization: '轻松自定义',
+    },
     profile: {
       displaySettings: '显示设置',
       textSizeDescription: '调整应用文字大小，获得更舒适的阅读体验。',
@@ -357,6 +380,18 @@ const messages = {
       login: 'Log Masuk',
       notifications: 'Lihat notifikasi',
       openMenu: 'Buka menu',
+    },
+    footer: {
+      description:
+        'Ruang tempahan filem serba lengkap anda untuk waktu tayangan, tiket dan pengalaman pawagam tersuai.',
+      explore: 'Teroka',
+      account: 'Akaun',
+      support: 'Sokongan',
+      helpCenter: 'Pusat Bantuan',
+      copyright: '© 2026 PopFlix. Hak cipta terpelihara.',
+      builtForMovieLovers: 'Dibina untuk pencinta filem',
+      fastBooking: 'Tempahan pantas',
+      easyCustomization: 'Penyesuaian mudah',
     },
     profile: {
       displaySettings: 'Tetapan Paparan',

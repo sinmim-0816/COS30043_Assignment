@@ -29,7 +29,7 @@ const { featuredMovies, fetchHeroMovies, getImageURL, isLoading, getLanguageName
 const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
 const { items: experienceData, loading: expLoading, loadExperiences, loadAllExperiences } = useExperience(); 
 const { setReminder, checkReminderExists } = useReminders();
-const { t } = useAppI18n();
+const { t, locale } = useAppI18n();
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
@@ -321,6 +321,13 @@ watch(
     },
     { immediate: true }
 );
+
+watch(locale, async () => {
+    await Promise.all([
+        fetchHeroMovies(),
+        fetchComingSoonMovies(),
+    ]);
+});
 </script>
 
 <template>

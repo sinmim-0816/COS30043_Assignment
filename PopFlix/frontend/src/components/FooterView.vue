@@ -1,28 +1,32 @@
 <script setup>
-import { Facebook, Twitter, Instagram, MessageCircle } from "lucide-vue-next"
+import { computed } from 'vue';
+import { Facebook, Twitter, Instagram, MessageCircle } from 'lucide-vue-next';
 import Ticket from 'lucide-vue-next/dist/esm/icons/ticket';
 import Clapperboard from 'lucide-vue-next/dist/esm/icons/clapperboard';
 import MapPinned from 'lucide-vue-next/dist/esm/icons/map-pinned';
 import logo from '@/assets/popflix_logo.png';
+import { useAppI18n } from '../utils/i18n';
 
-const exploreLinks = [
-  { label: 'Movies', to: '/movies' },
-  { label: 'Showtimes', to: '/showtimes' },
-  { label: 'Cinemas', to: '/theaters' },
-  { label: 'Customization', to: '/customize-list' },
-];
+const { t } = useAppI18n();
 
-const accountLinks = [
-  { label: 'My Profile', to: '/profile' },
-  { label: 'My Bookings', to: '/my-tickets' },
-  { label: 'Notification', to: '/notification' },
-];
+const exploreLinks = computed(() => [
+  { label: t('topbar.movies'), to: '/movies' },
+  { label: t('topbar.showtimes'), to: '/showtimes' },
+  { label: t('topbar.cinemas'), to: '/theaters' },
+  { label: t('topbar.customization'), to: '/customize-list' },
+]);
 
-const supportLinks = [
-  { label: 'Help Center', to: '/theaters?category=Booking&faqId=1' },
+const accountLinks = computed(() => [
+  { label: t('topbar.viewProfile'), to: '/profile' },
+  { label: t('topbar.myBookings'), to: '/my-tickets' },
+  { label: t('topbar.notifications'), to: '/notification' },
+]);
+
+const supportLinks = computed(() => [
+  { label: t('footer.helpCenter'), to: '/theaters?category=Booking&faqId=1' },
   { label: 'support@popflix.com', href: 'mailto:support@popflix.com' },
   { label: '+60 123 456 789', href: 'tel:+60123456789' },
-];
+]);
 </script>
 
 <template>
@@ -32,10 +36,9 @@ const supportLinks = [
                 <section class="footer-brand-card">
                     <div class="brand-lockup">
                         <img :src="logo" alt="PopFlix Logo" class="footer-logo" />
-                        
                     </div>
                     <p class="footer-description">
-                        Your all-in-one movie booking space for showtimes, tickets, and custom cinema experiences.
+                        {{ t('footer.description') }}
                     </p>
                     <div class="social-icons">
                         <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook">
@@ -47,7 +50,7 @@ const supportLinks = [
                         <a href="https://instagram.com" target="_blank" rel="noreferrer" aria-label="Instagram">
                             <Instagram size="18" />
                         </a>
-                        <a href="https://whatsapp.com" target="_blank" rel="noreferrer" aria-label="Instagram">
+                        <a href="https://whatsapp.com" target="_blank" rel="noreferrer" aria-label="WhatsApp">
                             <MessageCircle size="18" />
                         </a>
                     </div>
@@ -56,7 +59,7 @@ const supportLinks = [
                 <section class="footer-nav-card">
                     <p class="footer-title">
                         <Clapperboard size="16" class="me-2" />
-                        Explore
+                        {{ t('footer.explore') }}
                     </p>
                     <ul class="footer-links">
                         <li v-for="link in exploreLinks" :key="link.to">
@@ -68,7 +71,7 @@ const supportLinks = [
                 <section class="footer-nav-card">
                     <p class="footer-title">
                         <Ticket size="16" class="me-2" />
-                        Account
+                        {{ t('footer.account') }}
                     </p>
                     <ul class="footer-links">
                         <li v-for="link in accountLinks" :key="link.to">
@@ -80,7 +83,7 @@ const supportLinks = [
                 <section class="footer-nav-card">
                     <p class="footer-title">
                         <MapPinned size="16" class="me-2" />
-                        Support
+                        {{ t('footer.support') }}
                     </p>
                     <ul class="footer-links">
                         <li v-for="link in supportLinks" :key="link.label">
@@ -88,18 +91,17 @@ const supportLinks = [
                             <a v-else :href="link.href">{{ link.label }}</a>
                         </li>
                     </ul>
-                    
                 </section>
             </div>
 
             <div class="footer-bottom">
-                <span>© 2026 PopFlix. All rights reserved.</span>
+                <span>{{ t('footer.copyright') }}</span>
                 <div class="footer-bottom-links">
-                    <span>Built for movie lovers</span>
+                    <span>{{ t('footer.builtForMovieLovers') }}</span>
                     <span class="footer-dot"></span>
-                    <span>Fast booking</span>
+                    <span>{{ t('footer.fastBooking') }}</span>
                     <span class="footer-dot"></span>
-                    <span>Easy customization</span>
+                    <span>{{ t('footer.easyCustomization') }}</span>
                 </div>
             </div>
         </v-container>
@@ -110,7 +112,7 @@ const supportLinks = [
 .footer-wrapper {
     position: relative;
     overflow: hidden;
-    background:var(--footer-bg);
+    background: var(--footer-bg);
     color: var(--footer-text);
     border-top: 1px solid var(--footer-border);
 }
@@ -147,20 +149,6 @@ const supportLinks = [
 .footer-logo {
     width: 140px;
     height: auto;
-}
-
-.brand-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    width: fit-content;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: var(--footer-chip-bg);
-    color: var(--footer-chip-text);
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
 }
 
 .footer-description {
@@ -223,22 +211,6 @@ const supportLinks = [
 .footer-links a:hover {
     color: var(--footer-link-hover);
     padding-left: 4px;
-}
-
-.contact-card {
-    margin-top: 18px;
-    padding-top: 18px;
-    border-top: 1px solid var(--footer-divider);
-    display: grid;
-    gap: 12px;
-}
-
-.contact-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--footer-muted);
-    font-size: 0.92rem;
 }
 
 .footer-bottom {

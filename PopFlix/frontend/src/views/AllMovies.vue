@@ -485,7 +485,7 @@ onBeforeUnmount(() => {
                                     <ChevronDown />
                                 </v-btn>
                             </template>
-                            <v-carousel-item v-for="(exp, i) in experiences" :key="i" :src="exp.image_url" cover>
+                            <v-carousel-item v-for="(exp, i) in experiences" :key="i" :src="exp.image_url" cover class="position-relative">
                                 <div
                                     class="d-flex flex-column justify-end overlay position-absolute botom-0 w-100 h-100 left-0 px-5 pb-2">
                                     <h3 class="text-white">{{ exp.title }}</h3>

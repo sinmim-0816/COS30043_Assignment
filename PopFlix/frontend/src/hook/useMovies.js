@@ -369,7 +369,7 @@ export function useMovies() {
             console.error("invalid id");
             return null;
         }
-        const key = String(id);
+        const key = `${String(id)}:${getTmdbLanguageCode()}`;
 
         if (movieCache.has(key)) {
             return movieCache.get(key);
@@ -379,7 +379,8 @@ export function useMovies() {
         isLoading.value = true;
 
         try {
-            const res = await movieRepository.getMovieDetails(id, getTmdbLanguageCode());
+            const tmdbLanguage = getTmdbLanguageCode();
+            const res = await movieRepository.getMovieDetails(id, tmdbLanguage);
 
             const details = res.data?.movie;
 
