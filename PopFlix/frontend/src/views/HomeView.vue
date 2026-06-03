@@ -334,7 +334,7 @@ watch(
             </div>
         </div>
     </template>
-    <v-app v-else-if="featuredMovies" full-height class="container-fluid m-0 p-0">
+    <v-app v-else-if="featuredMovies" full-height class="container-fluid m-0 p-0 home-view-shell">
         <v-snackbar
             v-model="showToast"
             location="top"
@@ -387,7 +387,7 @@ watch(
                                 </div>
                                 <p class="fs-6 text-wrap">{{ movie?.overview }}</p>
 
-                                <v-row>
+                                <v-row class="btn-row">
                                     <v-btn variant="flat" class="trailer-btn py-4 fs-6 rounded-2"
                                         @click="playVideo(movie)">
                                         <CirclePlay class="me-2" />Watch Trailer
@@ -544,7 +544,7 @@ watch(
         </section>
         <section id="custom-ticket-cta" class=" position-relative">
             
-            <v-container fluid class="text-center position-relative z-index-2" width="100vw">
+            <v-container fluid class="text-center position-relative z-index-2 w-100 px-0">
                 
                 <div class="ticket-animation-stage scroll-animate">
                     
@@ -1101,13 +1101,17 @@ watch(
 }
 .bottom-gradient {
     background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
-    width: 100vw !important;
+    width: 100% !important;
     bottom: 0;
 }
 
 
 #experiences {
     padding: 0 13rem;
+}
+
+.home-view-shell {
+    overflow-x: clip;
 }
 
 
@@ -1151,6 +1155,10 @@ watch(
 
     .overlay-elements {
         padding: 0 1.5rem 1.5rem;
+    }
+
+    .home-view-shell {
+        overflow-x: hidden;
     }
 
     .hero_content {
@@ -1509,6 +1517,11 @@ watch(
         flex-shrink: 0;
     }
 
+    .btn-row{
+        display:flex;
+        flex-direction:row;
+    }
+
 }
 #movie-matchmaker {
     background-color: var(--bg-color); 
@@ -1580,8 +1593,8 @@ watch(
         height: 250px;
     }
 }
-.svg-ticket-wrapper {
-    width: 350px;   
+    .svg-ticket-wrapper {
+    width: min(350px, 100%);   
     height: 400px; 
     display: flex;
     justify-content: center;
