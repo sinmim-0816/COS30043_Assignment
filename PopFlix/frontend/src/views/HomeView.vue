@@ -20,6 +20,7 @@ import FooterView from '@/components/FooterView.vue';
 import { useExperience } from '../hook/useExperience';
 import { useAuthStore } from '../stores/auth';
 import { useReminders } from '../hook/useReminder';
+import { useAppI18n } from '../utils/i18n';
 import TicketLeft from '@/components/TicketLeft.vue';
 import TicketCenter from '@/components/TicketCenter.vue';
 import TicketRight from '@/components/TicketRight.vue';
@@ -28,6 +29,7 @@ const { featuredMovies, fetchHeroMovies, getImageURL, isLoading, getLanguageName
 const { cinemas, allSessions, loadInitialData, fetchAllShowtimes } = useShowtimes();
 const { items: experienceData, loading: expLoading, loadExperiences, loadAllExperiences } = useExperience(); 
 const { setReminder, checkReminderExists } = useReminders();
+const { t } = useAppI18n();
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
@@ -390,11 +392,11 @@ watch(
                                 <v-row class="btn-row">
                                     <v-btn variant="flat" class="trailer-btn py-4 fs-6 rounded-2"
                                         @click="playVideo(movie)">
-                                        <CirclePlay class="me-2" />Watch Trailer
+                                        <CirclePlay class="me-2" />{{ t('home.watchTrailer') }}
                                     </v-btn>
                                     <v-btn variant="flat" elevation="3" class="movie-btn py-4 fs-6 rounded-2"
                                         @click="handleBuyOrRemind(movie)">
-                                        Buy Now
+                                        {{ t('home.buyNow') }}
                                     </v-btn>
                                 </v-row>
                             </v-col>
@@ -442,16 +444,16 @@ watch(
         </section>
         <section id="now-showing">
             <v-container v-if="!isLoading" class="reveal-on-load" fluid>
-                <h2>Movie Showtime</h2>
+                <h2>{{ t('home.movieShowtime') }}</h2>
                 <div class="now-showing-toolbar mt-4 mx-5 mb-8">
                     <v-tabs v-model="activeTab" bg-color="transparent" class="now-showing-tabs">
-                        <v-tab v-for="(tab, index) in ['Now Showing', 'Kids', 'Coming Soon']" :key="index"
+                        <v-tab v-for="(tab, index) in [t('home.nowShowing'), t('home.kids'), t('home.comingSoon')]" :key="index"
                             :value="index" :class="getTabClass(index)">
                             {{ tab }}
                         </v-tab>
                     </v-tabs>
                     <RouterLink to="/movies" class="now-showing-link">
-                        <v-btn variant="text" class="hidden-sm-and-down rounded theme-tab-inactive">See More
+                        <v-btn variant="text" class="hidden-sm-and-down rounded theme-tab-inactive">{{ t('home.seeMore') }}
                             <ChevronRight />
                         </v-btn>
                     </RouterLink>
@@ -569,10 +571,10 @@ watch(
                 </div>
 
                 <h2 class="text-h3 font-weight-black mb-4" style="letter-spacing: -1px;">
-                    Craft Your Cinematic Keepsake
+                    {{ t('home.cinematicKeepsake') }}
                 </h2>
                 <p class="text-h6 text-color font-weight-regular mx-auto w-75" >
-                    Don't just watch the movie, own the memory. After booking your showtime, unlock the ability to customize and design your own unique digital ticket to share and collect!
+                    {{ t('home.keepsakeDescription') }}
                 </p>
                 
                 <v-btn 
@@ -582,7 +584,7 @@ watch(
                     height="48"
                     class="movie-btn px-8 font-weight-bold text-white text-none"
                 >
-                    Learn More
+                    {{ t('home.learnMore') }}
                 </v-btn>
 
             </v-container>

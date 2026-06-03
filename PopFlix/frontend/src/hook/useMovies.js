@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { movieRepository } from '../services/movieRepository';
 import { IMAGE_BASE_URL } from '../api/client';
 import { youtubeSearch } from '../api/client';
+import { currentLocale } from '../utils/i18n';
 
 const featuredMovies = ref([]);
 const error = ref(null);
@@ -33,14 +34,19 @@ export function useMovies() {
             return 'Unknown';
         }
         const map = {
-            'cn': 'zh-Huat',
+            'cn': 'zh',
             'tw': 'zh-Hant',
             'ms': 'ms',
             'en': 'en',
         };
         const cleanCode = map[code.toLowerCase()] || code;
         try {
-            const displayNames = new Intl.DisplayNames(['en'], { type: 'language' });
+            const locale = currentLocale.value === 'zh'
+                ? 'zh-CN'
+                : currentLocale.value === 'ms'
+                    ? 'ms-MY'
+                    : 'en';
+            const displayNames = new Intl.DisplayNames([locale], { type: 'language' });
             return displayNames.of(cleanCode);
         } catch (err) {
             console.error("Error fetching language name:", err);

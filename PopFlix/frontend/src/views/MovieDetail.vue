@@ -10,6 +10,7 @@ import { useReminders } from '../hook/useReminder';
 import { movieRepository } from '../services/movieRepository';
 import { getGenreName } from '../utils/genre';
 import { getCertImage } from '../utils/AgeRating';
+import { useAppI18n } from '../utils/i18n';
 import { useAuthStore } from '../stores/auth';
 import FooterView from '@/components/FooterView.vue';
 
@@ -31,6 +32,7 @@ const {
     getLanguageName,
     getCertificate
 } = useMovieDetails();
+const { t, locale } = useAppI18n();
 
 const { reviews, fetchReviews } = useReviews();
 const { isProcessing, hasReminder, checkReminderStatus, setReminder } = useReminders();
@@ -41,6 +43,11 @@ const isAtStart = ref(true);
 const isAtEnd = ref(false);
 const fontSizeMode = ref(localStorage.getItem('app_font_size') || document.documentElement.dataset.fontSize || 'medium');
 const fontSizeObserver = ref(null);
+const dateLocale = computed(() => {
+    if (locale.value === 'zh') return 'zh-CN';
+    if (locale.value === 'ms') return 'ms-MY';
+    return 'en-GB';
+});
 
 const syncFontSizeState = () => {
     fontSizeMode.value = localStorage.getItem('app_font_size') || document.documentElement.dataset.fontSize || 'medium';
@@ -50,6 +57,15 @@ const heroBackdropHeight = computed(() => {
     if (fontSizeMode.value === 'large') return '620px';
     if (fontSizeMode.value === 'small') return '540px';
     return '570px';
+});
+const formattedReleaseDate = computed(() => {
+    if (!movie.value?.release_date) return t('common.nA');
+
+    return new Intl.DateTimeFormat(dateLocale.value, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    }).format(new Date(movie.value.release_date));
 });
 const showStickyBuy = ref(false);
 const showToast = ref(false);
@@ -277,7 +293,7 @@ const getClipClass = (index) => {
                 :disabled="(!isReleased && hasReminder) || isProcessing"
             >
                 <Bell v-if="!isReleased" class="me-2"/>
-                {{ isReleased ? 'Buy Now' : (hasReminder ? 'Reminder Set' : 'Remind Me') }}
+                {{ isReleased ? t('movieDetail.buyNow') : (hasReminder ? t('movieDetail.reminderSet') : t('movieDetail.remindMe')) }}
             </v-btn>
         </v-fade-transition>
         <v-main>
@@ -296,7 +312,7 @@ const getClipClass = (index) => {
                                     <v-btn icon color="transparent" size="large" class="floating-play-btn"
                                         elevation="12" @click="playFirstTrailer" :disabled="!movie?.allVideos?.length">
                                         <CirclePlay size="45" color="red" />
-                                        <v-tooltip activator="parent" location="top">Watch Trailer</v-tooltip>
+                                        <v-tooltip activator="parent" location="top">{{ t('movieDetail.watchTrailer') }}</v-tooltip>
                                     </v-btn>
                                 </div>
                             </v-col>
@@ -324,11 +340,7 @@ const getClipClass = (index) => {
                                         <span>
                                             <Calendar size="20" />
                                         </span>
-                                        <span>{{ new Date(movie?.release_date).toLocaleDateString('en-GB', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            year: 'numeric'
-                                        }) }}</span>
+                                        <span>{{ formattedReleaseDate }}</span>
                                     </div>
                                     <div class="d-flex flex-wrap gap-2 my-3">
                                         <v-chip v-for="id in movie?.genres" :key="id" variant="tonal"
@@ -338,7 +350,7 @@ const getClipClass = (index) => {
                                     </div>
                                     <div class="d-flex align-center gap-6 mb-8 mt-6">
                                         <div class="d-flex flex-column">
-                                            <span class="text-overline text-color fw-bold mb-n1"> Rating</span>
+                                            <span class="text-overline text-color fw-bold mb-n1">{{ t('movieDetail.rating') }}</span>
                                             <div class="d-flex align-center">
                                                 <Star size="28" fill="#f5c518" color="#f5c518" class="me-2" />
                                                 <span class=" fs-2 font-weight-black text-white">{{
@@ -350,7 +362,7 @@ const getClipClass = (index) => {
                                         <v-divider vertical class="mx-4" thickness="1" color="grey"></v-divider>
 
                                         <div class="d-flex flex-column">
-                                            <span class="text-overline text-color mb-1 fw-bold">Popularity</span>
+                                            <span class="text-overline text-color mb-1 fw-bold">{{ t('movieDetail.popularity') }}</span>
                                             <div class="d-flex align-center">
                                                 <v-icon size="28" color="red-accent-3" class="me-2">mdi-fire</v-icon>
                                                 <span class="fs-2 font-weight-bold text-white">{{
@@ -367,7 +379,7 @@ const getClipClass = (index) => {
                                                 :disabled="(!isReleased && hasReminder) || isProcessing"
                                             >
                                                 <Bell v-if="!isReleased" class="me-2"/>
-                                                {{ isReleased ? 'Buy Now' : (hasReminder ? 'Reminder Set' : 'Remind Me') }}
+                                                {{ isReleased ? t('movieDetail.buyNow') : (hasReminder ? t('movieDetail.reminderSet') : t('movieDetail.remindMe')) }}
                                             </v-btn>
                                         </v-row>
                                     </div>
@@ -379,7 +391,7 @@ const getClipClass = (index) => {
             </section>
             <section>
                 <v-container fluid>
-                    <h2 class="mb-3">Synopsis</h2>
+                    <h2 class="mb-3">{{ t('movieDetail.overview') }}</h2>
                     <v-row class="synopsis">
                         <v-col cols="12" lg="8" class="pe-lg-12">
                             <div class="synopsis-card pa-1">
@@ -394,7 +406,7 @@ const getClipClass = (index) => {
             <section v-if="movie?.allVideos?.length" ref="sectionRef" class="film-strip-section reveal-on-scroll"
                 :class="{ 'is-visible': isVisible }">
                 <div class="text-center mb-4">
-                    <h2>Trailers & Clips</h2>
+                    <h2>{{ t('movieDetail.trailersAndClips') }}</h2>
                 </div>
 
                 <div class="filmstrip-outer" :class="{ 'is-projecting': activeVideoIdx !== null }">
@@ -440,7 +452,7 @@ const getClipClass = (index) => {
                             <div class="player-header">
                                 <div class="player-now">
                                     <div class="now-dot"></div>
-                                    <span class="now-label">Now Projecting</span>
+                                    <span class="now-label">{{ t('movieDetail.nowProjecting') }}</span>
                                     <span class="now-title">{{ activeVideo.name }}</span>
                                 </div>
                                 <v-btn icon variant="text" color="grey-lighten-1" @click="closePlayer">
@@ -456,7 +468,7 @@ const getClipClass = (index) => {
                 </v-expand-transition>
             </section>
             <section v-if="movie">
-                <h2>Top Billed Cast</h2>
+                <h2>{{ t('movieDetail.topBilledCast') }}</h2>
                 <v-container>
                     <v-row justify="center">
                         <v-col cols="12" lg="10">
@@ -494,7 +506,7 @@ const getClipClass = (index) => {
             </section>
             <section v-if="movie?.backdrops?.length">
                 <div class="text-center mb-3">
-                    <h2 class="section-title">Official Posters</h2>
+                    <h2 class="section-title">{{ t('movieDetail.officialPosters') }}</h2>
                 </div>
                 <v-container fluid>
                     <div class="dynamic-poster-flex" :class="{ 'center-justify': movie.backdrops.length <= 3 }">
@@ -513,26 +525,26 @@ const getClipClass = (index) => {
             </section>
             <section v-if="movie" class="production-section">
                 <v-container fluid>
-                    <h2 class="mb-4">Production Details</h2>
+                    <h2 class="mb-4">{{ t('movieDetail.productionDetails') }}</h2>
                     <v-row class="ledger-container">
                         <v-col cols="12" md="6">
                             <table class="ledger-table">
                                 <tbody>
                                     <tr>
-                                        <th class="px-2">Director</th>
-                                        <td class="px-2">{{ director || 'N/A' }}</td>
+                                        <th class="px-2">{{ t('movieDetail.director') }}</th>
+                                        <td class="px-2">{{ director || t('common.nA') }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="px-2">Screenplay</th>
+                                        <th class="px-2">{{ t('movieDetail.writers') }}</th>
                                         <td class="px-2">{{ writers }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="px-2">Original Language</th>
+                                        <th class="px-2">{{ t('movieDetail.originalLanguage') }}</th>
                                         <td class="px-2">{{ getLanguageName(movie.language) }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="px-2">Production Countries</th>
-                                        <td class="px-2">{{ productionCountries }}</td>
+                                        <th class="px-2">{{ t('movieDetail.productionCountries') }}</th>
+                                        <td class="px-2">{{ productionCountries || t('common.nA') }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -542,21 +554,21 @@ const getClipClass = (index) => {
                             <table class="ledger-table">
                                 <tbody>
                                     <tr>
-                                        <th class="px-2">Budget</th>
+                                        <th class="px-2">{{ t('movieDetail.budget') }}</th>
                                         <td class="px-2">{{ formattedBudget }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="px-2">Revenue</th>
+                                        <th class="px-2">{{ t('movieDetail.revenue') }}</th>
                                         <td class="px-2">{{ formattedRevenue }}</td>
                                     </tr>
                                     <tr>
-                                        <th class="px-2">Status</th>
+                                        <th class="px-2">{{ t('movieDetail.status') }}</th>
                                         <td><v-chip size="small" color="red" variant="flat"
                                                 class="font-weight-bold me-2">{{
                                                     status }}</v-chip></td>
                                     </tr>
                                     <tr>
-                                        <th class="px-2">Studios</th>
+                                        <th class="px-2">{{ t('movieDetail.studios') }}</th>
                                         <td>
                                             <div class="d-flex flex-wrap gap-2 justify-end me-2">
                                                 <span v-for="studio in movie.production_companies" :key="studio.id"
@@ -575,7 +587,7 @@ const getClipClass = (index) => {
 
             <section v-if="movie && reviews && reviews.length > 0" class="press-section">
                 <div class="text-center">
-                    <h2>Cinephile Reviews</h2>
+                    <h2>{{ t('movieDetail.cinephileReviews') }}</h2>
                 </div>
 
                 <v-container fluid>
@@ -595,7 +607,7 @@ const getClipClass = (index) => {
                             </p>
                             <p class="clip-body">"{{ review.comment }}"</p>
                             <div class="clip-stamp" :class="review.rating >= 4 ? 'stamp-green' : 'stamp-red'">
-                                {{ review.rating >= 4 ? 'RECOMMENDED' : 'REVIEWED' }}
+                                {{ review.rating >= 4 ? t('movieDetail.recommended') : t('movieDetail.reviewed') }}
                             </div>
                         </div>
                     </div>

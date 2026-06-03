@@ -16,6 +16,7 @@ import {
   applyFontSizePreference,
   readStoredFontSize,
 } from '../utils/appPreferences';
+import { useAppI18n } from '../utils/i18n';
 import FooterView from '@/components/FooterView.vue';
 
 const activeTab = ref('Profile');
@@ -43,11 +44,18 @@ const rewardsSectionRef = ref(null);
 const isDarkTheme = ref(false);
 const themeObserver = ref(null);
 const selectedFontSize = ref(readStoredFontSize());
+const { locale, t, setLocale, getLocaleLabel, supportedLocales } = useAppI18n();
 const fontSizeOptions = [
   { value: 'small', label: 'Small', preview: 'Aa' },
   { value: 'medium', label: 'Medium', preview: 'Aa' },
   { value: 'large', label: 'Large', preview: 'Aa' },
 ];
+const languageOptions = computed(() =>
+  supportedLocales.map((value) => ({
+    value,
+    label: getLocaleLabel(value),
+  }))
+);
 
 const cloneUserState = () => JSON.parse(JSON.stringify(user));
 
@@ -65,6 +73,10 @@ const syncThemeState = () => {
 
 const setFontSize = (size) => {
   selectedFontSize.value = size;
+};
+
+const setLanguage = (value) => {
+  setLocale(value);
 };
 
 const triggerAvatarUpload = () => {
@@ -847,9 +859,9 @@ const passStrengthText = computed(() => {
           <div class="glass-control-card display-settings-card">
             <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
               <div>
-                <h3 class="panel-inner-title fs-6 mb-1">Display Settings</h3>
+                <h3 class="panel-inner-title fs-6 mb-1">{{ t('profile.displaySettings') }}</h3>
                 <p class="display-settings-description mb-0">
-                  Adjust the app text size for a more comfortable reading experience.
+                  {{ t('profile.textSizeDescription') }}
                 </p>
               </div>
             </div>
@@ -869,6 +881,34 @@ const passStrengthText = computed(() => {
                 </div>
                 <Check v-if="selectedFontSize === option.value" size="18" />
               </button>
+            </div>
+
+            <div class="mt-5">
+              <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
+                <div>
+                  <h3 class="panel-inner-title fs-6 mb-1">{{ t('profile.appLanguage') }}</h3>
+                  <p class="display-settings-description mb-0">
+                    {{ t('profile.languageDescription') }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="font-size-option-grid">
+                <button
+                  v-for="option in languageOptions"
+                  :key="option.value"
+                  type="button"
+                  class="font-size-option"
+                  :class="{ active: locale === option.value }"
+                  @click="setLanguage(option.value)"
+                >
+                  <div>
+                    <p class="font-size-option-label">{{ option.label }}</p>
+                    <p class="font-size-option-preview">{{ option.value.toUpperCase() }}</p>
+                  </div>
+                  <Check v-if="locale === option.value" size="18" />
+                </button>
+              </div>
             </div>
           </div>
         </section>
