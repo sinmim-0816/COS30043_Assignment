@@ -169,7 +169,7 @@ const handleHeroScroll = () => {
 };
 
 const movieHeroBackdropStyle = computed(() => ({
-  transform: `translate3d(0, ${Math.min(scrollY.value * 0.12, 140)}px, 0) scale(1.08)`,
+  '--hero-parallax-y': `${Math.min(scrollY.value * 0.06, 60)}px`,
 }));
 
 const movieHeroContentStyle = computed(() => ({
@@ -319,7 +319,7 @@ const getClipClass = (index) => {
                     :src="getImageURL(movie?.backdrop, 'original')"
                     :height="heroBackdropHeight"
                     cover
-                    class="movie-detail-hero-bg"
+                    class="movie-detail-hero"
                     :style="movieHeroBackdropStyle"
                     >
                     <div class="overlay-gradient"></div>
@@ -1232,6 +1232,18 @@ const getClipClass = (index) => {
     padding: 2px 8px;
     border-radius: 4px;
     display: inline-block;
+}
+
+.movie-detail-hero {
+  position: relative;
+  overflow: hidden;
+  padding-left:3rem;
+}
+
+.movie-detail-hero :deep(.v-img__img) {
+  transform: translate3d(0, var(--hero-parallax-y, 0px), 0) scale(1.08);
+  will-change: transform;
+  transition: transform 180ms linear;
 }
 
 @media (min-width: 960px) {

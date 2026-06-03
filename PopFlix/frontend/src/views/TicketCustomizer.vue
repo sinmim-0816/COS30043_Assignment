@@ -33,7 +33,7 @@ import TicketShape14 from '@/components/TicketShape14.vue';
 const route = useRoute();
 const { fetchMovieDetails, isLoading } = useMovies();
 const { fetchTicketDetails, isTicketsLoading } = useTickets();
-const { t, locale } = useAppI18n();
+const { t } = useAppI18n();
 const activeTicket = ref(null);
 
 const shapes = [TicketShape1, TicketShape2, TicketShape3, TicketShape4, TicketShape5, TicketShape6,TicketShape7,TicketShape8,TicketShape9,TicketShape10,TicketShape11,TicketShape12,TicketShape13,TicketShape14];
@@ -223,10 +223,6 @@ const handleResize = (el, x, y, width, height) => {
 onMounted(async () => {
     syncLayoutMode();
     window.addEventListener('resize', syncLayoutMode);
-    await loadTicketResources();
-});
-
-watch(locale, async () => {
     await loadTicketResources();
 });
 
