@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useDisplay } from 'vuetify';
-import { GENRE_MAP } from '../utils/genre';
+import { GENRE_IDS, getGenreName } from '../utils/genre';
 import { useMovies } from '../hook/useMovies';
 
 const {getLanguageName}=useMovies();
@@ -47,10 +47,12 @@ const availableLanguages=computed(()=>{
     return [...codes];
 })
 
-const genreOptions=Object.entries(GENRE_MAP).map(([id,name])=>({
-    id:parseInt(id),
-    name:name
-}));
+const genreOptions = computed(() =>
+    GENRE_IDS.map((id) => ({
+        id,
+        name: getGenreName(id),
+    }))
+);
 
 const defaultFilters = () => ({
     genre: [],
