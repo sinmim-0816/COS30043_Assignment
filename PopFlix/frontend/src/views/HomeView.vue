@@ -1391,6 +1391,109 @@ watch(locale, async () => {
     #experiences {
         padding: 0 1rem;
     }
+    .experience-sidebar,
+    .experience-panel {
+        width: 100%;
+    }
+
+    .experience-list-container {
+        max-height: none;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(180px, 72%);
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 0 0.5rem;
+        gap: 10px;
+        scroll-snap-type: x proximity;
+        
+    }
+
+    .experience-item {
+        min-height: 120px;
+        padding: 14px 16px;
+        scroll-snap-align: start;
+        align-items: flex-start;
+        
+    }
+
+    .experience-item.active {
+        transform: none;
+    }
+
+    .experience-item .desc-text {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+    }
+
+    .scroll-indicator {
+        display: none;
+    }
+
+    .custom-feature-layout {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        gap: 16px;
+    }
+
+    .feature-col-large {
+        width: 100%;
+        max-width: 100%;
+        margin-top: 0;
+    }
+    .feature-col-large .feature-card {
+        width: 100%;
+        max-width: 100%;
+        height: 350px !important;
+    }
+    .feature-col-small .feature-card{
+        width: 100%;
+        max-width: 100%;
+        height: 200px !important;
+    }
+
+    .view-all-btn {
+        width: 100%;
+        max-width: 90%;
+        height: 52px;
+    }
+
+    .feature-col-small .feature-card .text-h6 {
+        font-size: 1rem !important;
+    }
+
+    .feature-col-large .text-h4 {
+        font-size: 1.25rem !important;
+    }
+
+    .feature-col-large .text-body-1 {
+        font-size: 0.95rem !important;
+    }
+
+    .view-all-btn-desktop {
+        display: none !important;
+    }
+
+    .view-all-btn-mobile {
+        display: flex !important;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 1rem !important;
+        justify-content: center;
+    }
+
+    .view-all-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        white-space: nowrap;
+    }
+
+    .experience-cta-icon {
+        flex-shrink: 0;
+    }
 
 }
 
@@ -1523,7 +1626,7 @@ watch(locale, async () => {
         line-height: 1.15;
     }
 
-    .experience-sidebar,
+    /* .experience-sidebar,
     .experience-panel {
         width: 100%;
     }
@@ -1625,7 +1728,7 @@ watch(locale, async () => {
 
     .experience-cta-icon {
         flex-shrink: 0;
-    }
+    } */
 
 }
 #movie-matchmaker {
