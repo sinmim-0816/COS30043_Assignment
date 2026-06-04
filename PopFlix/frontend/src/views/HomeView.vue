@@ -446,7 +446,7 @@ watch(locale, async () => {
                                         <img :src="getImageURL(backdrop)" alt="Poster Image">
                                     </v-col>
                                 </v-row>
-                                <div class="d-flex mb-3 Movjustify-content-center">
+                                <div class="d-flex mb-3 justify-content-center">
 
                                     <div v-for="actor in (movie?.actors?.slice(0, 5) || [])" :key="actor.name"
                                         class="actors me-4">
