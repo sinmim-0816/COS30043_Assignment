@@ -41,7 +41,7 @@ export class AiDesignService {
     }
 
     try {
-      const model = this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash';
+      const model = this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash';
       const response = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
         this.buildGeminiRequest(dto),
@@ -74,7 +74,7 @@ export class AiDesignService {
       console.error('Gemini ticket design failed:', {
         status,
         message,
-        model: this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash',
+        model: this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash',
         hasApiKey: Boolean(apiKey),
       });
 
