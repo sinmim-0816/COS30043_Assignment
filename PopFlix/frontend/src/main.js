@@ -4,7 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
-import { initFontSizePreference } from './utils/appPreferences'
+import { initContrastThemePreference, initFontSizePreference } from './utils/appPreferences'
 import { initLocalePreference } from './utils/i18n'
 
 // Vuetify
@@ -28,6 +28,7 @@ const vuetify = createVuetify({
 })
 
 initFontSizePreference()
+initContrastThemePreference()
 initLocalePreference()
 
 createApp(App).use(vuetify).use(router).use(createPinia()).mount('#app')

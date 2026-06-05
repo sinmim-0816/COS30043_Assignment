@@ -1,7 +1,7 @@
 const BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = "c9858d1981c48307a734e8bb777a1a5c";
-const YOUTUBE_API_KEY = "AIzaSyBo2ivSxIJmHJRd4HmnmqkrrdX9tqNySe8";
-// const YOUTUBE_API_KEY = "AI";
+// const YOUTUBE_API_KEY = "AIzaSyBo2ivSxIJmHJRd4HmnmqkrrdX9tqNySe8";
+const YOUTUBE_API_KEY = "AI";
 
 // ============================
 // TMDB API CLIENT

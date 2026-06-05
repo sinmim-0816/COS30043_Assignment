@@ -14,6 +14,9 @@ import { formatTicketDate } from '../utils/formatDateTime';
 import { useReviews } from '../hook/useReviews';
 import {
   applyFontSizePreference,
+  applyContrastThemePreference,
+  CONTRAST_THEMES,
+  readStoredContrastTheme,
   readStoredFontSize,
 } from '../utils/appPreferences';
 import { useAppI18n } from '../utils/i18n';
@@ -44,6 +47,7 @@ const rewardsSectionRef = ref(null);
 const isDarkTheme = ref(false);
 const themeObserver = ref(null);
 const selectedFontSize = ref(readStoredFontSize());
+const selectedContrastTheme = ref(readStoredContrastTheme());
 const { locale, t, setLocale, getLocaleLabel, supportedLocales } = useAppI18n();
 const fontSizeOptions = [
   { value: 'small', label: 'Small', preview: 'Aa' },
@@ -54,6 +58,13 @@ const languageOptions = computed(() =>
   supportedLocales.map((value) => ({
     value,
     label: getLocaleLabel(value),
+  }))
+);
+
+const contrastThemeOptions = computed(() =>
+  CONTRAST_THEMES.map((theme) => ({
+    ...theme,
+    label: t(`profile.contrastThemeOptions.${theme.value}`),
   }))
 );
 
@@ -73,6 +84,11 @@ const syncThemeState = () => {
 
 const setFontSize = (size) => {
   selectedFontSize.value = size;
+};
+
+const setContrastTheme = (value) => {
+  selectedContrastTheme.value = applyContrastThemePreference(value);
+  syncThemeState();
 };
 
 const setLanguage = (value) => {
@@ -916,6 +932,49 @@ const passStrengthText = computed(() => {
                     <p class="font-size-option-preview">{{ option.value.toUpperCase() }}</p>
                   </div>
                   <Check v-if="locale === option.value" size="18" />
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
+                <div>
+                  <h3 class="panel-inner-title fs-6 mb-1">{{ t('profile.contrastTheme') }}</h3>
+                  <p class="display-settings-description mb-0">
+                    {{ t('profile.contrastThemeDescription') }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="contrast-theme-grid">
+                <button
+                  v-for="option in contrastThemeOptions"
+                  :key="option.value"
+                  type="button"
+                  class="contrast-theme-option"
+                  :class="{ active: selectedContrastTheme === option.value }"
+                  @click="setContrastTheme(option.value)"
+                >
+                  <div class="contrast-theme-preview" :data-preview-theme="option.value">
+                    <span class="preview-aa">Aa</span>
+                    <span class="preview-lines">
+                      <i></i>
+                      <i></i>
+                      <i></i>
+                    </span>
+                    <span class="preview-mini-card"></span>
+                    <span class="preview-swatches">
+                      <i
+                        v-for="swatch in option.swatches"
+                        :key="swatch"
+                        :style="{ background: swatch }"
+                      ></i>
+                    </span>
+                  </div>
+                  <div class="contrast-theme-meta">
+                    <span>{{ option.label }}</span>
+                    <Check v-if="selectedContrastTheme === option.value" size="18" />
+                  </div>
                 </button>
               </div>
             </div>
@@ -2314,6 +2373,120 @@ const passStrengthText = computed(() => {
   line-height: 1;
 }
 
+.contrast-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.contrast-theme-option {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.contrast-theme-option:hover {
+  transform: translateY(-1px);
+}
+
+.contrast-theme-option.active {
+  border-color: #ff5252;
+}
+
+.contrast-theme-preview {
+  position: relative;
+  min-height: 96px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 14px;
+}
+
+.contrast-theme-preview[data-preview-theme="desert"] {
+  background: #faf7f2;
+  color: #041435;
+}
+
+.contrast-theme-preview[data-preview-theme="navy"] {
+  background: #0a0e17;
+  color: #ffffff;
+}
+
+.contrast-theme-preview[data-preview-theme="dusk"] {
+  background: #1e2430;
+  color: #f8fafc;
+}
+
+.contrast-theme-preview[data-preview-theme="night-sky"] {
+  background: #020617;
+  color: #f8fafc;
+}
+
+.preview-aa {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.preview-lines {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  width: 42px;
+  display: grid;
+  gap: 5px;
+}
+
+.preview-lines i {
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.preview-mini-card {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 42px;
+  height: 26px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  opacity: 0.72;
+}
+
+.preview-swatches {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: flex;
+  gap: 5px;
+}
+
+.preview-swatches i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.contrast-theme-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
 .node-field,
 .node-textarea-field,
 .node-select-field,
@@ -2876,6 +3049,10 @@ const passStrengthText = computed(() => {
   .font-size-option-grid {
     grid-template-columns: 1fr;
   }
+
+  .contrast-theme-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 600px) {
@@ -3188,6 +3365,19 @@ const passStrengthText = computed(() => {
 .profile-page-light.theme-dark .font-size-option {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+}
+
+.profile-page-light.theme-dark .contrast-theme-option {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.profile-page-light.theme-dark .contrast-theme-option.active {
+  border-color: rgba(255, 82, 82, 0.5);
+}
+
+.profile-page-light.theme-dark .contrast-theme-meta {
   color: #e5e7eb;
 }
 
