@@ -92,7 +92,8 @@ export class AiDesignService {
                 'Use one of these fontFamily values: Inter, Playfair Display, Bebas Neue, Montserrat, Courier Prime, Roboto, Oswald, Lora, Pacifico.',
                 'The user prompt is the highest priority for style, colors, mood, and component choices.',
                 'Choose accent colors based on the user prompt, movie title, genres, and available backdrop count.',
-                'If backdropCount is greater than 0, choose a backgroundIndex from the available backdrop list.',
+                'If backdropCount is greater than 0, you MUST choose a backgroundIndex from the available backdrop list and set backdropOpacity between 0.45 and 0.75.',
+                'Do not repeat the same palette or composition as a default template. Use the variation seed to make a visibly different result every request.',
                 `Variation seed: ${dto.variationSeed || Date.now()}. Use it to avoid repeating the same composition.`,
                 `User design idea: ${dto.userPrompt || 'Create a polished cinematic ticket design.'}`,
                 `Movie data: ${JSON.stringify({
@@ -162,7 +163,7 @@ export class AiDesignService {
     const seedText = `${dto.movieTitle || ''}|${dto.userPrompt || ''}|${dto.variationSeed || ''}`;
     const seed = this.hash(seedText);
     const palette = this.pickPalette(dto.userPrompt || '', dto.genres || [], seed);
-    const layoutVariant = seed % 3;
+    const layoutVariant = seed % 6;
     const backgroundIndex = hasBackdrop ? seed % (dto.backdrops?.length || 1) : -1;
     const useBarcode = /barcode|bar code/i.test(dto.userPrompt || '') || layoutVariant === 2;
 
@@ -188,6 +189,27 @@ export class AiDesignService {
         { type: 'seats', x: 415, y: 270, w: 145, h: 44, fontSize: 25, color: palette.text, fontFamily: 'Bebas Neue' },
         { type: useBarcode ? 'barcode' : 'qr', x: 488, y: 86, w: 84, h: 84, fontSize: 16, color: '#000000' },
       ],
+      [
+        { type: 'title', x: 188, y: 112, w: 270, h: 46, fontSize: 24, color: palette.text, fontFamily: 'Montserrat' },
+        { type: 'runtime', x: 188, y: 174, w: 120, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Courier Prime' },
+        { type: 'startTime', x: 188, y: 214, w: 255, h: 32, fontSize: 15, color: palette.text, fontFamily: 'Courier Prime' },
+        { type: 'seats', x: 420, y: 286, w: 138, h: 40, fontSize: 24, color: palette.text, fontFamily: 'Oswald' },
+        { type: useBarcode ? 'barcode' : 'qr', x: 492, y: 84, w: 80, h: 80, fontSize: 16, color: '#000000' },
+      ],
+      [
+        { type: 'title', x: 218, y: 78, w: 250, h: 52, fontSize: 26, color: palette.text, fontFamily: 'Pacifico' },
+        { type: 'genres', x: 218, y: 152, w: 230, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Lora' },
+        { type: 'cinema', x: 218, y: 190, w: 245, h: 32, fontSize: 14, color: palette.text, fontFamily: 'Lora' },
+        { type: 'seats', x: 408, y: 260, w: 150, h: 48, fontSize: 26, color: palette.text, fontFamily: 'Bebas Neue' },
+        { type: useBarcode ? 'barcode' : 'qr', x: 482, y: 92, w: 88, h: 88, fontSize: 16, color: '#000000' },
+      ],
+      [
+        { type: 'title', x: 190, y: 80, w: 230, h: 48, fontSize: 25, color: palette.text, fontFamily: 'Bebas Neue' },
+        { type: 'startTime', x: 190, y: 148, w: 250, h: 32, fontSize: 15, color: palette.muted, fontFamily: 'Montserrat' },
+        { type: 'cinema', x: 190, y: 190, w: 235, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Montserrat' },
+        { type: 'seats', x: 440, y: 286, w: 112, h: 38, fontSize: 23, color: palette.text, fontFamily: 'Oswald' },
+        { type: useBarcode ? 'barcode' : 'qr', x: 498, y: 74, w: 78, h: 78, fontSize: 16, color: '#000000' },
+      ],
     ];
 
     return {
@@ -195,7 +217,7 @@ export class AiDesignService {
       accentColor: palette.primary,
       accentColor2: palette.secondary,
       gradientAngle: [45, 135, 210, 300][seed % 4],
-      backdropOpacity: hasBackdrop ? 0.48 : 1,
+      backdropOpacity: hasBackdrop ? [0.46, 0.54, 0.62, 0.7][seed % 4] : 1,
       backgroundIndex,
       description: `Ticket design inspired by ${dto.userPrompt || dto.movieTitle || 'the movie'}.`,
       textElements: layouts[layoutVariant],

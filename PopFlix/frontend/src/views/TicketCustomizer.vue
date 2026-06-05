@@ -67,6 +67,7 @@ const { generateTicketDesign, isAiDesigning } = useAiDesign();
 const ticketDescription = ref('');
 const aiDesignPrompt = ref('');
 const aiDesignNotice = ref('');
+const aiDesignRunCount = ref(0);
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
 
 const normalizeImageUrl = (path) => {
@@ -286,7 +287,12 @@ const applyAiDesign = async (design) => {
     gradientAngle.value = Number(design.gradientAngle ?? gradientAngle.value);
     backdropOpacity.value = Number(design.backdropOpacity ?? backdropOpacity.value);
 
-    const backgroundIndex = Number(design.backgroundIndex ?? -1);
+    const hasBackdrops = movieBackdrops.value.length > 0;
+    const requestedBackgroundIndex = Number(design.backgroundIndex ?? 0);
+    const backgroundIndex = hasBackdrops
+        ? (Math.max(0, requestedBackgroundIndex) + aiDesignRunCount.value - 1) % movieBackdrops.value.length
+        : -1;
+
     if (backgroundIndex >= 0 && movieBackdrops.value[backgroundIndex]) {
         await selectBackground(movieBackdrops.value[backgroundIndex], backgroundIndex);
     } else {
@@ -304,6 +310,7 @@ const applyAiDesign = async (design) => {
 const autoDesignTicket = async () => {
     if (!activeTicket.value) return;
     aiDesignNotice.value = '';
+    aiDesignRunCount.value += 1;
 
     try {
         const rect = ticketRef.value?.getBoundingClientRect();
@@ -321,7 +328,7 @@ const autoDesignTicket = async () => {
             canvasWidth: Math.round(rect?.width || ticketDisplayWidth.value),
             canvasHeight: Math.round(rect?.height || 430),
             userPrompt: aiDesignPrompt.value.trim(),
-            variationSeed: Date.now(),
+            variationSeed: Date.now() + aiDesignRunCount.value,
         });
 
         await applyAiDesign(design);
