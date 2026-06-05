@@ -1059,7 +1059,7 @@ const getClipClass = (index) => {
 
 .center-justify {
     justify-content: center;
-}
+}i
 
 .poster-wrapper {
     flex: 1 300px;

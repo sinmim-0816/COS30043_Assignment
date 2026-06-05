@@ -12,4 +12,5 @@ export class GenerateTicketDesignDto {
   canvasWidth?: number;
   canvasHeight?: number;
   userPrompt?: string;
+  variationSeed?: number;
 }

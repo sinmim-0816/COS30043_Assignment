@@ -42,6 +42,7 @@ const currentShape = shallowRef(TicketShape1);
 const tabs = ['shape', 'picture', 'components'];
 const activeTab = ref('shape');
 const isModalOpen = ref(false);
+const isAiPromptModalOpen = ref(false);
 const previewImageUrl = ref('');
 const isSidebarOpen = ref(true);
 const isMobileLayout = ref(false);
@@ -65,6 +66,7 @@ const { save, isLoading: isSaving } = useTicketDesign();
 const { generateTicketDesign, isAiDesigning } = useAiDesign();
 const ticketDescription = ref('');
 const aiDesignPrompt = ref('');
+const aiDesignNotice = ref('');
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
 
 const normalizeImageUrl = (path) => {
@@ -125,6 +127,11 @@ const toggleSidebar = () => {
 
 const closeSidebar = () => {
     isSidebarOpen.value = false;
+};
+
+const openAiPromptModal = () => {
+    aiDesignNotice.value = '';
+    isAiPromptModalOpen.value = true;
 };
 
 const openPreview = async () => {
@@ -296,6 +303,7 @@ const applyAiDesign = async (design) => {
 
 const autoDesignTicket = async () => {
     if (!activeTicket.value) return;
+    aiDesignNotice.value = '';
 
     try {
         const rect = ticketRef.value?.getBoundingClientRect();
@@ -313,9 +321,14 @@ const autoDesignTicket = async () => {
             canvasWidth: Math.round(rect?.width || ticketDisplayWidth.value),
             canvasHeight: Math.round(rect?.height || 430),
             userPrompt: aiDesignPrompt.value.trim(),
+            variationSeed: Date.now(),
         });
 
         await applyAiDesign(design);
+        aiDesignNotice.value = design.source === 'fallback'
+            ? (design.notice || t('ticketCustomizer.aiFallbackNotice'))
+            : '';
+        isAiPromptModalOpen.value = false;
         activeTab.value = 'picture';
     } catch (err) {
         console.error(err);
@@ -552,25 +565,16 @@ const triggerShare = async () => {
                 </button>
             </div>
 
-            <div class="ai-prompt-panel">
-                <label for="ai-ticket-prompt">{{ t('ticketCustomizer.aiPromptLabel') }}</label>
-                <textarea
-                    id="ai-ticket-prompt"
-                    v-model="aiDesignPrompt"
-                    :placeholder="t('ticketCustomizer.aiPromptPlaceholder')"
-                    rows="3"
-                ></textarea>
-            </div>
-
             <button
                 class="ai-design-btn"
                 type="button"
                 :disabled="isAiDesigning || isTicketsLoading || isLoading"
-                @click="autoDesignTicket"
+                @click="openAiPromptModal"
             >
                 <WandSparkles size="18" />
                 <span>{{ isAiDesigning ? t('ticketCustomizer.aiDesigning') : t('ticketCustomizer.aiDesign') }}</span>
             </button>
+            <p v-if="aiDesignNotice" class="ai-design-notice">{{ aiDesignNotice }}</p>
 
             <section v-if="activeTab === 'shape'" class="control-group">
                 <div class="grid-options">
@@ -723,6 +727,49 @@ const triggerShare = async () => {
             <button @click="openPreview" class="share-btn">
                 <ExternalLink size="18" class="me-2 mb-1" />{{ t('ticketCustomizer.previewSave') }}
             </button>
+
+            <v-dialog
+                v-model="isAiPromptModalOpen"
+                max-width="560"
+                content-class="ai-prompt-dialog"
+            >
+                <v-card class="ai-prompt-card">
+                    <div class="ai-prompt-header">
+                        <div>
+                            <h5 class="ai-prompt-title">{{ t('ticketCustomizer.aiPromptTitle') }}</h5>
+                            <p class="ai-prompt-subtitle">{{ t('ticketCustomizer.aiPromptSubtitle') }}</p>
+                        </div>
+                        <v-btn icon variant="text" @click="isAiPromptModalOpen = false">
+                            <X />
+                        </v-btn>
+                    </div>
+
+                    <div class="ai-prompt-body">
+                        <label for="ai-ticket-prompt">{{ t('ticketCustomizer.aiPromptLabel') }}</label>
+                        <textarea
+                            id="ai-ticket-prompt"
+                            v-model="aiDesignPrompt"
+                            :placeholder="t('ticketCustomizer.aiPromptPlaceholder')"
+                            rows="5"
+                        ></textarea>
+                    </div>
+
+                    <div class="ai-prompt-actions">
+                        <v-btn variant="outlined" class="share-btn-style" @click="isAiPromptModalOpen = false">
+                            {{ t('ticketCustomizer.cancel') }}
+                        </v-btn>
+                        <v-btn
+                            class="save-btn-style"
+                            :loading="isAiDesigning"
+                            :disabled="isTicketsLoading || isLoading"
+                            @click="autoDesignTicket"
+                        >
+                            <WandSparkles size="17" class="me-2" />
+                            {{ t('ticketCustomizer.generateDesign') }}
+                        </v-btn>
+                    </div>
+                </v-card>
+            </v-dialog>
 
             <v-dialog
             v-model="isModalOpen"
@@ -948,37 +995,6 @@ const triggerShare = async () => {
     border-bottom-color: #e53935;
 }
 
-.ai-prompt-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 0 0 12px;
-}
-
-.ai-prompt-panel label {
-    color: var(--text-color);
-    font-size: 0.84rem;
-    font-weight: 700;
-}
-
-.ai-prompt-panel textarea {
-    width: 100%;
-    resize: vertical;
-    min-height: 74px;
-    max-height: 140px;
-    padding: 10px 12px;
-    border: 1px solid #333;
-    border-radius: 8px;
-    background: var(--bg-color);
-    color: var(--text-color);
-    outline: none;
-}
-
-.ai-prompt-panel textarea:focus {
-    border-color: #527aff;
-    box-shadow: 0 0 0 3px rgba(82, 122, 255, 0.14);
-}
-
 .ai-design-btn {
     width: 100%;
     min-height: 46px;
@@ -1004,6 +1020,91 @@ const triggerShare = async () => {
 .ai-design-btn:disabled {
     cursor: not-allowed;
     opacity: 0.62;
+}
+
+.ai-design-notice {
+    margin: -10px 0 18px;
+    padding: 8px 10px;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 8px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+:deep(.ai-prompt-dialog) {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.ai-prompt-card {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: var(--border-card);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.ai-prompt-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--dropdown-divider);
+    background: var(--header-bg);
+}
+
+.ai-prompt-title {
+    margin: 0 0 6px;
+    color: var(--text-color);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.ai-prompt-subtitle {
+    margin: 0;
+    color: var(--muted-text-color);
+    font-size: 0.92rem;
+}
+
+.ai-prompt-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 24px;
+}
+
+.ai-prompt-body label {
+    color: var(--text-color);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.ai-prompt-body textarea {
+    width: 100%;
+    min-height: 132px;
+    max-height: 240px;
+    resize: vertical;
+    padding: 12px 14px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    outline: none;
+}
+
+.ai-prompt-body textarea:focus {
+    border-color: #527aff;
+    box-shadow: 0 0 0 3px rgba(82, 122, 255, 0.14);
+}
+
+.ai-prompt-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 0 24px 24px;
 }
 
 .sidebar-scrollable {

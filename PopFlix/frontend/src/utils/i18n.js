@@ -355,6 +355,11 @@ const messages = {
       aiDesignFailed: 'AI could not design this ticket. Please try again.',
       aiPromptLabel: 'Design idea',
       aiPromptPlaceholder: 'Example: black and gold, big title, QR top right, clean premium style',
+      aiFallbackNotice: 'Gemini was not available, so a local fallback design was applied.',
+      aiPromptTitle: 'AI Ticket Designer',
+      aiPromptSubtitle: 'Tell AI the style, mood, colors, and layout you want.',
+      generateDesign: 'Generate Design',
+      cancel: 'Cancel',
     },
     theaterPage: {
       heroSubtitle: 'Premium cinema locations — pick your nearest and book your seat.',
@@ -1454,6 +1459,11 @@ const messages = {
       aiDesignFailed: 'AI tidak dapat mereka bentuk tiket ini. Sila cuba lagi.',
       aiPromptLabel: 'Idea reka bentuk',
       aiPromptPlaceholder: 'Contoh: hitam dan emas, tajuk besar, QR di kanan atas, gaya premium kemas',
+      aiFallbackNotice: 'Gemini tidak tersedia, jadi reka bentuk sandaran tempatan digunakan.',
+      aiPromptTitle: 'Pereka Tiket AI',
+      aiPromptSubtitle: 'Beritahu AI gaya, suasana, warna dan susun atur yang anda mahu.',
+      generateDesign: 'Jana Reka Bentuk',
+      cancel: 'Batal',
     },
     theaterPage: {
       halls: 'Dewan',
