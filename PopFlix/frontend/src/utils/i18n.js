@@ -353,6 +353,8 @@ const messages = {
       aiDesign: 'AI Design',
       aiDesigning: 'Designing...',
       aiDesignFailed: 'AI could not design this ticket. Please try again.',
+      aiPromptLabel: 'Design idea',
+      aiPromptPlaceholder: 'Example: black and gold, big title, QR top right, clean premium style',
     },
     theaterPage: {
       heroSubtitle: 'Premium cinema locations — pick your nearest and book your seat.',
@@ -1450,6 +1452,8 @@ const messages = {
       aiDesign: 'Reka Bentuk AI',
       aiDesigning: 'Mereka bentuk...',
       aiDesignFailed: 'AI tidak dapat mereka bentuk tiket ini. Sila cuba lagi.',
+      aiPromptLabel: 'Idea reka bentuk',
+      aiPromptPlaceholder: 'Contoh: hitam dan emas, tajuk besar, QR di kanan atas, gaya premium kemas',
     },
     theaterPage: {
       halls: 'Dewan',

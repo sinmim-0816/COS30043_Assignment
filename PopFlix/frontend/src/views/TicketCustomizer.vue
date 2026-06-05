@@ -64,6 +64,7 @@ const selectedText = ref(null);
 const { save, isLoading: isSaving } = useTicketDesign();
 const { generateTicketDesign, isAiDesigning } = useAiDesign();
 const ticketDescription = ref('');
+const aiDesignPrompt = ref('');
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
 
 const normalizeImageUrl = (path) => {
@@ -199,6 +200,76 @@ const formatFontFamily = (fontFamily) => {
     return `'${fontFamily}', sans-serif`;
 };
 
+const clampNumber = (value, min, max) => {
+    const numberValue = Number(value);
+    if (!Number.isFinite(numberValue)) return min;
+    return Math.min(max, Math.max(min, numberValue));
+};
+
+const getAiSafeBox = (type) => {
+    const width = ticketRef.value?.getBoundingClientRect()?.width || ticketDisplayWidth.value || 650;
+    const height = ticketRef.value?.getBoundingClientRect()?.height || 430;
+    const scaleX = width / 650;
+    const scaleY = height / 430;
+
+    if (type === 'qr' || type === 'barcode') {
+        return {
+            minX: 470 * scaleX,
+            maxX: 585 * scaleX,
+            minY: 72 * scaleY,
+            maxY: 235 * scaleY,
+            minW: 72 * scaleX,
+            maxW: 92 * scaleX,
+            minH: 72 * scaleY,
+            maxH: 92 * scaleY,
+        };
+    }
+
+    if (type === 'seats') {
+        return {
+            minX: 395 * scaleX,
+            maxX: 570 * scaleX,
+            minY: 235 * scaleY,
+            maxY: 330 * scaleY,
+            minW: 80 * scaleX,
+            maxW: 160 * scaleX,
+            minH: 32 * scaleY,
+            maxH: 56 * scaleY,
+        };
+    }
+
+    return {
+        minX: 185 * scaleX,
+        maxX: 555 * scaleX,
+        minY: 72 * scaleY,
+        maxY: 330 * scaleY,
+        minW: 100 * scaleX,
+        maxW: 290 * scaleX,
+        minH: 28 * scaleY,
+        maxH: 58 * scaleY,
+    };
+};
+
+const normalizeAiElement = (el, index) => {
+    const safe = getAiSafeBox(el.type);
+    const w = clampNumber(el.w, safe.minW, Math.min(safe.maxW, safe.maxX - safe.minX));
+    const h = clampNumber(el.h, safe.minH, Math.min(safe.maxH, safe.maxY - safe.minY));
+
+    return {
+        id: Date.now() + index,
+        text: getTicketInfoValue(el.type),
+        type: el.type,
+        x: clampNumber(el.x, safe.minX, safe.maxX - w),
+        y: clampNumber(el.y, safe.minY, safe.maxY - h),
+        w,
+        h,
+        fontSize: clampNumber(el.fontSize, 12, el.type === 'title' ? 30 : 26),
+        rotation: clampNumber(el.rotation || 0, -8, 8),
+        color: el.color || '#ffffff',
+        fontFamily: formatFontFamily(el.fontFamily),
+    };
+};
+
 const applyAiDesign = async (design) => {
     if (!design) return;
 
@@ -215,19 +286,7 @@ const applyAiDesign = async (design) => {
         await selectBackground('', -1);
     }
 
-    textElements.value = (design.textElements || []).map((el, index) => ({
-        id: Date.now() + index,
-        text: getTicketInfoValue(el.type),
-        type: el.type,
-        x: Number(el.x || 40),
-        y: Number(el.y || 40),
-        w: Number(el.w || 180),
-        h: Number(el.h || 40),
-        fontSize: Number(el.fontSize || 16),
-        rotation: Number(el.rotation || 0),
-        color: el.color || '#ffffff',
-        fontFamily: formatFontFamily(el.fontFamily),
-    }));
+    textElements.value = (design.textElements || []).map(normalizeAiElement);
 
     selectedText.value = null;
     if (design.description) {
@@ -253,6 +312,7 @@ const autoDesignTicket = async () => {
             currentBackdropIndex: selectedBgIndex.value,
             canvasWidth: Math.round(rect?.width || ticketDisplayWidth.value),
             canvasHeight: Math.round(rect?.height || 430),
+            userPrompt: aiDesignPrompt.value.trim(),
         });
 
         await applyAiDesign(design);
@@ -490,6 +550,16 @@ const triggerShare = async () => {
                 <button v-for="tab in tabs" :key="tab" :class="{ active: activeTab === tab }" @click="activeTab = tab">
                     {{ t(`ticketCustomizer.${tab}Tab`) }}
                 </button>
+            </div>
+
+            <div class="ai-prompt-panel">
+                <label for="ai-ticket-prompt">{{ t('ticketCustomizer.aiPromptLabel') }}</label>
+                <textarea
+                    id="ai-ticket-prompt"
+                    v-model="aiDesignPrompt"
+                    :placeholder="t('ticketCustomizer.aiPromptPlaceholder')"
+                    rows="3"
+                ></textarea>
             </div>
 
             <button
@@ -876,6 +946,37 @@ const triggerShare = async () => {
 .tabs button.active {
     color: var(--text-color);
     border-bottom-color: #e53935;
+}
+
+.ai-prompt-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.ai-prompt-panel label {
+    color: var(--text-color);
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.ai-prompt-panel textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 74px;
+    max-height: 140px;
+    padding: 10px 12px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: var(--bg-color);
+    color: var(--text-color);
+    outline: none;
+}
+
+.ai-prompt-panel textarea:focus {
+    border-color: #527aff;
+    box-shadow: 0 0 0 3px rgba(82, 122, 255, 0.14);
 }
 
 .ai-design-btn {

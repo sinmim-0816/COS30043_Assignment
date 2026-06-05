@@ -79,9 +79,13 @@ export class AiDesignService {
                 'Return JSON only. No markdown. No explanation.',
                 'Coordinates are CSS pixels inside the ticket canvas.',
                 `Canvas size: ${dto.canvasWidth || 650} x ${dto.canvasHeight || 430}.`,
-                'Keep text readable, balanced, inside the ticket, and away from the extreme edges.',
+                'The visible ticket is not a full rectangle. Avoid the left stub/cutout area and all extreme edges.',
+                'Use this safe layout zone for normal text: x 185 to 560, y 72 to 330. Do not put text above y 72.',
+                'Use this safe layout zone for QR/barcode: x 470 to 560, y 72 to 235, with width and height between 72 and 92.',
+                'Keep text readable, balanced, inside the ticket, and never overlap elements.',
                 'Use exactly 4 to 6 textElements. Include title, seats, startTime, cinema, and one qr or barcode.',
                 'Use one of these fontFamily values: Inter, Playfair Display, Bebas Neue, Montserrat, Courier Prime, Roboto, Oswald, Lora, Pacifico.',
+                `User design idea: ${dto.userPrompt || 'Create a polished cinematic ticket design.'}`,
                 `Movie data: ${JSON.stringify({
                   title: dto.movieTitle,
                   runtime: dto.runtime,
@@ -156,11 +160,11 @@ export class AiDesignService {
       backgroundIndex: hasBackdrop ? 0 : -1,
       description: 'AI styled cinematic ticket design.',
       textElements: [
-        { type: 'title', x: 78, y: 70, w: 310, h: 58, fontSize: 30, color: '#ffffff', fontFamily: 'Bebas Neue' },
-        { type: 'cinema', x: 82, y: 138, w: 230, h: 32, fontSize: 15, color: '#f8fafc', fontFamily: 'Montserrat' },
-        { type: 'startTime', x: 82, y: 178, w: 270, h: 34, fontSize: 15, color: '#f8fafc', fontFamily: 'Montserrat' },
-        { type: 'seats', x: 405, y: 260, w: 185, h: 46, fontSize: 22, color: '#ffffff', fontFamily: 'Oswald' },
-        { type: 'qr', x: 500, y: 70, w: 96, h: 96, fontSize: 16, color: '#000000' },
+        { type: 'title', x: 190, y: 78, w: 280, h: 54, fontSize: 26, color: '#ffffff', fontFamily: 'Bebas Neue' },
+        { type: 'cinema', x: 190, y: 145, w: 245, h: 32, fontSize: 15, color: '#f8fafc', fontFamily: 'Montserrat' },
+        { type: 'startTime', x: 190, y: 186, w: 260, h: 34, fontSize: 15, color: '#f8fafc', fontFamily: 'Montserrat' },
+        { type: 'seats', x: 430, y: 272, w: 120, h: 44, fontSize: 24, color: '#ffffff', fontFamily: 'Oswald' },
+        { type: 'qr', x: 488, y: 78, w: 84, h: 84, fontSize: 16, color: '#000000' },
       ],
     };
   }
@@ -191,12 +195,14 @@ export class AiDesignService {
           .filter((el) => allowedTypes.has(el.type as string))
           .slice(0, 8)
           .map((el) => {
-            const w = this.clamp(el.w, 60, canvasWidth - 20);
-            const h = this.clamp(el.h, 28, canvasHeight - 20);
+            const isCode = el.type === 'qr' || el.type === 'barcode';
+            const safe = this.getSafeBox(el.type, canvasWidth, canvasHeight);
+            const w = this.clamp(el.w, isCode ? 72 : 70, Math.min(isCode ? 92 : 290, safe.maxX - safe.minX));
+            const h = this.clamp(el.h, isCode ? 72 : 28, Math.min(isCode ? 92 : 58, safe.maxY - safe.minY));
             return {
               type: el.type,
-              x: this.clamp(el.x, 10, canvasWidth - w - 10),
-              y: this.clamp(el.y, 10, canvasHeight - h - 10),
+              x: this.clamp(el.x, safe.minX, safe.maxX - w),
+              y: this.clamp(el.y, safe.minY, safe.maxY - h),
               w,
               h,
               fontSize: this.clamp(el.fontSize, 12, 54),
@@ -223,6 +229,36 @@ export class AiDesignService {
     const numberValue = Number(value);
     if (!Number.isFinite(numberValue)) return min;
     return Math.min(max, Math.max(min, numberValue));
+  }
+
+  private getSafeBox(type: string, canvasWidth: number, canvasHeight: number) {
+    const scaleX = canvasWidth / 650;
+    const scaleY = canvasHeight / 430;
+
+    if (type === 'qr' || type === 'barcode') {
+      return {
+        minX: 470 * scaleX,
+        maxX: 585 * scaleX,
+        minY: 72 * scaleY,
+        maxY: 235 * scaleY,
+      };
+    }
+
+    if (type === 'seats') {
+      return {
+        minX: 395 * scaleX,
+        maxX: 570 * scaleX,
+        minY: 235 * scaleY,
+        maxY: 330 * scaleY,
+      };
+    }
+
+    return {
+      minX: 185 * scaleX,
+      maxX: 555 * scaleX,
+      minY: 72 * scaleY,
+      maxY: 330 * scaleY,
+    };
   }
 
   private isHexColor(value: unknown): value is string {

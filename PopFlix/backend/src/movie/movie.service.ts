@@ -314,6 +314,8 @@ export class MovieService {
     const tmdbKey = process.env.TMDB_KEY;
     const tmdbLanguage = this.normalizeTmdbLanguage(language);
     const tmdbParams = `api_key=${tmdbKey}&language=${encodeURIComponent(tmdbLanguage)}`;
+    // Image assets are not translated, so fetch them without a locale filter.
+    const tmdbImageParams = `api_key=${tmdbKey}`;
 
     const detailsRes = await axios.get<{
       title: string;
@@ -347,7 +349,7 @@ export class MovieService {
     );
 
     const imagesRes = await axios.get<TmdbImageResponse>(
-      `https://api.themoviedb.org/3/movie/${id}/images?${tmdbParams}`,
+      `https://api.themoviedb.org/3/movie/${id}/images?${tmdbImageParams}`,
     );
 
     const actors = creditsRes.data.cast.map((a) => ({

@@ -11,4 +11,5 @@ export class GenerateTicketDesignDto {
   currentBackdropIndex?: number;
   canvasWidth?: number;
   canvasHeight?: number;
+  userPrompt?: string;
 }
