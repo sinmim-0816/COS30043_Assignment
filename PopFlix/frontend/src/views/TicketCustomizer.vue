@@ -1370,7 +1370,7 @@ const triggerShare = async () => {
 .transparent-drag-input {
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.24);
+    background: transparent;
     border: none;
     color: var(--ticket-text-color, #ffffff);
     text-align: center;
@@ -1379,7 +1379,6 @@ const triggerShare = async () => {
     white-space: nowrap;
     text-overflow: ellipsis;
     min-width: 0;
-    border-radius: 6px;
     font-weight: 800;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
 }
