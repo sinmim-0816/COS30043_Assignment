@@ -410,23 +410,7 @@ watch(currentShape, () => {
 
 const bg = ref({ x: 0, y: 0, width: 700, height: 430, src: '' });
 
-const loadImageAsDataUrl = async (url) => {
-    if (!url) return '';
-    if (url.startsWith('data:') || url.startsWith('blob:')) return url;
-
-    const response = await fetch(url, { mode: 'cors' });
-    if (!response.ok) throw new Error(`Failed to load image: ${response.status}`);
-
-    const blob = await response.blob();
-    return await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(String(reader.result || ''));
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-};
-
-const selectBackground = async (url, index) => {
+const selectBackground = (url, index) => {
     selectedBgIndex.value = index;
 
     if (!url) {
@@ -435,15 +419,8 @@ const selectBackground = async (url, index) => {
         return;
     }
 
-    try {
-        const safeUrl = await loadImageAsDataUrl(url);
-        movieBackdrop.value = safeUrl;
-        bg.value.src = safeUrl;
-    } catch (error) {
-        console.warn('Backdrop conversion failed, falling back to original URL:', error);
-        movieBackdrop.value = url;
-        bg.value.src = url;
-    }
+    movieBackdrop.value = url;
+    bg.value.src = url;
 };
 
 const captureTicket = async () => {
