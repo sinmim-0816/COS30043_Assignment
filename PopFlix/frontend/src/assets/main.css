@@ -209,6 +209,73 @@ body,
   --review-color: black;
 }
 
+html[data-contrast-theme='alpine']:not(.dark) {
+  --bg-color: #f6fbff;
+  --text-color: #0b1726;
+  --header-color: #0f2a43;
+  --card-bg: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.96);
+  --tab-inactive-color: #0f2a43;
+  --hero-gradient: linear-gradient(135deg, rgba(246, 251, 255, 0.15), rgba(219, 234, 254, 0.28));
+  --btn-color: #0f2a43;
+  --btn-bg: rgba(37, 99, 235, 0.12);
+  --divider-start: #0f2a43;
+  --divider-end: #2563eb;
+  --divider-shadow: rgba(37, 99, 235, 0.35);
+  --topbar-bg: rgba(255, 255, 255, 0.98);
+  --text-hover: #2563eb;
+  --topbar-link: #0f2a43;
+  --glass-btn: rgba(15, 42, 67, 0.08);
+  --chevron-icon: #0f2a43;
+  --movie-exp-color: rgba(15, 42, 67, 0.84);
+  --card-overlay: linear-gradient(
+    to top,
+    rgba(15, 42, 67, 0.45) 0%,
+    rgba(37, 99, 235, 0.28) 30%,
+    transparent 100%
+  );
+  --movie-btn: linear-gradient(135deg, #2563eb, #0ea5e9);
+  --overlay-details: linear-gradient(to right, rgba(246, 251, 255, 0.55) 0%, transparent 60%);
+  --muted-text-color: #1e293b;
+  --frame-bg: rgba(219, 234, 254, 0.68);
+  --studio-color: #334155;
+  --cinema-btn-color: #0f2a43;
+  --cinema-btn-bg: #ffffff;
+  --dropdown-bg: #ffffff;
+  --active-date-bg: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+  --pill-border: #2563eb;
+  --pill-text: #0f2a43;
+  --showtime-bg: #ffffff;
+  --login-bg: linear-gradient(135deg, #2563eb, #0ea5e9);
+  --selected-border: #2563eb;
+  --selected-box-shadow: rgba(37, 99, 235, 0.18);
+  --info-hover: #2563eb;
+  --chip-hover-border: #2563eb;
+  --chip-selected-bg: #2563eb;
+  --chip-selected-border: #2563eb;
+  --sort-chip-hover-border: #2563eb;
+  --sort-chip-selected-bg: #2563eb;
+  --sort-chip-selected-border: #2563eb;
+  --search-bg: #f6fbff;
+  --booking-accent: #2563eb;
+  --booking-accent-soft: rgba(37, 99, 235, 0.1);
+  --screen-color: rgba(37, 99, 235, 0.55);
+  --checkout-accent: #2563eb;
+  --checkout-accent-strong: #1d4ed8;
+  --checkout-accent-soft: rgba(37, 99, 235, 0.08);
+  --footer-bg: linear-gradient(180deg, #f6fbff 0%, #eaf4ff 100%);
+  --footer-chip-bg: rgba(37, 99, 235, 0.08);
+  --footer-chip-text: #1d4ed8;
+  --footer-link-hover: #2563eb;
+  --footer-social-hover-bg: rgba(37, 99, 235, 0.16);
+  --footer-social-hover-text: #2563eb;
+  --notification-bg: linear-gradient(180deg, #f6fbff 0%, #eaf4ff 100%);
+  --notification-accent: #2563eb;
+  --notification-chip-bg: rgba(37, 99, 235, 0.08);
+  --notification-chip-text: #1d4ed8;
+  --notification-chip-border: rgba(37, 99, 235, 0.18);
+}
+
 html.dark {
   --bg-color: #0a0e17;
   --text-color: #ffffff;

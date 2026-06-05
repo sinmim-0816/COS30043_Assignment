@@ -10,6 +10,11 @@ export const CONTRAST_THEMES = [
     swatches: ['#faf7f2', '#ffffff', '#041435', '#ff5252'],
   },
   {
+    value: 'alpine',
+    mode: 'light',
+    swatches: ['#f6fbff', '#ffffff', '#0f2a43', '#2563eb'],
+  },
+  {
     value: 'navy',
     mode: 'dark',
     swatches: ['#0a0e17', '#121826', '#ffffff', '#ff4d4d'],
@@ -26,6 +31,8 @@ export const CONTRAST_THEMES = [
   },
 ];
 const DEFAULT_CONTRAST_THEME = 'desert';
+const DEFAULT_LIGHT_CONTRAST_THEME = 'desert';
+const DEFAULT_DARK_CONTRAST_THEME = 'navy';
 
 const isValidFontSize = (value) => FONT_SIZES.includes(value);
 const isValidContrastTheme = (value) => CONTRAST_THEMES.some((theme) => theme.value === value);
@@ -70,6 +77,13 @@ export const applyContrastThemePreference = (value = DEFAULT_CONTRAST_THEME) => 
   localStorage.setItem('theme', shouldUseDarkMode ? 'dark' : 'light');
 
   return normalized;
+};
+
+export const applyModeContrastThemePreference = (mode = 'light') => {
+  const normalizedMode = mode === 'dark' ? 'dark' : 'light';
+  return applyContrastThemePreference(
+    normalizedMode === 'dark' ? DEFAULT_DARK_CONTRAST_THEME : DEFAULT_LIGHT_CONTRAST_THEME,
+  );
 };
 
 export const initContrastThemePreference = () => {

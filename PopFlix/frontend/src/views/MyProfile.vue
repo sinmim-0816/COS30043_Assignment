@@ -80,6 +80,7 @@ const syncThemeState = () => {
   isDarkTheme.value =
     document.documentElement.classList.contains('dark') ||
     localStorage.getItem('theme') === 'dark';
+  selectedContrastTheme.value = readStoredContrastTheme();
 };
 
 const setFontSize = (size) => {
@@ -251,7 +252,7 @@ onMounted(async () => {
   });
   themeObserver.value.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ['class'],
+    attributeFilter: ['class', 'data-contrast-theme'],
   });
 
   try {
@@ -2411,6 +2412,11 @@ const passStrengthText = computed(() => {
 .contrast-theme-preview[data-preview-theme="desert"] {
   background: #faf7f2;
   color: #041435;
+}
+
+.contrast-theme-preview[data-preview-theme="alpine"] {
+  background: #f6fbff;
+  color: #0f2a43;
 }
 
 .contrast-theme-preview[data-preview-theme="navy"] {

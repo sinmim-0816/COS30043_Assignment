@@ -1,14 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { Sun, Moon } from 'lucide-vue-next';
+import { applyModeContrastThemePreference } from '../utils/appPreferences';
 
-// State to track current theme
 const isDark = ref(false);
+let themeObserver = null;
+
+const syncThemeState = () => {
+  isDark.value =
+    document.documentElement.classList.contains('dark') ||
+    localStorage.getItem('theme') === 'dark';
+};
 
 const toggleTheme = () => {
-  isDark.value = !isDark.value;
-  document.documentElement.classList.toggle('dark', isDark.value);
-  localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
+  const nextMode = isDark.value ? 'light' : 'dark';
+  applyModeContrastThemePreference(nextMode);
+  syncThemeState();
 };
 
 onMounted(() => {
@@ -16,9 +23,23 @@ onMounted(() => {
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   
   if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-    isDark.value = true;
-    document.documentElement.classList.add('dark');
+    applyModeContrastThemePreference('dark');
   }
+
+  syncThemeState();
+
+  themeObserver = new MutationObserver(() => {
+    syncThemeState();
+  });
+
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'data-contrast-theme'],
+  });
+});
+
+onUnmounted(() => {
+  themeObserver?.disconnect();
 });
 </script>
 

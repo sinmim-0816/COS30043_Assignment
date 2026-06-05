@@ -152,6 +152,7 @@ const messages = {
       contrastThemeDescription: 'Choose a stronger site color palette for easier reading.',
       contrastThemeOptions: {
         desert: 'Desert',
+        alpine: 'Alpine',
         navy: 'Navy Blue',
         dusk: 'Dusk',
         'night-sky': 'Night Sky',
@@ -715,6 +716,7 @@ const messages = {
       contrastThemeDescription: '\u9009\u62e9\u66f4\u6e05\u6670\u7684\u7f51\u7ad9\u914d\u8272\uff0c\u8ba9\u9605\u8bfb\u66f4\u8f7b\u677e\u3002',
       contrastThemeOptions: {
         desert: '\u6c99\u6f20',
+        alpine: '\u96ea\u5cad',
         navy: '\u6d77\u519b\u84dd',
         dusk: '\u66ae\u8272',
         'night-sky': '\u591c\u7a7a',
@@ -1179,6 +1181,7 @@ const messages = {
       contrastThemeDescription: 'Pilih palet warna laman yang lebih jelas untuk bacaan yang lebih mudah.',
       contrastThemeOptions: {
         desert: 'Desert',
+        alpine: 'Alpine',
         navy: 'Biru Navy',
         dusk: 'Senja',
         'night-sky': 'Langit Malam',
