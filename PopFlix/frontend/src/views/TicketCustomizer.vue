@@ -219,6 +219,45 @@ const clampNumber = (value, min, max) => {
     return Math.min(max, Math.max(min, numberValue));
 };
 
+const fitFontSizeToBox = (text, boxWidth, boxHeight, requestedSize, type) => {
+    if (type === 'qr' || type === 'barcode') {
+        return Number(requestedSize || 16);
+    }
+
+    const value = String(text || '');
+    const longestWordLength = value
+        .split(/\s+/)
+        .reduce((max, word) => Math.max(max, word.length), 1);
+    const totalLength = Math.max(value.length, 1);
+    const byTotalLength = (boxWidth * 1.65) / totalLength;
+    const byLongestWord = (boxWidth * 0.95) / longestWordLength;
+    const byHeight = boxHeight * 0.72;
+    const maxByType = type === 'title' ? 30 : 24;
+
+    return Math.floor(clampNumber(
+        Math.min(Number(requestedSize || maxByType), byTotalLength, byLongestWord, byHeight),
+        10,
+        maxByType
+    ));
+};
+
+const isLightHexColor = (value) => {
+    if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value)) {
+        return false;
+    }
+
+    const r = parseInt(value.slice(1, 3), 16);
+    const g = parseInt(value.slice(3, 5), 16);
+    const b = parseInt(value.slice(5, 7), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 180;
+};
+
+const getReadableTextColor = (el, hasBackdrop) => {
+    if (el.type === 'qr' || el.type === 'barcode') return '#000000';
+    if (!hasBackdrop && el.color && /^#[0-9a-fA-F]{6}$/.test(el.color)) return el.color;
+    return isLightHexColor(el.color) ? el.color : '#ffffff';
+};
+
 const getAiSafeBox = (type) => {
     const width = ticketRef.value?.getBoundingClientRect()?.width || ticketDisplayWidth.value || 650;
     const height = ticketRef.value?.getBoundingClientRect()?.height || 430;
@@ -255,7 +294,7 @@ const getAiSafeBox = (type) => {
         minX: 185 * scaleX,
         maxX: 555 * scaleX,
         minY: 72 * scaleY,
-        maxY: 330 * scaleY,
+        maxY: 245 * scaleY,
         minW: 100 * scaleX,
         maxW: 290 * scaleX,
         minH: 28 * scaleY,
@@ -267,18 +306,20 @@ const normalizeAiElement = (el, index) => {
     const safe = getAiSafeBox(el.type);
     const w = clampNumber(el.w, safe.minW, Math.min(safe.maxW, safe.maxX - safe.minX));
     const h = clampNumber(el.h, safe.minH, Math.min(safe.maxH, safe.maxY - safe.minY));
+    const text = getTicketInfoValue(el.type);
+    const hasBackdrop = Boolean(movieBackdrop.value);
 
     return {
         id: Date.now() + index,
-        text: getTicketInfoValue(el.type),
+        text,
         type: el.type,
         x: clampNumber(el.x, safe.minX, safe.maxX - w),
         y: clampNumber(el.y, safe.minY, safe.maxY - h),
         w,
         h,
-        fontSize: clampNumber(el.fontSize, 12, el.type === 'title' ? 30 : 26),
+        fontSize: fitFontSizeToBox(text, w, h, el.fontSize, el.type),
         rotation: clampNumber(el.rotation || 0, -8, 8),
-        color: el.color || '#ffffff',
+        color: getReadableTextColor(el, hasBackdrop),
         fontFamily: formatFontFamily(el.fontFamily),
     };
 };
@@ -290,7 +331,9 @@ const applyAiDesign = async (design) => {
     accentColor.value = design.accentColor || accentColor.value;
     accentColor2.value = design.accentColor2 || accentColor2.value;
     gradientAngle.value = Number(design.gradientAngle ?? gradientAngle.value);
-    backdropOpacity.value = Number(design.backdropOpacity ?? backdropOpacity.value);
+    backdropOpacity.value = movieBackdrops.value.length > 0
+        ? clampNumber(design.backdropOpacity ?? 0.42, 0.28, 0.5)
+        : Number(design.backdropOpacity ?? backdropOpacity.value);
 
     const hasBackdrops = movieBackdrops.value.length > 0;
     const requestedBackgroundIndex = Number(design.backgroundIndex ?? 0);
@@ -705,6 +748,7 @@ const triggerShare = async () => {
                                 <input v-else v-model="el.text" class="transparent-drag-input" :style="{
                                     fontSize: el.fontSize + 'px',
                                     color: el.color,
+                                    '--ticket-text-color': el.color,
                                     fontFamily: el.fontFamily || 'sans-serif'
                                 }" />
                             </div>
@@ -1326,11 +1370,18 @@ const triggerShare = async () => {
 .transparent-drag-input {
     width: 100%;
     height: 100%;
-    background: transparent;
+    background: rgba(0, 0, 0, 0.24);
     border: none;
-    color: transparent;
+    color: var(--ticket-text-color, #ffffff);
     text-align: center;
     outline: none;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
+    border-radius: 6px;
+    font-weight: 800;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
 }
 
 .info-grid {
