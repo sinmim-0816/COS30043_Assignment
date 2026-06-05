@@ -194,6 +194,11 @@ const addInfo = (infoKey) => {
     });
 };
 
+const selectText = (el) => {
+    selectedText.value = el;
+    activeTab.value = 'components';
+};
+
 const formatFontFamily = (fontFamily) => {
     if (!fontFamily) return "'Montserrat', sans-serif";
     if (fontFamily.includes(',')) return fontFamily;
@@ -683,7 +688,7 @@ const triggerShare = async () => {
                         <VueDraggableResizable v-for="el in textElements" :key="el.id" :x="el.x" :y="el.y" :w="el.w"
                             :h="el.h" @click="selectText(el)" @resizing="(x, y, w, h) => handleResize(el, x, y, w, h)"
                             class-name="control-node-wrapper">
-                            <div class="rotation-wrapper" :style="{ transform: `rotate(${el.rotation || 0}deg)` }">
+                            <div class="rotation-wrapper" :style="{ transform: `rotate(${el.rotation || 0}deg)` }" @mousedown="selectText(el)">
                                 <div v-if="el.type === 'qr' && el.text !== 'N/A'" class="qr-node">
                                     <QrcodeVue :value="String(el.text)" :size="Math.max(40, Math.min(el.w, el.h) - 10)"
                                         level="H" />
