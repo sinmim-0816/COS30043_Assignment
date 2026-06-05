@@ -155,34 +155,13 @@ export function useMovies() {
             const payload = res.data || {};
             const results = payload.results || [];
 
-            const tmdbLanguage = getTmdbLanguageCode();
-            const localizedMovies = await Promise.all(
-                results.map(async (movie) => {
-                    try {
-                        const detailRes = await movieRepository.getMovieDetails(movie.id, tmdbLanguage);
-                        const details = detailRes.data?.movie || {};
-
-                        return {
-                            ...movie,
-                            title: details.title || movie.title,
-                            overview: details.overview || movie.overview,
-                            poster: getImageURL(details.poster || movie.poster),
-                            runtime: formatRuntime(details.runtime || movie.runtime || 0),
-                            language: details.language || movie.language,
-                            genres: details.genres || movie.genres || [],
-                            experiences: movie.experiences || [],
-                        };
-                    } catch (err) {
-                        console.error(err);
-                        return {
-                            ...movie,
-                            poster: getImageURL(movie.poster),
-                            runtime: formatRuntime(movie.runtime || 0),
-                            experiences: movie.experiences || [],
-                        };
-                    }
-                })
-            );
+            const localizedMovies = results.map((movie) => ({
+                ...movie,
+                poster: getImageURL(movie.poster),
+                runtime: formatRuntime(movie.runtime || 0),
+                genres: movie.genres || movie.genre_ids || [],
+                experiences: movie.experiences || [],
+            }));
 
             allMovies.value = localizedMovies;
 

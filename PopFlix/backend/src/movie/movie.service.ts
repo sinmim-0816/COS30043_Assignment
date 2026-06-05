@@ -317,40 +317,41 @@ export class MovieService {
     // Image assets are not translated, so fetch them without a locale filter.
     const tmdbImageParams = `api_key=${tmdbKey}`;
 
-    const detailsRes = await axios.get<{
-      title: string;
-      overview: string;
-      original_language: string;
-      runtime: number;
-      vote_average: number;
-      tagline: string;
-      popularity: number;
-      budget: number;
-      revenue: number;
-      production_countries: {
-        iso_3166_1: string;
-        name: string;
-      }[];
-      production_companies: {
-        id: number;
-        name: string;
-        logo_path: string | null;
-        origin_country: string;
-      }[];
-    }>(`https://api.themoviedb.org/3/movie/${id}?${tmdbParams}`);
-    const tmdb = detailsRes.data;
+    try {
+      const detailsRes = await axios.get<{
+        title: string;
+        overview: string;
+        original_language: string;
+        runtime: number;
+        vote_average: number;
+        tagline: string;
+        popularity: number;
+        budget: number;
+        revenue: number;
+        production_countries: {
+          iso_3166_1: string;
+          name: string;
+        }[];
+        production_companies: {
+          id: number;
+          name: string;
+          logo_path: string | null;
+          origin_country: string;
+        }[];
+      }>(`https://api.themoviedb.org/3/movie/${id}?${tmdbParams}`);
+      const tmdb = detailsRes.data;
 
-    const creditsRes: AxiosResponse<TmdbCreditsResponse> = await axios.get(
-      `https://api.themoviedb.org/3/movie/${id}/credits?${tmdbParams}`,
-    );
+      const creditsRes: AxiosResponse<TmdbCreditsResponse> = await axios.get(
+        `https://api.themoviedb.org/3/movie/${id}/credits?${tmdbParams}`,
+      );
 
-    const videoRes: AxiosResponse<TmdbVideosResponse> = await axios.get(
-      `https://api.themoviedb.org/3/movie/${id}/videos?${tmdbParams}`,
-    );
+      const videoRes: AxiosResponse<TmdbVideosResponse> = await axios.get(
+        `https://api.themoviedb.org/3/movie/${id}/videos?${tmdbParams}`,
+      );
 
-    const imagesRes = await axios.get<TmdbImageResponse>(
-      `https://api.themoviedb.org/3/movie/${id}/images?${tmdbImageParams}`,
-    );
+      const imagesRes = await axios.get<TmdbImageResponse>(
+        `https://api.themoviedb.org/3/movie/${id}/images?${tmdbImageParams}`,
+      );
 
     const actors = creditsRes.data.cast.map((a) => ({
       name: a.name,
@@ -394,33 +395,71 @@ export class MovieService {
 
     const revenue = detailsRes.data.revenue || 0;
 
-    return {
-      movie: {
-        id: movie.tmdb_id,
-        title: tmdb.title || movie.title,
-        overview: tmdb.overview || movie.overview,
-        poster: movie.poster_path,
-        posters,
-        backdrops,
-        backdrop: movie.backdrop_path,
-        vote_average: vote_average,
-        tagline: tagline,
-        director: director,
-        release_date: movie.release_date,
-        runtime,
-        language: tmdb.original_language || movie.original_language,
-        genres: movie.genre_ids,
-        experiences,
-        actors,
-        writers,
-        trailer: trailerUrl,
-        popularity: tmdb.popularity || 0,
-        production_countries: productionCountries,
-        production_companies: productionCompanies,
-        budget,
-        revenue,
-      },
-    };
+      return {
+        movie: {
+          id: movie.tmdb_id,
+          title: tmdb.title || movie.title,
+          overview: tmdb.overview || movie.overview,
+          poster: movie.poster_path,
+          posters,
+          backdrops,
+          backdrop: movie.backdrop_path,
+          vote_average: vote_average,
+          tagline: tagline,
+          director: director,
+          release_date: movie.release_date,
+          runtime,
+          language: tmdb.original_language || movie.original_language,
+          genres: movie.genre_ids,
+          experiences,
+          actors,
+          writers,
+          trailer: trailerUrl,
+          popularity: tmdb.popularity || 0,
+          production_countries: productionCountries,
+          production_companies: productionCompanies,
+          budget,
+          revenue,
+        },
+      };
+    } catch (error) {
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.status_message || error.response?.data?.message || error.message
+        : error instanceof Error
+          ? error.message
+          : String(error);
+
+      console.error('TMDB movie detail failed:', { movieId: id, status, message });
+
+      return {
+        movie: {
+          id: movie.tmdb_id,
+          title: movie.title,
+          overview: movie.overview,
+          poster: movie.poster_path,
+          posters: movie.poster_path ? [movie.poster_path] : [],
+          backdrops: movie.backdrop_path ? [movie.backdrop_path] : [],
+          backdrop: movie.backdrop_path,
+          vote_average: movie.vote_average || 0,
+          tagline: movie.tagline || '',
+          director: 'Unknown',
+          release_date: movie.release_date,
+          runtime: movie.runtime || 0,
+          language: movie.original_language,
+          genres: movie.genre_ids || [],
+          experiences,
+          actors: [],
+          writers: [],
+          trailer: null,
+          popularity: movie.popularity || 0,
+          production_countries: [],
+          production_companies: [],
+          budget: 0,
+          revenue: 0,
+        },
+      };
+    }
   }
 
   async findNowShowing(page = 1, limit = 20) {
