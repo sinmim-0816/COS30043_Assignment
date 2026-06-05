@@ -40,52 +40,68 @@ export class AiDesignService {
       return fallback;
     }
 
-    try {
-      const model = this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash';
-      const response = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        this.buildGeminiRequest(dto),
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': apiKey,
+    const requestedModel = this.configService.get<string>('GEMINI_MODEL');
+    const modelsToTry = [
+      requestedModel,
+      'gemini-1.5-flash',
+      'gemini-2.0-flash',
+    ].filter((model, index, models): model is string => Boolean(model) && models.indexOf(model) === index);
+
+    let lastFailure: { status?: number; message: string; model: string } | null = null;
+
+    for (const model of modelsToTry) {
+      try {
+        const response = await axios.post(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          this.buildGeminiRequest(dto),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey,
+            },
+            timeout: 20000,
           },
-          timeout: 20000,
-        },
-      );
+        );
 
-      const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) {
-        return this.createFallbackDesign(dto, 'Gemini returned an empty response, so a local design was applied.');
+        const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) {
+          lastFailure = { model, message: 'Gemini returned an empty response' };
+          continue;
+        }
+
+        return {
+          ...this.sanitizeDesign(JSON.parse(text), dto, fallback),
+          source: 'gemini',
+          notice: requestedModel && model !== requestedModel
+            ? `Gemini model ${requestedModel} failed, so ${model} was used.`
+            : undefined,
+        };
+      } catch (error) {
+        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+        const message = axios.isAxiosError(error)
+          ? error.response?.data?.error?.message || error.message
+          : error instanceof Error
+            ? error.message
+            : String(error);
+
+        lastFailure = { status, message, model };
+        console.error('Gemini ticket design model attempt failed:', {
+          status,
+          message,
+          model,
+          hasApiKey: Boolean(apiKey),
+        });
       }
-
-      return {
-        ...this.sanitizeDesign(JSON.parse(text), dto, fallback),
-        source: 'gemini',
-      };
-    } catch (error) {
-      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-      const message = axios.isAxiosError(error)
-        ? error.response?.data?.error?.message || error.message
-        : error instanceof Error
-          ? error.message
-          : String(error);
-
-      console.error('Gemini ticket design failed:', {
-        status,
-        message,
-        model: this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash',
-        hasApiKey: Boolean(apiKey),
-      });
-
-      if (this.configService.get<string>('AI_DESIGN_STRICT') === 'true') {
-        throw new InternalServerErrorException('AI ticket design failed');
-      }
-      return this.createFallbackDesign(
-        dto,
-        `Gemini request failed${status ? ` (${status})` : ''}, so a local design was applied.`,
-      );
     }
+
+    if (this.configService.get<string>('AI_DESIGN_STRICT') === 'true') {
+      throw new InternalServerErrorException('AI ticket design failed');
+    }
+
+    return this.createFallbackDesign(
+      dto,
+      `Gemini request failed${lastFailure?.status ? ` (${lastFailure.status})` : ''} after trying ${modelsToTry.join(', ')}, so a local design was applied.`,
+    );
   }
 
   private buildGeminiRequest(dto: GenerateTicketDesignDto) {
