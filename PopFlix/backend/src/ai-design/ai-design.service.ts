@@ -24,7 +24,7 @@ type AiTicketDesign = {
   backgroundIndex: number;
   textElements: AiTextElement[];
   description?: string;
-  source?: 'gemini' | 'fallback';
+  source?: 'groq' | 'fallback';
   notice?: string;
 };
 
@@ -33,121 +33,105 @@ export class AiDesignService {
   constructor(private readonly configService: ConfigService) {}
 
   async generateTicketDesign(dto: GenerateTicketDesignDto): Promise<AiTicketDesign> {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
-    const fallback = this.createFallbackDesign(dto, 'Gemini is not configured, so a local design was applied.');
+    const apiKey = this.configService.get<string>('GROQ_API_KEY');
+    const fallback = this.createFallbackDesign(dto, 'Groq is not configured, so a local design was applied.');
 
     if (!apiKey) {
       return fallback;
     }
 
-    const requestedModel = this.configService.get<string>('GEMINI_MODEL');
-    const modelsToTry = [
-      requestedModel,
-      'gemini-1.5-flash',
-      'gemini-2.0-flash',
-    ].filter((model, index, models): model is string => Boolean(model) && models.indexOf(model) === index);
+    const model = this.configService.get<string>('GROQ_MODEL') || 'llama-3.1-8b-instant';
 
-    let lastFailure: { status?: number; message: string; model: string } | null = null;
-
-    for (const model of modelsToTry) {
-      try {
-        const response = await axios.post(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-          this.buildGeminiRequest(dto),
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': apiKey,
-            },
-            timeout: 20000,
+    try {
+      const response = await axios.post(
+        'https://api.groq.com/openai/v1/chat/completions',
+        this.buildGroqRequest(dto, model),
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
           },
-        );
+          timeout: 20000,
+        },
+      );
 
-        const text = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text) {
-          lastFailure = { model, message: 'Gemini returned an empty response' };
-          continue;
-        }
-
-        return {
-          ...this.sanitizeDesign(JSON.parse(text), dto, fallback),
-          source: 'gemini',
-          notice: requestedModel && model !== requestedModel
-            ? `Gemini model ${requestedModel} failed, so ${model} was used.`
-            : undefined,
-        };
-      } catch (error) {
-        const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-        const message = axios.isAxiosError(error)
-          ? error.response?.data?.error?.message || error.message
-          : error instanceof Error
-            ? error.message
-            : String(error);
-
-        lastFailure = { status, message, model };
-        console.error('Gemini ticket design model attempt failed:', {
-          status,
-          message,
-          model,
-          hasApiKey: Boolean(apiKey),
-        });
+      const text = response.data?.choices?.[0]?.message?.content;
+      if (!text) {
+        return this.createFallbackDesign(dto, 'Groq returned an empty response, so a local design was applied.');
       }
-    }
 
-    if (this.configService.get<string>('AI_DESIGN_STRICT') === 'true') {
-      throw new InternalServerErrorException('AI ticket design failed');
-    }
+      return {
+        ...this.sanitizeDesign(this.parseJsonFromText(text), dto, fallback),
+        source: 'groq',
+      };
+    } catch (error) {
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.error?.message || error.message
+        : error instanceof Error
+          ? error.message
+          : String(error);
 
-    return this.createFallbackDesign(
-      dto,
-      `Gemini request failed${lastFailure?.status ? ` (${lastFailure.status})` : ''} after trying ${modelsToTry.join(', ')}, so a local design was applied.`,
-    );
+      console.error('Groq ticket design failed:', {
+        status,
+        message,
+        model,
+        hasApiKey: Boolean(apiKey),
+      });
+
+      if (this.configService.get<string>('AI_DESIGN_STRICT') === 'true') {
+        throw new InternalServerErrorException('AI ticket design failed');
+      }
+
+      return this.createFallbackDesign(
+        dto,
+        `Groq request failed${status ? ` (${status})` : ''}, so a local design was applied.`,
+      );
+    }
   }
 
-  private buildGeminiRequest(dto: GenerateTicketDesignDto) {
+  private buildGroqRequest(dto: GenerateTicketDesignDto, model: string) {
     return {
-      contents: [
+      model,
+      temperature: 0.9,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content: 'You design cinema ticket layouts. Return valid JSON only.',
+        },
         {
           role: 'user',
-          parts: [
-            {
-              text: [
-                'Design a premium cinema ticket using only this JSON schema.',
-                'Return JSON only. No markdown. No explanation.',
-                'Coordinates are CSS pixels inside the ticket canvas.',
-                `Canvas size: ${dto.canvasWidth || 650} x ${dto.canvasHeight || 430}.`,
-                'The visible ticket is not a full rectangle. Avoid the left stub/cutout area and all extreme edges.',
-                'Use this safe layout zone for normal text: x 185 to 560, y 72 to 330. Do not put text above y 72.',
-                'Use this safe layout zone for QR/barcode: x 470 to 560, y 72 to 235, with width and height between 72 and 92.',
-                'Keep text readable, balanced, inside the ticket, and never overlap elements.',
-                'Use exactly 4 to 6 textElements. Include title, seats, startTime, cinema, and one qr or barcode.',
-                'Use one of these fontFamily values: Inter, Playfair Display, Bebas Neue, Montserrat, Courier Prime, Roboto, Oswald, Lora, Pacifico.',
-                'The user prompt is the highest priority for style, colors, mood, and component choices.',
-                'Choose accent colors based on the user prompt, movie title, genres, and available backdrop count.',
-                'If backdropCount is greater than 0, you MUST choose a backgroundIndex from the available backdrop list and set backdropOpacity between 0.45 and 0.75.',
-                'Do not repeat the same palette or composition as a default template. Use the variation seed to make a visibly different result every request.',
-                `Variation seed: ${dto.variationSeed || Date.now()}. Use it to avoid repeating the same composition.`,
-                `User design idea: ${dto.userPrompt || 'Create a polished cinematic ticket design.'}`,
-                `Movie data: ${JSON.stringify({
-                  title: dto.movieTitle,
-                  runtime: dto.runtime,
-                  genres: dto.genres,
-                  cinema: dto.cinema,
-                  hall: dto.hall,
-                  startTime: dto.startTime,
-                  seats: dto.seats,
-                  bookingId: dto.bookingId,
-                  backdropCount: dto.backdrops?.length || 0,
-                })}`,
-              ].join('\n'),
-            },
-          ],
+          content: [
+            'Design a premium cinema ticket using only this JSON shape:',
+            '{"colorMode":"solid|gradient","accentColor":"#RRGGBB","accentColor2":"#RRGGBB","gradientAngle":number,"backdropOpacity":number,"backgroundIndex":number,"description":"string","textElements":[{"type":"title|runtime|genres|cinema|hall|startTime|seats|qr|barcode|id","x":number,"y":number,"w":number,"h":number,"fontSize":number,"color":"#RRGGBB","rotation":number,"fontFamily":"Inter|Playfair Display|Bebas Neue|Montserrat|Courier Prime|Roboto|Oswald|Lora|Pacifico"}]}',
+            'Return JSON only. No markdown. No explanation.',
+            'Coordinates are CSS pixels inside the ticket canvas.',
+            `Canvas size: ${dto.canvasWidth || 650} x ${dto.canvasHeight || 430}.`,
+            'The visible ticket is not a full rectangle. Avoid the left stub/cutout area and all extreme edges.',
+            'Use this safe layout zone for normal text: x 185 to 560, y 72 to 330. Do not put text above y 72.',
+            'Use this safe layout zone for QR/barcode: x 470 to 560, y 72 to 235, with width and height between 72 and 92.',
+            'Keep text readable, balanced, inside the ticket, and never overlap elements.',
+            'Use exactly 4 to 6 textElements. Include title, seats, startTime, cinema, and one qr or barcode.',
+            'The user prompt is the highest priority for style, colors, mood, and component choices.',
+            'If backdropCount is greater than 0, choose a backgroundIndex from the available backdrop list and set backdropOpacity between 0.45 and 0.75.',
+            'Do not repeat the same palette or composition as a default template. Use the variation seed to make a visibly different result every request.',
+            `Variation seed: ${dto.variationSeed || Date.now()}.`,
+            `User design idea: ${dto.userPrompt || 'Create a polished cinematic ticket design.'}`,
+            `Movie data: ${JSON.stringify({
+              title: dto.movieTitle,
+              runtime: dto.runtime,
+              genres: dto.genres,
+              cinema: dto.cinema,
+              hall: dto.hall,
+              startTime: dto.startTime,
+              seats: dto.seats,
+              bookingId: dto.bookingId,
+              backdropCount: dto.backdrops?.length || 0,
+            })}`,
+          ].join('\n'),
         },
       ],
-      generationConfig: {
-        temperature: 0.85,
-        responseMimeType: 'application/json',
-      },
     };
   }
 
@@ -217,6 +201,18 @@ export class AiDesignService {
       source: 'fallback',
       notice,
     };
+  }
+
+  private parseJsonFromText(text: string): Partial<AiTicketDesign> {
+    try {
+      return JSON.parse(text);
+    } catch {
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) {
+        throw new Error('Groq response did not contain JSON');
+      }
+      return JSON.parse(match[0]);
+    }
   }
 
   private sanitizeDesign(
