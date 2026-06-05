@@ -115,9 +115,13 @@ export class AiDesignService {
             'Keep text readable, balanced, inside the ticket, and never overlap elements.',
             'Long text must fit inside its box. Use smaller font sizes for long titles, cinema names, dates, and seat lists.',
             'Use title fontSize between 18 and 28. Use normal text fontSize between 11 and 18.',
+            'Choose font families intentionally based on the movie mood: Playfair Display or Lora for elegant, Bebas Neue or Oswald for bold/action, Courier Prime for sci-fi/tech, Pacifico only for playful/family.',
+            'Use a coordinated color palette for text. Do not make every text element white unless the user explicitly asks for white.',
+            'Use accent colors such as gold, warm cream, cyan, coral, mint, or pink when they suit the movie and background.',
+            'Use slight rotation only when it improves the layout. Rotation should usually be between -5 and 5 degrees.',
             'Use exactly 4 or 5 textElements. Prefer title, startTime, seats, cinema, and one qr or barcode.',
             'Do not include genres unless the user specifically asks. Do not place important text near y > 245 except seats.',
-            'Use white or near-white text over image backgrounds. Avoid blue, gray, or pastel text on colorful backdrops.',
+            'Avoid low-contrast text on colorful backdrops, but prefer a varied readable palette instead of default white.',
             'The user prompt is the highest priority for style, colors, mood, and component choices.',
             'If backdropCount is greater than 0, choose a backgroundIndex from the available backdrop list and set backdropOpacity between 0.28 and 0.5.',
             'Do not repeat the same palette or composition as a default template. Use the variation seed to make a visibly different result every request.',
@@ -145,48 +149,49 @@ export class AiDesignService {
     const seedText = `${dto.movieTitle || ''}|${dto.userPrompt || ''}|${dto.variationSeed || ''}`;
     const seed = this.hash(seedText);
     const palette = this.pickPalette(dto.userPrompt || '', dto.genres || [], seed);
+    const textColorOverrides = this.getPromptTextColorOverrides(dto.userPrompt || '');
     const layoutVariant = seed % 6;
     const backgroundIndex = hasBackdrop ? seed % (dto.backdrops?.length || 1) : -1;
     const useBarcode = /barcode|bar code/i.test(dto.userPrompt || '') || layoutVariant === 2;
 
     const layouts: AiTextElement[][] = [
       [
-        { type: 'title', x: 190, y: 78, w: 280, h: 54, fontSize: 26, color: palette.text, fontFamily: 'Bebas Neue' },
+        { type: 'title', x: 190, y: 78, w: 280, h: 54, fontSize: 26, color: textColorOverrides.title || palette.text, rotation: -2, fontFamily: 'Bebas Neue' },
         { type: 'cinema', x: 190, y: 145, w: 245, h: 32, fontSize: 15, color: palette.muted, fontFamily: 'Montserrat' },
         { type: 'startTime', x: 190, y: 186, w: 260, h: 34, fontSize: 15, color: palette.muted, fontFamily: 'Montserrat' },
-        { type: 'seats', x: 430, y: 272, w: 120, h: 44, fontSize: 24, color: palette.text, fontFamily: 'Oswald' },
+        { type: 'seats', x: 430, y: 272, w: 120, h: 44, fontSize: 24, color: palette.highlight, rotation: 2, fontFamily: 'Oswald' },
         { type: useBarcode ? 'barcode' : 'qr', x: 488, y: 78, w: 84, h: 84, fontSize: 16, color: '#000000' },
       ],
       [
-        { type: 'title', x: 205, y: 92, w: 250, h: 48, fontSize: 24, color: palette.text, fontFamily: 'Playfair Display' },
+        { type: 'title', x: 205, y: 92, w: 250, h: 48, fontSize: 24, color: textColorOverrides.title || palette.text, rotation: 1, fontFamily: 'Playfair Display' },
         { type: 'cinema', x: 205, y: 154, w: 210, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Montserrat' },
         { type: 'startTime', x: 205, y: 194, w: 250, h: 32, fontSize: 15, color: palette.text, fontFamily: 'Montserrat' },
-        { type: 'seats', x: 420, y: 274, w: 135, h: 44, fontSize: 24, color: palette.text, fontFamily: 'Bebas Neue' },
+        { type: 'seats', x: 420, y: 274, w: 135, h: 44, fontSize: 24, color: palette.highlight, rotation: -2, fontFamily: 'Bebas Neue' },
         { type: useBarcode ? 'barcode' : 'qr', x: 484, y: 82, w: 88, h: 88, fontSize: 16, color: '#000000' },
       ],
       [
-        { type: 'title', x: 190, y: 86, w: 255, h: 48, fontSize: 23, color: palette.text, fontFamily: 'Oswald' },
+        { type: 'title', x: 190, y: 86, w: 255, h: 48, fontSize: 23, color: textColorOverrides.title || palette.text, rotation: -1, fontFamily: 'Oswald' },
         { type: 'cinema', x: 190, y: 154, w: 235, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Montserrat' },
         { type: 'hall', x: 190, y: 192, w: 140, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Montserrat' },
-        { type: 'seats', x: 415, y: 270, w: 145, h: 44, fontSize: 25, color: palette.text, fontFamily: 'Bebas Neue' },
+        { type: 'seats', x: 415, y: 270, w: 145, h: 44, fontSize: 25, color: palette.highlight, rotation: 2, fontFamily: 'Bebas Neue' },
         { type: useBarcode ? 'barcode' : 'qr', x: 488, y: 86, w: 84, h: 84, fontSize: 16, color: '#000000' },
       ],
       [
-        { type: 'title', x: 188, y: 112, w: 270, h: 46, fontSize: 24, color: palette.text, fontFamily: 'Montserrat' },
+        { type: 'title', x: 188, y: 112, w: 270, h: 46, fontSize: 24, color: textColorOverrides.title || palette.text, rotation: 2, fontFamily: 'Montserrat' },
         { type: 'runtime', x: 188, y: 174, w: 120, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Courier Prime' },
-        { type: 'startTime', x: 188, y: 214, w: 255, h: 32, fontSize: 15, color: palette.text, fontFamily: 'Courier Prime' },
+        { type: 'startTime', x: 188, y: 214, w: 255, h: 32, fontSize: 15, color: palette.highlight, fontFamily: 'Courier Prime' },
         { type: 'seats', x: 420, y: 286, w: 138, h: 40, fontSize: 24, color: palette.text, fontFamily: 'Oswald' },
         { type: useBarcode ? 'barcode' : 'qr', x: 492, y: 84, w: 80, h: 80, fontSize: 16, color: '#000000' },
       ],
       [
-        { type: 'title', x: 218, y: 78, w: 250, h: 52, fontSize: 26, color: palette.text, fontFamily: 'Pacifico' },
+        { type: 'title', x: 218, y: 78, w: 250, h: 52, fontSize: 26, color: textColorOverrides.title || palette.text, rotation: -3, fontFamily: 'Pacifico' },
         { type: 'startTime', x: 218, y: 152, w: 230, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Lora' },
-        { type: 'cinema', x: 218, y: 190, w: 245, h: 32, fontSize: 14, color: palette.text, fontFamily: 'Lora' },
+        { type: 'cinema', x: 218, y: 190, w: 245, h: 32, fontSize: 14, color: palette.highlight, fontFamily: 'Lora' },
         { type: 'seats', x: 408, y: 260, w: 150, h: 48, fontSize: 26, color: palette.text, fontFamily: 'Bebas Neue' },
         { type: useBarcode ? 'barcode' : 'qr', x: 482, y: 92, w: 88, h: 88, fontSize: 16, color: '#000000' },
       ],
       [
-        { type: 'title', x: 190, y: 80, w: 230, h: 48, fontSize: 25, color: palette.text, fontFamily: 'Bebas Neue' },
+        { type: 'title', x: 190, y: 80, w: 230, h: 48, fontSize: 25, color: textColorOverrides.title || palette.text, rotation: 2, fontFamily: 'Bebas Neue' },
         { type: 'startTime', x: 190, y: 148, w: 250, h: 32, fontSize: 15, color: palette.muted, fontFamily: 'Montserrat' },
         { type: 'cinema', x: 190, y: 190, w: 235, h: 30, fontSize: 14, color: palette.muted, fontFamily: 'Montserrat' },
         { type: 'seats', x: 440, y: 286, w: 112, h: 38, fontSize: 23, color: palette.text, fontFamily: 'Oswald' },
@@ -283,12 +288,12 @@ export class AiDesignService {
   private pickPalette(prompt: string, genres: string[], seed: number) {
     const text = `${prompt} ${genres.join(' ')}`.toLowerCase();
     const palettes = [
-      { primary: '#111827', secondary: '#d4af37', text: '#ffffff', muted: '#f8fafc' },
-      { primary: '#051923', secondary: '#00b4d8', text: '#ffffff', muted: '#d7f9ff' },
-      { primary: '#2d0a0a', secondary: '#e53935', text: '#ffffff', muted: '#ffe5e5' },
-      { primary: '#0f172a', secondary: '#22c55e', text: '#ffffff', muted: '#dcfce7' },
-      { primary: '#1f1235', secondary: '#f472b6', text: '#ffffff', muted: '#fce7f3' },
-      { primary: '#f8fafc', secondary: '#334155', text: '#111827', muted: '#1f2937' },
+      { primary: '#111827', secondary: '#d4af37', text: '#d4af37', muted: '#fff7d6', highlight: '#f97316' },
+      { primary: '#051923', secondary: '#00b4d8', text: '#67e8f9', muted: '#d7f9ff', highlight: '#facc15' },
+      { primary: '#2d0a0a', secondary: '#e53935', text: '#fecaca', muted: '#ffe5e5', highlight: '#fb7185' },
+      { primary: '#0f172a', secondary: '#22c55e', text: '#bbf7d0', muted: '#dcfce7', highlight: '#86efac' },
+      { primary: '#1f1235', secondary: '#f472b6', text: '#f9a8d4', muted: '#fce7f3', highlight: '#c4b5fd' },
+      { primary: '#f8fafc', secondary: '#334155', text: '#111827', muted: '#1f2937', highlight: '#d97706' },
     ];
 
     if (text.includes('gold') || text.includes('luxury') || text.includes('premium')) return palettes[0];
@@ -299,6 +304,26 @@ export class AiDesignService {
     if (text.includes('minimal') || text.includes('clean') || text.includes('white')) return palettes[5];
 
     return palettes[seed % palettes.length];
+  }
+
+  private getPromptTextColorOverrides(prompt: string) {
+    const text = prompt.toLowerCase();
+    const asksForTitle = /title|movie name|heading|headline/.test(text);
+    const color = [
+      { pattern: /gold|golden|luxury|premium/, value: '#d4af37' },
+      { pattern: /yellow/, value: '#facc15' },
+      { pattern: /red/, value: '#ef4444' },
+      { pattern: /blue/, value: '#60a5fa' },
+      { pattern: /green/, value: '#22c55e' },
+      { pattern: /pink/, value: '#f472b6' },
+      { pattern: /purple/, value: '#a78bfa' },
+      { pattern: /black/, value: '#111827' },
+      { pattern: /white/, value: '#ffffff' },
+    ].find(({ pattern }) => pattern.test(text))?.value;
+
+    return {
+      title: asksForTitle ? color : undefined,
+    };
   }
 
   private clamp(value: unknown, min: number, max: number): number {

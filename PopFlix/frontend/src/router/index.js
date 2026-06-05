@@ -26,103 +26,110 @@ import NotificationView from '@/views/NotificationView.vue'
 const routes = [
     {
         path: '/',
-        component: HomeView
+        component: HomeView,
+        meta: { title: 'Home' }
     },
     {
         path: '/movies',
         name: 'Movies',
-        component: AllMovies
+        component: AllMovies,
+        meta: { title: 'All Movies' }
     },
     {
         path: '/movie/:id',
         name: 'MovieDetails',
         component: MovieDetail,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Movie Details' }
     },
     {
         path: '/showtimes',
         name: 'Showtimes',
         component: AllShowtimes,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Movie Showtimes' }
     },
     {
         path: '/booking/:movieId/:showtimeId',
         name: 'TicketBooking',
         component: TicketBooking,
-
+        meta: { title: 'Select Seats' }
     },
     {
         path: '/login',
         name: 'Login',
-        component: UserLogin
+        component: UserLogin,
+        meta: { title: 'Login' }
     },
     {
         path: '/register',
         name: 'Register',
-        component: RegisterPage
+        component: RegisterPage,
+        meta: { title: 'Register' }
     },
     {
         path: '/forgot-password',
         name: 'ForgotPassword',
-        component: ForgotPassword
+        component: ForgotPassword,
+        meta: { title: 'Forgot Password' }
     },
     {
         path: '/activate',
         name: 'ActivateAccount',
-        component: UserActivate
+        component: UserActivate,
+        meta: { title: 'Account Activation' }
     },
     {
         path: '/reset-password',
         name: 'ResetPassword',
-        component: ResetPassword
+        component: ResetPassword,
+        meta: { title: 'Reset Password' }
     },
     {
         path: '/checkout-payment',
         name: 'CheckoutPayment',
         component: CheckoutPayment,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Checkout Payment' }
     },
     {
         path: '/my-tickets',
         name: "MyTickets",
         component: MyTickets,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'My Tickets' }
     },
     {
         path: '/notification',
         name: "MyNotification",
         component: NotificationView,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Notifications' }
     },
     {
         path: '/theaters',
         name: "Theaters",
         component: TheaterPage,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Theaters' }
     },
     {
         path: '/faq',
         name: 'FAQ',
         component: TheaterPage,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Frequently Asked Questions' }
     },
     {
         path: '/customize-tickets/:movieId/:bookingId',
         name: "CustomizeTickets",
         component: TicketCustomizer,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Customize Ticket Design' }
     },
     {
         path: '/customize-list',
         name: "CustomizeList",
         component: CustomizeList,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'Ticket Designs' }
     },
     {
         path: '/profile',
         name: "MyProfile",
         component: MyProfile,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, title: 'My Profile' }
     },
 
 ]
@@ -147,6 +154,11 @@ router.beforeEach((to, from, next) => {
     else {
         next()
     }
+})
+
+router.afterEach((to) => {
+    const pageTitle = to.meta?.title || 'Movie Booking and Cinema Tickets'
+    document.title = `${pageTitle} | PopFlix`
 })
 
 export default router

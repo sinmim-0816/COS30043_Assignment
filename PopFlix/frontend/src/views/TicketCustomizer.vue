@@ -252,10 +252,50 @@ const isLightHexColor = (value) => {
     return (0.299 * r + 0.587 * g + 0.114 * b) > 180;
 };
 
+const getPromptColorPreference = (type) => {
+    const prompt = aiDesignPrompt.value.toLowerCase();
+    const colorMatches = [
+        { pattern: /gold|golden|luxury|premium/, color: '#d4af37' },
+        { pattern: /yellow/, color: '#facc15' },
+        { pattern: /red/, color: '#ef4444' },
+        { pattern: /blue/, color: '#60a5fa' },
+        { pattern: /green/, color: '#22c55e' },
+        { pattern: /pink/, color: '#f472b6' },
+        { pattern: /purple/, color: '#a78bfa' },
+        { pattern: /black/, color: '#111827' },
+        { pattern: /white/, color: '#ffffff' },
+    ];
+
+    const asksForTitle = /title|movie name|heading|headline/.test(prompt);
+    if (type !== 'title' && asksForTitle) return '';
+
+    return colorMatches.find(({ pattern }) => pattern.test(prompt))?.color || '';
+};
+
 const getReadableTextColor = (el, hasBackdrop) => {
     if (el.type === 'qr' || el.type === 'barcode') return '#000000';
-    if (!hasBackdrop && el.color && /^#[0-9a-fA-F]{6}$/.test(el.color)) return el.color;
-    return isLightHexColor(el.color) ? el.color : '#ffffff';
+    const promptColor = getPromptColorPreference(el.type);
+    if (promptColor) return promptColor;
+    const isValidColor = el.color && /^#[0-9a-fA-F]{6}$/.test(el.color);
+
+    if (isValidColor && el.color.toLowerCase() !== '#ffffff') {
+        return el.color;
+    }
+
+    if (isValidColor && !hasBackdrop) return el.color;
+
+    const designerFallbacks = {
+        title: accentColor2.value || '#d4af37',
+        seats: accentColor.value || '#f8fafc',
+        cinema: '#f8fafc',
+        startTime: '#fde68a',
+        runtime: '#bfdbfe',
+        genres: '#fbcfe8',
+        hall: '#d9f99d',
+        id: '#e0e7ff',
+    };
+
+    return designerFallbacks[el.type] || (isLightHexColor(accentColor2.value) ? accentColor2.value : '#f8fafc');
 };
 
 const getAiSafeBox = (type) => {
@@ -1380,7 +1420,6 @@ const triggerShare = async () => {
     text-overflow: ellipsis;
     min-width: 0;
     font-weight: 800;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
 }
 
 .info-grid {
