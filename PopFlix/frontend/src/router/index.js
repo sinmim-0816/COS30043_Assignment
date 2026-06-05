@@ -21,6 +21,7 @@ import ForgotPassword from '@/views/ForgotPassword.vue'
 import ResetPassword from '@/views/ResetPassword.vue'
 import UserActivate from '@/views/UserActivate.vue'
 import MyProfile from '@/views/MyProfile.vue'
+import PreferencePage from '@/views/PreferencePage.vue'
 import NotificationView from '@/views/NotificationView.vue'
 
 const routes = [
@@ -122,6 +123,12 @@ const routes = [
         path: '/profile',
         name: "MyProfile",
         component: MyProfile,
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/preferences',
+        name: "Preferences",
+        component: PreferencePage,
         meta: { requiresAuth: true }
     },
 

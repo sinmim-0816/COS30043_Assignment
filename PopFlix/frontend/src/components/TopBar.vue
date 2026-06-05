@@ -7,6 +7,7 @@ import {
     LogOut,
     ChevronDown,
     Menu,
+    Settings,
     Ticket,
 } from '@lucide/vue'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
@@ -232,6 +233,11 @@ watch(
                             <span>{{ t('topbar.myBookings') }}</span>
                         </li>
 
+                        <li @click="navigateTo('Preferences')" class="dropdown-item">
+                            <Settings size="16" />
+                            <span>{{ t('topbar.preferences') }}</span>
+                        </li>
+
                         <li class="dropdown-divider"></li>
 
                         <li @click="handleLogout" class="dropdown-item logout-item">
@@ -292,6 +298,21 @@ watch(
             </router-link>
 
             <template v-if="isLoggedIn">
+                <router-link to="/profile" @click="closeMobileMenu">
+                    <User size="18" />
+                    {{ t('topbar.viewProfile') }}
+                </router-link>
+
+                <router-link to="/my-tickets" @click="closeMobileMenu">
+                    <Ticket size="18" />
+                    {{ t('topbar.myBookings') }}
+                </router-link>
+
+                <router-link to="/preferences" @click="closeMobileMenu">
+                    <Settings size="18" />
+                    {{ t('topbar.preferences') }}
+                </router-link>
+
                 <button
                     class="mobile-logout-btn"
                     @click="handleLogout"
@@ -742,6 +763,10 @@ button {
 .mobile-dropdown-links a,
 .mobile-logout-btn {
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
     padding: 14px 16px;
     border-radius: 12px;
     text-decoration: none;
@@ -762,10 +787,6 @@ button {
 
 .mobile-logout-btn {
     border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
     color: #ff5252;
     margin-right: 0;
     background: none;

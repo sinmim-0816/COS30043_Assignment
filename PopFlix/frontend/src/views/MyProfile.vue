@@ -12,13 +12,6 @@ import { resolveBackendAssetPath } from '../utils/FormatPicture';
 import { useTicketDesign } from '../hook/useTicketDesign';
 import { formatTicketDate } from '../utils/formatDateTime';
 import { useReviews } from '../hook/useReviews';
-import {
-  applyFontSizePreference,
-  applyContrastThemePreference,
-  CONTRAST_THEMES,
-  readStoredContrastTheme,
-  readStoredFontSize,
-} from '../utils/appPreferences';
 import { useAppI18n } from '../utils/i18n';
 import FooterView from '@/components/FooterView.vue';
 
@@ -46,27 +39,7 @@ const reviewsSectionRef = ref(null);
 const rewardsSectionRef = ref(null);
 const isDarkTheme = ref(false);
 const themeObserver = ref(null);
-const selectedFontSize = ref(readStoredFontSize());
-const selectedContrastTheme = ref(readStoredContrastTheme());
-const { locale, t, setLocale, getLocaleLabel, supportedLocales } = useAppI18n();
-const fontSizeOptions = [
-  { value: 'small', label: 'Small', preview: 'Aa' },
-  { value: 'medium', label: 'Medium', preview: 'Aa' },
-  { value: 'large', label: 'Large', preview: 'Aa' },
-];
-const languageOptions = computed(() =>
-  supportedLocales.map((value) => ({
-    value,
-    label: getLocaleLabel(value),
-  }))
-);
-
-const contrastThemeOptions = computed(() =>
-  CONTRAST_THEMES.map((theme) => ({
-    ...theme,
-    label: t(`profile.contrastThemeOptions.${theme.value}`),
-  }))
-);
+const { t } = useAppI18n();
 
 const cloneUserState = () => JSON.parse(JSON.stringify(user));
 
@@ -80,20 +53,6 @@ const syncThemeState = () => {
   isDarkTheme.value =
     document.documentElement.classList.contains('dark') ||
     localStorage.getItem('theme') === 'dark';
-  selectedContrastTheme.value = readStoredContrastTheme();
-};
-
-const setFontSize = (size) => {
-  selectedFontSize.value = size;
-};
-
-const setContrastTheme = (value) => {
-  selectedContrastTheme.value = applyContrastThemePreference(value);
-  syncThemeState();
-};
-
-const setLanguage = (value) => {
-  setLocale(value);
 };
 
 const triggerAvatarUpload = () => {
@@ -345,9 +304,6 @@ const syncLocalUserFromStore = () => {
 
 
 watch(currentUser, syncLocalUserFromStore, { immediate: true });
-watch(selectedFontSize, (newValue) => {
-  applyFontSizePreference(newValue);
-}, { immediate: true });
 watch(
   () => route.fullPath,
   async () => {
@@ -877,107 +833,6 @@ const passStrengthText = computed(() => {
               >
                 <Plus size="16"/>
               </button>
-            </div>
-          </div>
-        </section>
-
-        <section v-if="activeTab === 'profile'" class="display-settings-shell">
-          <div class="glass-control-card display-settings-card">
-            <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
-              <div>
-                <h3 class="panel-inner-title fs-6 mb-1">{{ t('profile.displaySettings') }}</h3>
-                <p class="display-settings-description mb-0">
-                  {{ t('profile.textSizeDescription') }}
-                </p>
-              </div>
-            </div>
-
-            <div class="font-size-option-grid">
-              <button
-                v-for="option in fontSizeOptions"
-                :key="option.value"
-                type="button"
-                class="font-size-option"
-                :class="{ active: selectedFontSize === option.value }"
-                @click="setFontSize(option.value)"
-              >
-                <div>
-                  <p class="font-size-option-label">{{ option.label }}</p>
-                  <p class="font-size-option-preview">{{ option.preview }}</p>
-                </div>
-                <Check v-if="selectedFontSize === option.value" size="18" />
-              </button>
-            </div>
-
-            <div class="mt-5">
-              <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
-                <div>
-                  <h3 class="panel-inner-title fs-6 mb-1">{{ t('profile.appLanguage') }}</h3>
-                  <p class="display-settings-description mb-0">
-                    {{ t('profile.languageDescription') }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="font-size-option-grid">
-                <button
-                  v-for="option in languageOptions"
-                  :key="option.value"
-                  type="button"
-                  class="font-size-option"
-                  :class="{ active: locale === option.value }"
-                  @click="setLanguage(option.value)"
-                >
-                  <div>
-                    <p class="font-size-option-label">{{ option.label }}</p>
-                    <p class="font-size-option-preview">{{ option.value.toUpperCase() }}</p>
-                  </div>
-                  <Check v-if="locale === option.value" size="18" />
-                </button>
-              </div>
-            </div>
-
-            <div class="mt-5">
-              <div class="d-flex flex-wrap align-center justify-space-between gap-3 mb-4">
-                <div>
-                  <h3 class="panel-inner-title fs-6 mb-1">{{ t('profile.contrastTheme') }}</h3>
-                  <p class="display-settings-description mb-0">
-                    {{ t('profile.contrastThemeDescription') }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="contrast-theme-grid">
-                <button
-                  v-for="option in contrastThemeOptions"
-                  :key="option.value"
-                  type="button"
-                  class="contrast-theme-option"
-                  :class="{ active: selectedContrastTheme === option.value }"
-                  @click="setContrastTheme(option.value)"
-                >
-                  <div class="contrast-theme-preview" :data-preview-theme="option.value">
-                    <span class="preview-aa">Aa</span>
-                    <span class="preview-lines">
-                      <i></i>
-                      <i></i>
-                      <i></i>
-                    </span>
-                    <span class="preview-mini-card"></span>
-                    <span class="preview-swatches">
-                      <i
-                        v-for="swatch in option.swatches"
-                        :key="swatch"
-                        :style="{ background: swatch }"
-                      ></i>
-                    </span>
-                  </div>
-                  <div class="contrast-theme-meta">
-                    <span>{{ option.label }}</span>
-                    <Check v-if="selectedContrastTheme === option.value" size="18" />
-                  </div>
-                </button>
-              </div>
             </div>
           </div>
         </section>
