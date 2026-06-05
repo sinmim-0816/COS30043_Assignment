@@ -118,6 +118,9 @@ export class AiDesignService {
             'Choose font families intentionally based on the movie mood: Playfair Display or Lora for elegant, Bebas Neue or Oswald for bold/action, Courier Prime for sci-fi/tech, Pacifico only for playful/family.',
             'Use a coordinated color palette for text. Do not make every text element white unless the user explicitly asks for white.',
             'Use accent colors such as gold, warm cream, cyan, coral, mint, or pink when they suit the movie and background.',
+            'Design for the current app theme. If themeMode is dark, avoid black, charcoal, navy, dark brown, or other low-luminance text on backdrops.',
+            'If themeMode is dark and a backdrop is used, choose readable light/accent text such as gold, cream, cyan, mint, rose, or bright warm colors.',
+            'If themeMode is light, dark text may be used on light ticket areas, but keep text readable over selected backdrops.',
             'Use slight rotation only when it improves the layout. Rotation should usually be between -5 and 5 degrees.',
             'Use exactly 4 or 5 textElements. Prefer title, startTime, seats, cinema, and one qr or barcode.',
             'Do not include genres unless the user specifically asks. Do not place important text near y > 245 except seats.',
@@ -137,6 +140,10 @@ export class AiDesignService {
               seats: dto.seats,
               bookingId: dto.bookingId,
               backdropCount: dto.backdrops?.length || 0,
+              themeMode: dto.themeMode || 'light',
+              contrastTheme: dto.contrastTheme,
+              themeBackground: dto.themeBackground,
+              themeText: dto.themeText,
             })}`,
           ].join('\n'),
         },
@@ -148,7 +155,7 @@ export class AiDesignService {
     const hasBackdrop = (dto.backdrops?.length || 0) > 0;
     const seedText = `${dto.movieTitle || ''}|${dto.userPrompt || ''}|${dto.variationSeed || ''}`;
     const seed = this.hash(seedText);
-    const palette = this.pickPalette(dto.userPrompt || '', dto.genres || [], seed);
+    const palette = this.pickPalette(dto.userPrompt || '', dto.genres || [], seed, dto.themeMode || 'light');
     const textColorOverrides = this.getPromptTextColorOverrides(dto.userPrompt || '');
     const layoutVariant = seed % 6;
     const backgroundIndex = hasBackdrop ? seed % (dto.backdrops?.length || 1) : -1;
@@ -285,7 +292,7 @@ export class AiDesignService {
     return [...value].reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0, 7);
   }
 
-  private pickPalette(prompt: string, genres: string[], seed: number) {
+  private pickPalette(prompt: string, genres: string[], seed: number, themeMode: 'light' | 'dark') {
     const text = `${prompt} ${genres.join(' ')}`.toLowerCase();
     const palettes = [
       { primary: '#111827', secondary: '#d4af37', text: '#d4af37', muted: '#fff7d6', highlight: '#f97316' },
@@ -301,9 +308,18 @@ export class AiDesignService {
     if (text.includes('red') || text.includes('horror') || text.includes('action')) return palettes[2];
     if (text.includes('green') || text.includes('nature')) return palettes[3];
     if (text.includes('pink') || text.includes('romance') || text.includes('playful')) return palettes[4];
-    if (text.includes('minimal') || text.includes('clean') || text.includes('white')) return palettes[5];
+    if (text.includes('minimal') || text.includes('clean') || text.includes('white')) {
+      return themeMode === 'dark'
+        ? { primary: '#0f172a', secondary: '#f8fafc', text: '#f8fafc', muted: '#e2e8f0', highlight: '#facc15' }
+        : palettes[5];
+    }
 
-    return palettes[seed % palettes.length];
+    const selected = palettes[seed % palettes.length];
+    if (themeMode === 'dark' && selected.text === '#111827') {
+      return { ...selected, text: '#f8fafc', muted: '#e2e8f0', highlight: '#facc15' };
+    }
+
+    return selected;
   }
 
   private getPromptTextColorOverrides(prompt: string) {

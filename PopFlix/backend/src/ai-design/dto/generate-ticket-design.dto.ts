@@ -13,4 +13,8 @@ export class GenerateTicketDesignDto {
   canvasHeight?: number;
   userPrompt?: string;
   variationSeed?: number;
+  themeMode?: 'light' | 'dark';
+  contrastTheme?: string;
+  themeBackground?: string;
+  themeText?: string;
 }

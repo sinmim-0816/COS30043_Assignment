@@ -68,6 +68,9 @@ const ticketDescription = ref('');
 const aiDesignPrompt = ref('');
 const aiDesignNotice = ref('');
 const aiDesignRunCount = ref(0);
+const currentThemeMode = ref('light');
+const currentContrastTheme = ref('');
+let themeObserver = null;
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
 
 const normalizeImageUrl = (path) => {
@@ -112,6 +115,26 @@ const syncLayoutMode = () => {
     const mobile = window.innerWidth <= 992;
     isMobileLayout.value = mobile;
     isSidebarOpen.value = !mobile;
+};
+
+const syncThemeContext = () => {
+    currentThemeMode.value =
+        document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark'
+            ? 'dark'
+            : 'light';
+    currentContrastTheme.value = document.documentElement.dataset.contrastTheme || '';
+};
+
+const getThemeDesignContext = () => {
+    syncThemeContext();
+    const styles = getComputedStyle(document.documentElement);
+
+    return {
+        themeMode: currentThemeMode.value,
+        contrastTheme: currentContrastTheme.value,
+        themeBackground: styles.getPropertyValue('--bg-color').trim(),
+        themeText: styles.getPropertyValue('--text-color').trim(),
+    };
 };
 
 const ticketDisplayWidth = computed(() => {
@@ -241,15 +264,31 @@ const fitFontSizeToBox = (text, boxWidth, boxHeight, requestedSize, type) => {
     ));
 };
 
-const isLightHexColor = (value) => {
+const getHexLuminance = (value) => {
     if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value)) {
-        return false;
+        return 0;
     }
 
     const r = parseInt(value.slice(1, 3), 16);
     const g = parseInt(value.slice(3, 5), 16);
     const b = parseInt(value.slice(5, 7), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 180;
+    return 0.299 * r + 0.587 * g + 0.114 * b;
+};
+
+const isLightHexColor = (value) => {
+    return getHexLuminance(value) > 180;
+};
+
+const isTextColorReadableForTheme = (color, hasBackdrop) => {
+    if (currentThemeMode.value === 'dark') {
+        return getHexLuminance(color) >= (hasBackdrop ? 115 : 95);
+    }
+
+    if (hasBackdrop) {
+        return getHexLuminance(color) >= 55 || getHexLuminance(color) <= 35;
+    }
+
+    return true;
 };
 
 const getPromptColorPreference = (type) => {
@@ -275,25 +314,36 @@ const getPromptColorPreference = (type) => {
 const getReadableTextColor = (el, hasBackdrop) => {
     if (el.type === 'qr' || el.type === 'barcode') return '#000000';
     const promptColor = getPromptColorPreference(el.type);
-    if (promptColor) return promptColor;
+    if (promptColor && isTextColorReadableForTheme(promptColor, hasBackdrop)) return promptColor;
     const isValidColor = el.color && /^#[0-9a-fA-F]{6}$/.test(el.color);
 
-    if (isValidColor && el.color.toLowerCase() !== '#ffffff') {
+    if (isValidColor && el.color.toLowerCase() !== '#ffffff' && isTextColorReadableForTheme(el.color, hasBackdrop)) {
         return el.color;
     }
 
     if (isValidColor && !hasBackdrop) return el.color;
 
-    const designerFallbacks = {
-        title: accentColor2.value || '#d4af37',
-        seats: accentColor.value || '#f8fafc',
-        cinema: '#f8fafc',
-        startTime: '#fde68a',
-        runtime: '#bfdbfe',
-        genres: '#fbcfe8',
-        hall: '#d9f99d',
-        id: '#e0e7ff',
-    };
+    const designerFallbacks = currentThemeMode.value === 'dark'
+        ? {
+            title: isTextColorReadableForTheme(accentColor2.value, hasBackdrop) ? accentColor2.value : '#facc15',
+            seats: '#f8fafc',
+            cinema: '#e0f2fe',
+            startTime: '#fde68a',
+            runtime: '#bfdbfe',
+            genres: '#fbcfe8',
+            hall: '#d9f99d',
+            id: '#e0e7ff',
+        }
+        : {
+            title: accentColor2.value || '#d4af37',
+            seats: accentColor.value || '#111827',
+            cinema: '#111827',
+            startTime: '#92400e',
+            runtime: '#1d4ed8',
+            genres: '#be185d',
+            hall: '#166534',
+            id: '#3730a3',
+        };
 
     return designerFallbacks[el.type] || (isLightHexColor(accentColor2.value) ? accentColor2.value : '#f8fafc');
 };
@@ -403,6 +453,7 @@ const autoDesignTicket = async () => {
     try {
         const rect = ticketRef.value?.getBoundingClientRect();
         const design = await generateTicketDesign({
+            ...getThemeDesignContext(),
             movieTitle: activeTicket.value.title || movieTitle.value,
             runtime: activeTicket.value.runtime,
             genres: (activeTicket.value.genres || []).map(id => getGenreName(id)),
@@ -476,7 +527,13 @@ const handleResize = (el, x, y, width, height) => {
 
 onMounted(async () => {
     syncLayoutMode();
+    syncThemeContext();
     window.addEventListener('resize', syncLayoutMode);
+    themeObserver = new MutationObserver(() => syncThemeContext());
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'data-contrast-theme'],
+    });
     await loadTicketResources();
 });
 
@@ -486,6 +543,7 @@ watch(locale, async () => {
 
 onUnmounted(() => {
     window.removeEventListener('resize', syncLayoutMode);
+    themeObserver?.disconnect();
 });
 
 watch(currentShape, () => {
