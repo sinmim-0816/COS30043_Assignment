@@ -64,11 +64,27 @@ export class AiDesignService {
         source: 'gemini',
       };
     } catch (error) {
-      console.error('Gemini ticket design failed:', error);
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.error?.message || error.message
+        : error instanceof Error
+          ? error.message
+          : String(error);
+
+      console.error('Gemini ticket design failed:', {
+        status,
+        message,
+        model: this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.0-flash',
+        hasApiKey: Boolean(apiKey),
+      });
+
       if (this.configService.get<string>('AI_DESIGN_STRICT') === 'true') {
         throw new InternalServerErrorException('AI ticket design failed');
       }
-      return this.createFallbackDesign(dto, 'Gemini request failed, so a local design was applied.');
+      return this.createFallbackDesign(
+        dto,
+        `Gemini request failed${status ? ` (${status})` : ''}, so a local design was applied.`,
+      );
     }
   }
 
@@ -115,45 +131,6 @@ export class AiDesignService {
       generationConfig: {
         temperature: 0.85,
         responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'OBJECT',
-          properties: {
-            colorMode: { type: 'STRING' },
-            accentColor: { type: 'STRING' },
-            accentColor2: { type: 'STRING' },
-            gradientAngle: { type: 'NUMBER' },
-            backdropOpacity: { type: 'NUMBER' },
-            backgroundIndex: { type: 'NUMBER' },
-            description: { type: 'STRING' },
-            textElements: {
-              type: 'ARRAY',
-              items: {
-                type: 'OBJECT',
-                properties: {
-                  type: { type: 'STRING' },
-                  x: { type: 'NUMBER' },
-                  y: { type: 'NUMBER' },
-                  w: { type: 'NUMBER' },
-                  h: { type: 'NUMBER' },
-                  fontSize: { type: 'NUMBER' },
-                  color: { type: 'STRING' },
-                  rotation: { type: 'NUMBER' },
-                  fontFamily: { type: 'STRING' },
-                },
-                required: ['type', 'x', 'y', 'w', 'h', 'fontSize', 'color'],
-              },
-            },
-          },
-          required: [
-            'colorMode',
-            'accentColor',
-            'accentColor2',
-            'gradientAngle',
-            'backdropOpacity',
-            'backgroundIndex',
-            'textElements',
-          ],
-        },
       },
     };
   }
