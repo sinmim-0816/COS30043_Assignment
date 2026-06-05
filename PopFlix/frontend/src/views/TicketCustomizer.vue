@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import * as htmlToImage from 'html-to-image';
 import VueDraggableResizable from 'vue-draggable-resizable-vue3';
 import QrcodeVue from 'qrcode.vue';
-import { ExternalLink, X, Menu } from 'lucide-vue-next';
+import { ExternalLink, X, Menu, WandSparkles } from 'lucide-vue-next';
 import { useAppI18n } from '@/utils/i18n';
 
 // Import other hook and components
@@ -12,6 +12,7 @@ import { useMovies } from '../hook/useMovies';
 import { useTickets } from '../hook/useTickets';
 import { getGenreName } from '../utils/genre';
 import { useTicketDesign } from '../hook/useTicketDesign';
+import { useAiDesign } from '../hook/useAiDesign';
 import FooterView from '@/components/FooterView.vue';
 
 // Import your SVG shapes
@@ -61,6 +62,7 @@ const gradientAngle = ref(90);
 const textElements = ref([]);
 const selectedText = ref(null);
 const { save, isLoading: isSaving } = useTicketDesign();
+const { generateTicketDesign, isAiDesigning } = useAiDesign();
 const ticketDescription = ref('');
 const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/original';
 
@@ -81,11 +83,13 @@ const loadTicketResources = async () => {
 
     const oldBackdrops = [...movieBackdrops.value];
     const oldPosters = [...moviePosters.value];
+    const fallbackBackdrops = [activeTicket.value?.backdrop].filter(Boolean).map(normalizeImageUrl);
+    const fallbackPosters = [activeTicket.value?.poster].filter(Boolean).map(normalizeImageUrl);
 
     const movie = await fetchMovieDetails(movieId);
     if (!movie) return;
 
-    movieTitle.value = movie.title;
+    movieTitle.value = activeTicket.value?.title || movie.title;
 
     const nextPosters = (movie.posters || [movie.poster])
         .filter(Boolean)
@@ -95,8 +99,8 @@ const loadTicketResources = async () => {
         .filter(Boolean)
         .map(normalizeImageUrl);
 
-    moviePosters.value = nextPosters.length > 0 ? nextPosters : oldPosters;
-    movieBackdrops.value = nextBackdrops.length > 0 ? nextBackdrops : oldBackdrops;
+    moviePosters.value = nextPosters.length > 0 ? nextPosters : (fallbackPosters.length > 0 ? fallbackPosters : oldPosters);
+    movieBackdrops.value = nextBackdrops.length > 0 ? nextBackdrops : (fallbackBackdrops.length > 0 ? fallbackBackdrops : oldBackdrops);
 };
 
 const syncLayoutMode = () => {
@@ -147,31 +151,116 @@ const confirmSave = async () => {
     }
 };
 
-const addInfo = (infoKey) => {
+const getTicketInfoValue = (infoKey) => {
+    if (!activeTicket.value) return 'N/A';
+
     const valueMap = {
         title: activeTicket.value.title,
         runtime: activeTicket.value.runtime,
-        genres: activeTicket.value.genres
+        genres: (activeTicket.value.genres || [])
             .map(id => getGenreName(id))
             .join(', '),
         cinema: activeTicket.value.cinema,
         hall: activeTicket.value.hall,
         startTime: new Date(activeTicket.value.startTime).toLocaleString(),
-        seats: activeTicket.value.seats.join(', '),
+        seats: (activeTicket.value.seats || []).join(', '),
         id: activeTicket.value.id,
         qr: activeTicket.value.bookingId,
         barcode: activeTicket.value.bookingId,
     };
 
+    return valueMap[infoKey] || 'N/A';
+};
+
+const addInfo = (infoKey) => {
+
     textElements.value.push({
         id: Date.now(),
-        text: valueMap[infoKey] || 'N/A',
+        text: getTicketInfoValue(infoKey),
         type: infoKey,
         x: 50, y: 50, w: 200, h: 40,
         fontSize: 16,
         rotation: 0,
         color: '#ffffff'
     });
+};
+
+const formatFontFamily = (fontFamily) => {
+    if (!fontFamily) return "'Montserrat', sans-serif";
+    if (fontFamily.includes(',')) return fontFamily;
+
+    const serifFonts = new Set(['Playfair Display', 'Lora']);
+    const cursiveFonts = new Set(['Pacifico']);
+    const monospaceFonts = new Set(['Courier Prime']);
+
+    if (serifFonts.has(fontFamily)) return `'${fontFamily}', serif`;
+    if (cursiveFonts.has(fontFamily)) return `'${fontFamily}', cursive`;
+    if (monospaceFonts.has(fontFamily)) return `'${fontFamily}', monospace`;
+    return `'${fontFamily}', sans-serif`;
+};
+
+const applyAiDesign = async (design) => {
+    if (!design) return;
+
+    colorMode.value = design.colorMode === 'solid' ? 'solid' : 'gradient';
+    accentColor.value = design.accentColor || accentColor.value;
+    accentColor2.value = design.accentColor2 || accentColor2.value;
+    gradientAngle.value = Number(design.gradientAngle ?? gradientAngle.value);
+    backdropOpacity.value = Number(design.backdropOpacity ?? backdropOpacity.value);
+
+    const backgroundIndex = Number(design.backgroundIndex ?? -1);
+    if (backgroundIndex >= 0 && movieBackdrops.value[backgroundIndex]) {
+        await selectBackground(movieBackdrops.value[backgroundIndex], backgroundIndex);
+    } else {
+        await selectBackground('', -1);
+    }
+
+    textElements.value = (design.textElements || []).map((el, index) => ({
+        id: Date.now() + index,
+        text: getTicketInfoValue(el.type),
+        type: el.type,
+        x: Number(el.x || 40),
+        y: Number(el.y || 40),
+        w: Number(el.w || 180),
+        h: Number(el.h || 40),
+        fontSize: Number(el.fontSize || 16),
+        rotation: Number(el.rotation || 0),
+        color: el.color || '#ffffff',
+        fontFamily: formatFontFamily(el.fontFamily),
+    }));
+
+    selectedText.value = null;
+    if (design.description) {
+        ticketDescription.value = design.description;
+    }
+};
+
+const autoDesignTicket = async () => {
+    if (!activeTicket.value) return;
+
+    try {
+        const rect = ticketRef.value?.getBoundingClientRect();
+        const design = await generateTicketDesign({
+            movieTitle: activeTicket.value.title || movieTitle.value,
+            runtime: activeTicket.value.runtime,
+            genres: (activeTicket.value.genres || []).map(id => getGenreName(id)),
+            cinema: activeTicket.value.cinema,
+            hall: activeTicket.value.hall,
+            startTime: activeTicket.value.startTime,
+            seats: activeTicket.value.seats || [],
+            bookingId: String(activeTicket.value.bookingId || activeTicket.value.id || ''),
+            backdrops: movieBackdrops.value,
+            currentBackdropIndex: selectedBgIndex.value,
+            canvasWidth: Math.round(rect?.width || ticketDisplayWidth.value),
+            canvasHeight: Math.round(rect?.height || 430),
+        });
+
+        await applyAiDesign(design);
+        activeTab.value = 'picture';
+    } catch (err) {
+        console.error(err);
+        alert(t('ticketCustomizer.aiDesignFailed'));
+    }
 };
 
 const deleteSelectedText = () => {
@@ -402,6 +491,16 @@ const triggerShare = async () => {
                     {{ t(`ticketCustomizer.${tab}Tab`) }}
                 </button>
             </div>
+
+            <button
+                class="ai-design-btn"
+                type="button"
+                :disabled="isAiDesigning || isTicketsLoading || isLoading"
+                @click="autoDesignTicket"
+            >
+                <WandSparkles size="18" />
+                <span>{{ isAiDesigning ? t('ticketCustomizer.aiDesigning') : t('ticketCustomizer.aiDesign') }}</span>
+            </button>
 
             <section v-if="activeTab === 'shape'" class="control-group">
                 <div class="grid-options">
@@ -777,6 +876,33 @@ const triggerShare = async () => {
 .tabs button.active {
     color: var(--text-color);
     border-bottom-color: #e53935;
+}
+
+.ai-design-btn {
+    width: 100%;
+    min-height: 46px;
+    margin: 0 0 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1px solid rgba(229, 57, 53, 0.65);
+    border-radius: 8px;
+    background: linear-gradient(135deg, #e53935, #527aff);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.18s ease, filter 0.18s ease, opacity 0.18s ease;
+}
+
+.ai-design-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+}
+
+.ai-design-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
 }
 
 .sidebar-scrollable {

@@ -19,6 +19,7 @@ import { SearchModule } from './search/search.module';
 import { ReminderModule } from './reminder/reminder.module';
 import { NotificationModule } from './notification/notification.module';
 import { EmailModule } from './email/email.module';
+import { AiDesignModule } from './ai-design/ai-design.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { EmailModule } from './email/email.module';
     ReminderModule,
     NotificationModule,
     EmailModule,
+    AiDesignModule,
   ],
 })
 export class AppModule {}

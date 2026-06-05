@@ -35,6 +35,7 @@ export const API_ENDPOINTS = {
     TICKET_DESIGNS: '/ticket-design',
     GET_TICKET_DESIGN: (bookingId) => `/ticket-design/${bookingId}`,
     GET_MY_DESIGN: '/ticket-design/user/me',
+    AI_TICKET_DESIGN: '/ai-design/ticket',
     CREATE_REMINDER: (movieId) => `/reminders/${movieId}`,
     CHECK_REMINDER: (movieId) => `/reminders/check/${movieId}`,
     NOTIFICATIONS: {

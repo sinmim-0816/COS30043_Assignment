@@ -350,6 +350,9 @@ const messages = {
       reset: 'Reset',
       loadingTicket: 'Loading Ticket...',
       dataUnavailable: 'Data Unavailable',
+      aiDesign: 'AI Design',
+      aiDesigning: 'Designing...',
+      aiDesignFailed: 'AI could not design this ticket. Please try again.',
     },
     theaterPage: {
       heroSubtitle: 'Premium cinema locations — pick your nearest and book your seat.',
@@ -1444,6 +1447,9 @@ const messages = {
       reset: 'Tetapkan Semula',
       loadingTicket: 'Memuatkan Tiket...',
       dataUnavailable: 'Data Tidak Tersedia',
+      aiDesign: 'Reka Bentuk AI',
+      aiDesigning: 'Mereka bentuk...',
+      aiDesignFailed: 'AI tidak dapat mereka bentuk tiket ini. Sila cuba lagi.',
     },
     theaterPage: {
       halls: 'Dewan',
