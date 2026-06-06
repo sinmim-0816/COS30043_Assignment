@@ -531,13 +531,13 @@ const getClipClass = (index) => {
                     </v-row>
                 </v-container>
             </section>
-            <section v-if="movie?.backdrops?.length">
+            <section v-if="movie?.backdrop || movie?.backdrops?.length">
                 <div class="text-center mb-3">
                     <h2 class="section-title">{{ t('movieDetail.officialPosters') }}</h2>
                 </div>
                 <v-container fluid>
-                    <div class="dynamic-poster-flex" :class="{ 'center-justify': movie.backdrops.length <= 3 }">
-                        <div v-for="(url, index) in movie.backdrops" :key="index" class="poster-wrapper">
+                    <div class="dynamic-poster-flex" :class="{ 'center-justify': (movie.backdrops?.length || 1) <= 3 }">
+                        <div v-for="(url, index) in (movie.backdrops?.length ? movie.backdrops : [movie.backdrop])" :key="index" class="poster-wrapper">
                             <div class="poster-card">
                                 <v-img
                                     :src="getImageURL(url)"
@@ -1059,7 +1059,7 @@ const getClipClass = (index) => {
 
 .center-justify {
     justify-content: center;
-}i
+}
 
 .poster-wrapper {
     flex: 1 300px;
