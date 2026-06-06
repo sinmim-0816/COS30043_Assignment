@@ -30,6 +30,9 @@ export const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original";
 
 export const getImageURL = (path, size = "original") => {
     if (!path) return null;
+    if (typeof path === "string" && /^https?:\/\//i.test(path)) {
+        return path;
+    }
     return `https://image.tmdb.org/t/p/${size}${path}`;
 };
 

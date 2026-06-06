@@ -21,7 +21,13 @@ const allMoviesMeta = ref({
 const allMoviesLoading = ref(false);
 
 export function useMovies() {
-    const getImageURL = (path) => path ? `${IMAGE_BASE_URL}${path}` : null;
+    const getImageURL = (path) => {
+        if (!path) return null;
+        if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
+            return path;
+        }
+        return `${IMAGE_BASE_URL}${path}`;
+    };
 
     const formatRuntime = (minutes) => {
         const hours = Math.floor(minutes / 60);
