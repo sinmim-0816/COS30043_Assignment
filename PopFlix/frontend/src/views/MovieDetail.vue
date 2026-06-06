@@ -1533,8 +1533,8 @@ const getClipClass = (index) => {
     background: #f5f0e0f2;
     border: 0.5px solid #ddd;
     padding: 20px;
-    width: 280px;
-    min-height: 280px;
+    width: 270px;
+    min-height: 270px;
     box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
