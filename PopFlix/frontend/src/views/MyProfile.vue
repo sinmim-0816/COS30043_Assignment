@@ -3227,6 +3227,11 @@ const passStrengthText = computed(() => {
   padding-right: 34px;
 }
 
+.profile-page-light.theme-dark .node-select-field option {
+  background: rgba(17, 24, 39, 0.98);
+  color: #e5e7eb;
+}
+
 .profile-page-light.theme-dark .dock-input option {
   background: rgba(17,24,39,0.98);
   color: #e5e7eb;

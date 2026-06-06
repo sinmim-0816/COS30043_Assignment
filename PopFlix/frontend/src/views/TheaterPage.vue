@@ -13,7 +13,7 @@ import { resolveBackendAssetPath } from '../utils/FormatPicture';
 import { useAppI18n } from '../utils/i18n';
 
 const { cinemas, isLoading } = useCinemas();
-const { t } = useAppI18n();
+const { t, locale } = useAppI18n();
 const router = useRouter();
 const route=useRoute();
 
@@ -28,6 +28,18 @@ const { allFaqs, faqCategories, isLoadingFaqs } = useFaqs();
 const activeFaqCategory = ref('');
 const scrollToFaq = ref(false);
 const expandedFaqId = ref(null);
+
+const heroTitle = computed(() => {
+    if (locale.value === 'zh') return '我们的影院地点';
+    if (locale.value === 'ms') return 'Lokasi Pawagam Kami';
+    return 'Our Cinemas Locations';
+});
+
+const heroSubtitle = computed(() => {
+    if (locale.value === 'zh') return '优质影院地点 - 选择离您最近的影院并预订座位。';
+    if (locale.value === 'ms') return 'Lokasi pawagam premium - pilih yang terdekat dan tempah tempat duduk anda.';
+    return 'Premium cinema locations - pick your nearest and book your seat.';
+});
 
 const scrollToFaqSection = async () => {
     await nextTick();
@@ -332,8 +344,8 @@ const filteredFaqs = computed(() => {
 
         <div v-else>
             <div class="hero w-100" >
-                <h1 class="hero-title text-center mt-2">Our <span>Cinemas</span> Locations</h1>
-                <p class="hero-sub text-center">{{ t('theaterPage.heroSubtitle') }}</p>
+                <h1 class="hero-title text-center mt-2">{{ heroTitle }}</h1>
+                <p class="hero-sub text-center">{{ heroSubtitle }}</p>
             </div>
 
             <div class="custom-layout">
