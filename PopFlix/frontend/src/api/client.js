@@ -1,11 +1,19 @@
 const BASE_URL = "https://api.themoviedb.org/3";
-const API_KEY = "c9858d1981c48307a734e8bb777a1a5c";
-const YOUTUBE_API_KEY = "AIzaSyBo2ivSxIJmHJRd4HmnmqkrrdX9tqNySe8";
+const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+
+const assertEnv = (keyName, value) => {
+    if (!value) {
+        throw new Error(`Missing required env variable: ${keyName}`);
+    }
+};
 
 // ============================
 // TMDB API CLIENT
 // ============================
 export const apiClient = async (endpoint, params = {}) => {
+    assertEnv("VITE_TMDB_API_KEY", API_KEY);
+
     const queryParams = new URLSearchParams({
         api_key: API_KEY,
         language: "en-US",
@@ -41,6 +49,8 @@ export const getImageURL = (path, size = "original") => {
 // ============================
 export const youtubeSearch = async (query) => {
     try {
+        assertEnv("VITE_YOUTUBE_API_KEY", YOUTUBE_API_KEY);
+
         const url = new URL("https://www.googleapis.com/youtube/v3/search");
 
         url.search = new URLSearchParams({
